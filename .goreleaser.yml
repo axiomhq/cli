@@ -1,0 +1,122 @@
+project_name: axiom
+
+before:
+  hooks:
+    - make man
+
+builds:
+  - <<: &build_defaults
+      binary: axiom
+      main: ./cmd/axiom
+      env:
+        - CGO_ENABLED=0
+      flags:
+        - -buildmode=exe
+        - -installsuffix=cgo
+        - -trimpath
+        - -tags="osusergo netgo static_build"
+      ldflags:
+        - -s -w -extldflags "-fno-PIC -static"
+        - -X github.com/axiomhq/cli/pkg/version.release={{.Version}}
+        - -X github.com/axiomhq/cli/pkg/version.revision={{.ShortCommit}}
+        - -X github.com/axiomhq/cli/pkg/version.buildDate={{.CommitDate}}
+        - -X github.com/axiomhq/cli/pkg/version.buildUser=goreleaser
+      mod_timestamp: "{{ .CommitTimestamp }}"
+    id: darwin
+    goos: 
+      - darwin
+    goarch: 
+      - amd64
+
+  - <<: *build_defaults
+    id: linux
+    goos: 
+      - linux
+    goarch: 
+      - 386
+      - amd64
+      - arm64
+    goarm: 
+      - 6
+      - 7
+
+  - <<: *build_defaults
+    id: windows
+    goos: 
+      - windows
+    goarch: 
+      - 386
+      - amd64
+
+archives:
+  - <<: &archive_defaults
+      name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+    id: nix
+    builds:
+      - darwin
+      - linux
+    wrap_in_directory: true
+    format: tar.gz
+    files:
+      - LICENSE
+      - README.md
+      - man/{{ .ProjectName }}*.1
+  - <<: *archive_defaults
+    id: windows
+    builds:
+      - windows
+    wrap_in_directory: false
+    format: zip
+    files:
+      - LICENSE
+      - README.md
+
+checksum:
+  name_template: checksums.txt
+
+snapshot:
+  name_template: "{{ .Tag }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+
+milestones:
+  - repo:
+      owner: axiomhq
+      name: cli
+    close: true
+    fail_on_error: false
+
+release:
+  github:
+    owner: axiomhq
+    name: cli
+  prerelease: auto
+  name_template: Axiom CLI v{{.Version}}
+
+brews:
+  - name: axiom
+    description: Powerful log analytics from the comfort of your command-line
+    homepage: https://axiom.co
+    license: MIT
+    tap:
+      owner: axiomhq
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TOKEN }}"
+    commit_author:
+      name: axiom-automation
+      email: hello@axiom.co
+    skip_upload: auto
+    folder: Formula
+    install: |
+      bin.install "{{ .ProjectName }}"
+      man1.install Dir["man/{{ .ProjectName }}*.1"]
+      (bash_completion/"{{ .ProjectName }}").write `#{bin}/{{ .ProjectName }} completion bash`
+      (fish_completion/"{{ .ProjectName }}.fish").write `#{bin}/{{ .ProjectName }} completion fish`
+      (zsh_completion/"_{{ .ProjectName }}").write `#{bin}/{{ .ProjectName }} completion zsh`
+    test: |
+      assert_match "Axiom CLI version #{version}", shell_output("#{bin}/{{ .ProjectName }} -v")
