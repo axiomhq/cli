@@ -1,0 +1,168 @@
+name: go
+
+on:
+  push:
+    tags:
+      - "*"
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  GOPRIVATE: axicode.axiom.co/*
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Axicode
+        run: echo "machine axicode.axiom.co login lukas@axiom.co password ${{ secrets.AXICODE_TOKEN }}" > ~/.netrc
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.15"
+
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Check for man page generation differences
+        run: |
+          make man
+          git diff --exit-code
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Axicode
+        run: echo "machine axicode.axiom.co login lukas@axiom.co password ${{ secrets.AXICODE_TOKEN }}" > ~/.netrc
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.15"
+
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Lint
+        uses: golangci/golangci-lint-action@v2
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Axicode
+        run: echo "machine axicode.axiom.co login lukas@axiom.co password ${{ secrets.AXICODE_TOKEN }}" > ~/.netrc
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.15"
+
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Test
+        run: make test
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Axicode
+        run: echo "machine axicode.axiom.co login lukas@axiom.co password ${{ secrets.AXICODE_TOKEN }}" > ~/.netrc
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.15"
+
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Build
+        run: make build
+
+  release:
+    name: Release
+    needs:
+      - check
+      - lint
+      - test
+      - build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Axicode
+        run: echo "machine axicode.axiom.co login lukas@axiom.co password ${{ secrets.AXICODE_TOKEN }}" > ~/.netrc
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.15"
+
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Get tag
+        uses: olegtarasov/get-tag@v2
+        id: tagName
+
+      - name: Install changelog-extractor
+        run: make bin/changelog-extractor
+
+      - name: Extract changelog for ${{ steps.tagName.outputs.tag }}
+        run: ./bin/changelog-extractor -f=CHANGELOG.md -t=${{ steps.tagName.outputs.tag }} > /tmp/CHANGELOG_${{ steps.tagName.outputs.tag }}.md
+
+      - name: Release
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          args: release --rm-dist --release-notes /tmp/CHANGELOG_${{ steps.tagName.outputs.tag }}.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HOMEBREW_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
