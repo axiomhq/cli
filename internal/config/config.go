@@ -33,6 +33,8 @@ type Backend struct {
 	URL      string `toml:"url"`
 	Username string `toml:"username"`
 	Token    string `toml:"token"`
+
+	tree *toml.Tree
 }
 
 // LoadDefaultConfigFile tries to load the default configuration. It doesn't
