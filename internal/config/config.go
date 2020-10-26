@@ -26,6 +26,8 @@ type Config struct {
 	Backends      map[string]Backend `toml:"backends"`
 
 	configFilePath string
+
+	tree toml.Tree
 }
 
 // Backend is the configuration for an Axiom instance.
