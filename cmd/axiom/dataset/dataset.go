@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
-	"github.com/axiomhq/cli/internal/uiutil"
 )
 
 // NewDatasetCmd creates and returns the dataset command.
@@ -31,13 +30,6 @@ func NewDatasetCmd(f *cmdutil.Factory) *cobra.Command {
 		},
 
 		PersistentPreRunE: cmdutil.NeedsActiveBackend(f),
-
-		RunE: func(cmd *cobra.Command, _ []string) error {
-			m := NewModel(f)
-			m.standalone = true
-
-			return uiutil.RunUIOrHelp(f.IO, m, cmd)
-		},
 	}
 
 	cmd.AddCommand(newCreateCmd(f))

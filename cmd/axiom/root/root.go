@@ -6,7 +6,6 @@ import (
 
 	"github.com/axiomhq/cli/internal/cmdutil"
 	"github.com/axiomhq/cli/internal/config"
-	"github.com/axiomhq/cli/internal/uiutil"
 	"github.com/axiomhq/cli/pkg/version"
 
 	// Core commands
@@ -34,12 +33,7 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "axiom <command> <subcommand>",
 		Short: "Axiom CLI",
-		Long: heredoc.Doc(`
-			The power of Axiom on the command line.
-
-			Running without arguments starts the interactive mode when color
-			is supported and enabled in the terminal.
-		`),
+		Long:  "The power of Axiom on the command line.",
 
 		SilenceErrors: true,
 		SilenceUsage:  true,
@@ -64,10 +58,6 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 				f.Config.ActiveBackend = backendOverwrite
 			}
 			return err
-		},
-
-		RunE: func(cmd *cobra.Command, _ []string) error {
-			return uiutil.RunUIOrHelp(f.IO, newModel(f), cmd)
 		},
 	}
 

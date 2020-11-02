@@ -83,13 +83,7 @@ Axiom CLI version 0.1.0
 
 ### Using the application
 
-Run interactively:
-
-```shell
-$ axiom
-```
-
-Run in classic CLI mode:
+CLI usage:
 
 ```shell
 $ axiom <command> <subcommand> [flags]

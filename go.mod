@@ -7,9 +7,6 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.1.1
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/briandowns/spinner v1.11.1
-	github.com/charmbracelet/bubbles v0.7.2
-	github.com/charmbracelet/bubbletea v0.12.1
-	github.com/charmbracelet/charm v0.8.4
 	github.com/cli/cli v1.2.0
 	github.com/golangci/golangci-lint v1.32.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
@@ -26,6 +23,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.6.1
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
+	golang.org/x/sys v0.0.0-20201020230747-6e5568b54d1a // indirect
 	gotest.tools/gotestsum v0.6.0
 )
 
