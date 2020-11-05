@@ -89,7 +89,7 @@ func runLogout(ctx context.Context, opts *logoutOptions) error {
 		}
 	}
 
-	stop := opts.IO.StartProgressIndicator()
+	stop := opts.IO.StartActivityIndicator()
 	defer stop()
 
 	// TODO: Logout, I guess we need ctx in the here soon ;)

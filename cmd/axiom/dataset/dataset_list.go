@@ -43,7 +43,7 @@ func runList(ctx context.Context, f *cmdutil.Factory) error {
 		return err
 	}
 
-	progStop := f.IO.StartProgressIndicator()
+	progStop := f.IO.StartActivityIndicator()
 	datasets, err := client.Datasets.List(ctx, axiomdb.ListOptions{})
 	if err != nil {
 		progStop()

@@ -79,7 +79,7 @@ func runInfo(ctx context.Context, opts *infoOptions) error {
 		return err
 	}
 
-	progStop := opts.IO.StartProgressIndicator()
+	progStop := opts.IO.StartActivityIndicator()
 	dataset, err := client.Datasets.Info(ctx, opts.Name)
 	if err != nil {
 		progStop()

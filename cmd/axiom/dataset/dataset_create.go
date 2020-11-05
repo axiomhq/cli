@@ -74,7 +74,7 @@ func runCreate(ctx context.Context, opts *createOptions) error {
 		return err
 	}
 
-	stop := opts.IO.StartProgressIndicator()
+	stop := opts.IO.StartActivityIndicator()
 	if _, err := client.Datasets.CreateDataset(ctx, opts.Name); err != nil {
 		stop()
 		return err

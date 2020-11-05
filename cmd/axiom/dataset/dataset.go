@@ -45,7 +45,7 @@ func getDatasetNames(ctx context.Context, f *cmdutil.Factory) ([]string, error) 
 		return nil, err
 	}
 
-	stop := f.IO.StartProgressIndicator()
+	stop := f.IO.StartActivityIndicator()
 	datasets, err := client.Datasets.List(ctx, axiomdb.ListOptions{})
 	if err != nil {
 		stop()

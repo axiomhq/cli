@@ -178,7 +178,7 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 		}
 	}
 
-	stop := opts.IO.StartProgressIndicator()
+	stop := opts.IO.StartActivityIndicator()
 	defer stop()
 
 	// TODO: Login, I guess we need ctx in the here soon ;)

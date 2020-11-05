@@ -19,12 +19,11 @@ require (
 	github.com/muesli/termenv v0.7.4
 	github.com/nwidger/jsoncolor v0.3.0
 	github.com/pelletier/go-toml v1.8.1
+	github.com/schollz/progressbar/v3 v3.7.0
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.6.1
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897
-	golang.org/x/sys v0.0.0-20201101102859-da207088b7d1 // indirect
-	golang.org/x/text v0.3.4 // indirect
 	gotest.tools/gotestsum v0.6.0
 )
 

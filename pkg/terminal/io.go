@@ -15,12 +15,17 @@ import (
 	"github.com/google/shlex"
 	"github.com/mattn/go-colorable"
 	"github.com/mattn/go-isatty"
+	"github.com/schollz/progressbar/v3"
 	"golang.org/x/crypto/ssh/terminal"
 
 	"github.com/axiomhq/cli/pkg/doc"
 )
 
-const defaultTerminalWidth = 80
+const (
+	defaultTerminalWidth = 80
+
+	spinnerType = 11
+)
 
 // IO is used to interact with the terminal, files and any other I/O sources.
 type IO struct {
@@ -37,7 +42,7 @@ type IO struct {
 	colorEnabled bool
 
 	pagerCommand      string
-	progressIndicator *spinner.Spinner
+	activityIndicator *spinner.Spinner
 }
 
 // NewIO returns a new IO. It detects if a TTY is attached and detects if
@@ -60,8 +65,8 @@ func NewIO() *IO {
 	io.colorScheme = NewColorScheme(io.colorEnabled)
 
 	if io.isStdoutTTY && io.isStderrTTY {
-		io.progressIndicator = spinner.New(
-			spinner.CharSets[11],
+		io.activityIndicator = spinner.New(
+			spinner.CharSets[spinnerType],
 			time.Millisecond*150,
 			spinner.WithWriter(io.errOut),
 		)
@@ -169,16 +174,37 @@ func (io *IO) StartPager(ctx context.Context) (func(), error) {
 	return cancelFunc, nil
 }
 
-// StartProgressIndicator starts a spinner that indicates activity. The return
+// StartActivityIndicator starts a spinner that indicates activity. The return
 // function, when called, stops the spinner. When no TTY is attached, this is a
 // nop.
-func (io *IO) StartProgressIndicator() func() {
+func (io *IO) StartActivityIndicator() func() {
 	if !io.isStdoutTTY || !io.isStderrTTY {
 		return func() {}
 	}
-	io.progressIndicator.Start()
+	io.activityIndicator.Start()
 
-	return func() { io.progressIndicator.Stop() }
+	return func() { io.activityIndicator.Stop() }
+}
+
+// StartProgressIndicator starts a progress bar with the given limit and title
+// that indicates progress made reading from r. When no TTY is attached, this is
+// a nop.
+func (io *IO) StartProgressIndicator(r io.Reader, limit int64, title string) io.Reader {
+	if !io.isStdoutTTY || !io.isStderrTTY {
+		return r
+	}
+
+	bar := progressbar.NewOptions64(limit,
+		progressbar.OptionSetWriter(io.errOut),
+		progressbar.OptionClearOnFinish(),
+		progressbar.OptionShowBytes(true),
+		progressbar.OptionSetPredictTime(true),
+		progressbar.OptionSetDescription(title),
+		progressbar.OptionSpinnerType(spinnerType),
+	)
+
+	pbr := progressbar.NewReader(r, bar)
+	return &pbr
 }
 
 // SurveyIO returns an options that makes itself the IO for survey questions.

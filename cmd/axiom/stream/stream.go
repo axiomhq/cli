@@ -19,11 +19,11 @@ import (
 
 const (
 	formatJSON = "JSON"
+
+	streamingDuration = time.Second * 3
 )
 
 var validFormats = []string{formatJSON}
-
-const streamingDuration = time.Second * 3
 
 type options struct {
 	*cmdutil.Factory
@@ -48,7 +48,10 @@ func NewStreamCmd(f *cmdutil.Factory) *cobra.Command {
 
 		DisableFlagsInUseLine: true,
 
-		Args:              cobra.MaximumNArgs(1),
+		Args: cmdutil.ChainPositionalArgs(
+			cobra.MaximumNArgs(1),
+			cmdutil.PopulateFromArgs(f, &opts.Dataset),
+		),
 		ValidArgsFunction: cmdutil.DatasetCompletionFunc(f),
 
 		Example: heredoc.Doc(`
@@ -66,18 +69,15 @@ func NewStreamCmd(f *cmdutil.Factory) *cobra.Command {
 			"IsCore": "true",
 		},
 
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			if err := cmdutil.ChainRunFuncs(
-				cmdutil.NeedsActiveBackend(f),
-				cmdutil.NeedsDatasets(f),
-			)(cmd, args); err != nil {
-				return err
-			}
-
-			return complete(cmd.Context(), opts)
-		},
+		PreRunE: cmdutil.ChainRunFuncs(
+			cmdutil.NeedsActiveBackend(f),
+			cmdutil.NeedsDatasets(f),
+		),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := complete(cmd.Context(), opts); err != nil {
+				return err
+			}
 			return run(cmd.Context(), opts)
 		},
 	}
@@ -99,7 +99,7 @@ func complete(ctx context.Context, opts *options) error {
 		return err
 	}
 
-	stop := opts.IO.StartProgressIndicator()
+	stop := opts.IO.StartActivityIndicator()
 	datasets, err := client.Datasets.List(ctx, axiomdb.ListOptions{})
 	if err != nil {
 		stop()
@@ -167,13 +167,12 @@ func run(ctx context.Context, opts *options) error {
 				switch opts.Format {
 				case formatJSON:
 					_ = enc.Encode(entry)
-					fmt.Fprintln(opts.IO.Out())
 				default:
 					fmt.Fprintf(opts.IO.Out(), "%s\t",
 						cs.Gray(entry.Time.Format(time.RFC1123)))
 					_ = enc.Encode(entry.Data)
-					fmt.Fprintln(opts.IO.Out())
 				}
+				fmt.Fprintln(opts.IO.Out())
 			}
 		}
 

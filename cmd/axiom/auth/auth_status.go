@@ -64,7 +64,7 @@ func runStatus(ctx context.Context, opts *statusOptions) error {
 		backendAliases = []string{opts.Alias}
 	}
 
-	stop := opts.IO.StartProgressIndicator()
+	stop := opts.IO.StartActivityIndicator()
 	defer stop()
 
 	// TODO: Get authentication status, I guess we need ctx in here soon ;)

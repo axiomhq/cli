@@ -69,7 +69,7 @@ func newRefreshCmd(f *cmdutil.Factory) *cobra.Command {
 }
 
 func runRefresh(ctx context.Context, opts *refreshOptions) error {
-	stop := opts.IO.StartProgressIndicator()
+	stop := opts.IO.StartActivityIndicator()
 	defer stop()
 
 	// TODO: Refresh, I guess we need ctx in the here soon ;)
