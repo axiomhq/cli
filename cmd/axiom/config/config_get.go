@@ -33,9 +33,10 @@ func newGetCmd(f *cmdutil.Factory) *cobra.Command {
 			val, err := f.Config.Get(args[0])
 			if err != nil {
 				return err
+			} else if val != "" {
+				_, err = fmt.Fprintf(f.IO.Out(), "%s\n", val)
+				return err
 			}
-
-			fmt.Fprintf(f.IO.Out(), "%s\n", val)
 
 			return nil
 		},

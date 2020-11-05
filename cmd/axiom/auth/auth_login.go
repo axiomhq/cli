@@ -184,14 +184,9 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 	// TODO: Login, I guess we need ctx in the here soon ;)
 	_ = ctx
 
-	time.Sleep(time.Second * 3)
+	time.Sleep(time.Second * 2)
 
 	stop()
-
-	if opts.IO.IsStderrTTY() {
-		cs := opts.IO.ColorScheme()
-		fmt.Fprintf(opts.IO.ErrOut(), "%s Logged in to %s (%s) as %s\n", cs.SuccessIcon(), cs.Bold(opts.Alias), opts.URL, cs.Bold(opts.Username))
-	}
 
 	opts.Config.Backends[opts.Alias] = config.Backend{
 		URL:      opts.URL,
@@ -199,5 +194,15 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 		Token:    opts.Password,
 	}
 
-	return opts.Config.Write()
+	if err := opts.Config.Write(); err != nil {
+		return err
+	}
+
+	if opts.IO.IsStderrTTY() {
+		cs := opts.IO.ColorScheme()
+		fmt.Fprintf(opts.IO.ErrOut(), "%s Logged in to backend %s (%s) as %s\n",
+			cs.SuccessIcon(), cs.Bold(opts.Alias), opts.URL, cs.Bold(opts.Username))
+	}
+
+	return nil
 }

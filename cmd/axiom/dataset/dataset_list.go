@@ -44,13 +44,11 @@ func runList(ctx context.Context, f *cmdutil.Factory) error {
 	}
 
 	progStop := f.IO.StartProgressIndicator()
-	defer progStop()
-
 	datasets, err := client.Datasets.List(ctx, axiomdb.ListOptions{})
 	if err != nil {
+		progStop()
 		return err
 	}
-
 	progStop()
 
 	pagerStop, err := f.IO.StartPager(ctx)
@@ -74,7 +72,7 @@ func runList(ctx context.Context, f *cmdutil.Factory) error {
 
 	for _, dataset := range datasets {
 		id := strconv.Itoa(int(dataset.ID))
-		tp.AddField("#"+id, cs.Red)
+		tp.AddField(id, cs.Red)
 		tp.AddField(dataset.Name, cs.Bold)
 		tp.AddField(dataset.CreatedAt.Format(time.RFC1123), cs.Gray)
 		tp.EndRow()

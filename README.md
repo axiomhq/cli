@@ -52,7 +52,7 @@ $ brew install axiom
 With a working Go installation (>=1.15), run:
 
 ```shell
-$ go install github.com/axiomhq/cli/cmd/axiom
+$ go get -u github.com/axiomhq/cli/cmd/axiom
 ```
 
 Go 1.11 and higher _should_ be sufficient enough to use `go get` but it is not 

@@ -31,7 +31,7 @@ func newSetCmd(f *cmdutil.Factory) *cobra.Command {
 			return f.Config.Set(args[0], args[1])
 		},
 
-		PostRunE: func(_ *cobra.Command, _ []string) error {
+		PostRunE: func(*cobra.Command, []string) error {
 			return f.Config.Write()
 		},
 	}

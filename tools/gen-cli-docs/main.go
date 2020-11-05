@@ -10,6 +10,7 @@ import (
 
 	"github.com/axiomhq/cli/cmd/axiom/root"
 	"github.com/axiomhq/cli/internal/cmdutil"
+	"github.com/axiomhq/cli/internal/config"
 )
 
 func main() {
@@ -34,7 +35,10 @@ func main() {
 		fatal("no dir set")
 	}
 
-	rootCmd := root.NewRootCmd(cmdutil.NewFactory())
+	f := cmdutil.NewFactory()
+	f.Config = &config.Config{}
+
+	rootCmd := root.NewRootCmd(f)
 	if err := os.MkdirAll(*dir, 0755); err != nil {
 		fatal(err)
 	}

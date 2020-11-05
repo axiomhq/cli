@@ -119,10 +119,6 @@ func (c *Config) Get(key string) (string, error) {
 	}
 	val = strings.TrimSpace(val)
 
-	if val == "" {
-		return "", fmt.Errorf("value at key %q is present but an empty string", key)
-	}
-
 	return val, nil
 }
 

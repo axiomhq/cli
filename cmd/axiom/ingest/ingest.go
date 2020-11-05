@@ -103,13 +103,14 @@ func run(ctx context.Context, opts *options) error {
 		break
 	}
 
+	// Create a new reader and prepend what we have already consumed in order to
+	// figure out the content type.
 	bufSize := br.Buffered()
 	buf, err := br.Peek(bufSize)
 	if err != nil {
 		return err
 	}
 	alreadyRead := bytes.NewReader(buf)
-
 	r = io.MultiReader(alreadyRead, r)
 
 	res, err := client.Datasets.Ingest(ctx, opts.Dataset, gzipStream(opts.IO.ErrOut(), r), typ, axiomdb.GZIP, axiomdb.IngestOptions{

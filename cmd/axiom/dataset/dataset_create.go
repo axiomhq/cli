@@ -25,32 +25,28 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "create <dataset-name>",
+		Use:   "create [<dataset-name>]",
 		Short: "Create a dataset",
 
 		Aliases: []string{"new"},
 
-		Args: cobra.MaximumNArgs(1),
+		Args: cmdutil.ChainPositionalArgs(
+			cobra.MaximumNArgs(1),
+			cmdutil.PopulateFromArgs(f, &opts.Name),
+		),
 
 		Example: heredoc.Doc(`
 			# Interactively create a dataset:
 			$ axiom dataset create
 			
-			# Create a dataset and providen the dataset name as an argument:
+			# Create a dataset and provide the dataset name as an argument:
 			$ axiom dataset create nginx-logs
 		`),
 
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			if !opts.IO.IsStdinTTY() && len(args) == 0 {
-				return cmdutil.ErrNoPromptArgRequired
-			} else if len(args) == 1 {
-				opts.Name = args[0]
-				return nil
-			}
-			return completeCreate(opts)
-		},
-
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			if err := completeCreate(opts); err != nil {
+				return err
+			}
 			return runCreate(cmd.Context(), opts)
 		},
 	}
@@ -59,6 +55,10 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 }
 
 func completeCreate(opts *createOptions) error {
+	if opts.Name != "" {
+		return nil
+	}
+
 	v := survey.ComposeValidators(
 		survey.Required,
 		survey.MinLength(3),
@@ -75,17 +75,16 @@ func runCreate(ctx context.Context, opts *createOptions) error {
 	}
 
 	stop := opts.IO.StartProgressIndicator()
-	defer stop()
-
 	if _, err := client.Datasets.CreateDataset(ctx, opts.Name); err != nil {
+		stop()
 		return err
 	}
-
 	stop()
 
 	if opts.IO.IsStderrTTY() {
 		cs := opts.IO.ColorScheme()
-		fmt.Fprintf(opts.IO.ErrOut(), "%s Created dataset %s\n", cs.SuccessIcon(), cs.Bold(opts.Name))
+		fmt.Fprintf(opts.IO.ErrOut(), "%s Created dataset %s\n",
+			cs.SuccessIcon(), cs.Bold(opts.Name))
 	}
 
 	return nil

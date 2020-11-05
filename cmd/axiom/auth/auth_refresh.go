@@ -32,7 +32,10 @@ func newRefreshCmd(f *cmdutil.Factory) *cobra.Command {
 
 		DisableFlagsInUseLine: true,
 
-		Args:              cobra.MaximumNArgs(1),
+		Args: cmdutil.ChainPositionalArgs(
+			cobra.MaximumNArgs(1),
+			cmdutil.PopulateFromArgs(f, &opts.Alias),
+		),
 		ValidArgsFunction: backendCompletionFunc(f.Config),
 
 		Example: heredoc.Doc(`
@@ -43,24 +46,21 @@ func newRefreshCmd(f *cmdutil.Factory) *cobra.Command {
 			$ axiom auth refresh axiom-eu-west-1
 		`),
 
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			if !opts.IO.IsStdinTTY() && len(args) == 0 {
-				return cmdutil.ErrNoPromptArgRequired
-			} else if len(args) == 1 {
-				opts.Alias = args[0]
-			}
-
-			if err := cmdutil.ChainRunFuncs(
-				cmdutil.NeedsBackends(f),
-				cmdutil.NeedsValidBackend(f, opts.Alias),
-			)(cmd, args); err != nil {
-				return err
-			}
-
-			return completeRefresh(opts)
-		},
+		PreRunE: cmdutil.ChainRunFuncs(
+			cmdutil.NeedsBackends(f),
+			cmdutil.NeedsValidBackend(f, &opts.Alias),
+		),
 
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			if opts.Alias == "" {
+				if err := survey.AskOne(&survey.Select{
+					Message: "Which backend to refresh the authentication credentials for?",
+					Options: opts.Config.BackendAliases(),
+				}, &opts.Alias, opts.IO.SurveyIO()); err != nil {
+					return err
+				}
+			}
+
 			return runRefresh(cmd.Context(), opts)
 		},
 	}
@@ -68,22 +68,7 @@ func newRefreshCmd(f *cmdutil.Factory) *cobra.Command {
 	return cmd
 }
 
-func completeRefresh(opts *refreshOptions) error {
-	if opts.Alias != "" {
-		return nil
-	}
-
-	return survey.AskOne(&survey.Select{
-		Message: "Which backend to refresh the authentication credentials for?",
-		Options: opts.Config.BackendAliases(),
-	}, &opts.Alias, opts.IO.SurveyIO())
-}
-
 func runRefresh(ctx context.Context, opts *refreshOptions) error {
-	cs := opts.IO.ColorScheme()
-
-	backend := opts.Config.Backends[opts.Alias]
-
 	stop := opts.IO.StartProgressIndicator()
 	defer stop()
 
@@ -95,6 +80,8 @@ func runRefresh(ctx context.Context, opts *refreshOptions) error {
 	stop()
 
 	if opts.IO.IsStderrTTY() {
+		cs := opts.IO.ColorScheme()
+		backend := opts.Config.Backends[opts.Alias]
 		fmt.Fprintf(opts.IO.ErrOut(), "%s Refreshed authentication credentials for %s @ %s (%s)\n",
 			cs.SuccessIcon(), cs.Bold(backend.Username), cs.Bold(opts.Alias), backend.URL)
 	}

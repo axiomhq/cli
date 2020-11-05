@@ -28,37 +28,31 @@ func newDeleteCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "delete <dataset-name>",
+		Use:   "delete [<dataset-name>]",
 		Short: "Delete a dataset",
 
 		Aliases: []string{"remove"},
 
-		Args:              cobra.MaximumNArgs(1),
+		Args: cmdutil.ChainPositionalArgs(
+			cobra.MaximumNArgs(1),
+			cmdutil.PopulateFromArgs(f, &opts.Name),
+		),
 		ValidArgsFunction: cmdutil.DatasetCompletionFunc(f),
 
 		Example: heredoc.Doc(`
 			# Interactively delete a dataset:
 			$ axiom dataset delete
 			
-			# Delete a dataset and providen the dataset name as an argument:
+			# Delete a dataset and provide the dataset name as an argument:
 			$ axiom dataset delete nginx-logs
 		`),
 
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			if err := cmdutil.NeedsDatasets(f)(cmd, args); err != nil {
-				return err
-			}
-
-			if !opts.IO.IsStdinTTY() && len(args) == 0 {
-				return cmdutil.ErrNoPromptArgRequired
-			} else if len(args) == 1 {
-				opts.Name = args[0]
-				return nil
-			}
-			return completeDelete(cmd.Context(), opts)
-		},
+		PreRunE: cmdutil.NeedsDatasets(f),
 
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			if err := completeDelete(cmd.Context(), opts); err != nil {
+				return err
+			}
 			return runDelete(cmd.Context(), opts)
 		},
 	}
@@ -71,6 +65,10 @@ func newDeleteCmd(f *cmdutil.Factory) *cobra.Command {
 }
 
 func completeDelete(ctx context.Context, opts *deleteOptions) error {
+	if opts.Name != "" {
+		return nil
+	}
+
 	datasetNames, err := getDatasetNames(ctx, opts.Factory)
 	if err != nil {
 		return err
@@ -83,13 +81,12 @@ func completeDelete(ctx context.Context, opts *deleteOptions) error {
 }
 
 func runDelete(ctx context.Context, opts *deleteOptions) error {
-	cs := opts.IO.ColorScheme()
+	// Deleting must be forced if not running interactively.
+	if !opts.IO.IsStdinTTY() && !opts.Force {
+		return cmdutil.ErrSilent
+	}
 
 	if !opts.Force {
-		if !opts.IO.IsStdinTTY() {
-			return cmdutil.ErrSilent
-		}
-
 		msg := fmt.Sprintf("Delete dataset %q?", opts.Name)
 		if overwrite, err := surveyext.AskConfirm(msg, opts.IO.SurveyIO()); err != nil {
 			return err
@@ -104,16 +101,16 @@ func runDelete(ctx context.Context, opts *deleteOptions) error {
 	}
 
 	stop := opts.IO.StartProgressIndicator()
-	defer stop()
-
 	if err = client.Datasets.Delete(ctx, opts.Name); err != nil {
+		stop()
 		return err
 	}
-
 	stop()
 
 	if opts.IO.IsStderrTTY() {
-		fmt.Fprintf(opts.IO.ErrOut(), "%s Deleted dataset %s\n", cs.Red("✓"), cs.Bold(opts.Name))
+		cs := opts.IO.ColorScheme()
+		fmt.Fprintf(opts.IO.ErrOut(), "%s Deleted dataset %s\n",
+			cs.Red("✓"), cs.Bold(opts.Name))
 	}
 
 	return nil

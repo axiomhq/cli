@@ -62,7 +62,7 @@ func NewIO() *IO {
 	if io.isStdoutTTY && io.isStderrTTY {
 		io.progressIndicator = spinner.New(
 			spinner.CharSets[11],
-			time.Millisecond*100,
+			time.Millisecond*150,
 			spinner.WithWriter(io.errOut),
 		)
 	}

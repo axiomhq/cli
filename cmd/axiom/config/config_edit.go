@@ -31,7 +31,7 @@ func newEditCmd(f *cmdutil.Factory) *cobra.Command {
 			$ axiom config edit -C /etc/axiom/cli.toml
 		`),
 
-		PreRunE: func(_ *cobra.Command, _ []string) error {
+		PreRunE: func(*cobra.Command, []string) error {
 			f, err := os.Open(f.Config.ConfigFilePath)
 			if err != nil {
 				return err
@@ -47,7 +47,7 @@ func newEditCmd(f *cmdutil.Factory) *cobra.Command {
 			return f.Close()
 		},
 
-		RunE: func(_ *cobra.Command, _ []string) error {
+		RunE: func(*cobra.Command, []string) error {
 			if !f.IO.IsStdinTTY() {
 				return errors.New("cannot run this command non interactively")
 			}
@@ -61,7 +61,7 @@ func newEditCmd(f *cmdutil.Factory) *cobra.Command {
 			}, &content, f.IO.SurveyIO())
 		},
 
-		PostRunE: func(_ *cobra.Command, _ []string) error {
+		PostRunE: func(*cobra.Command, []string) error {
 			f, err := os.Create(f.Config.ConfigFilePath)
 			if err != nil {
 				return err

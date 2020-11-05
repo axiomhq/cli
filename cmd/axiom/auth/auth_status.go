@@ -31,7 +31,10 @@ func newStatusCmd(f *cmdutil.Factory) *cobra.Command {
 
 		DisableFlagsInUseLine: true,
 
-		Args:              cobra.MaximumNArgs(1),
+		Args: cmdutil.ChainPositionalArgs(
+			cobra.MaximumNArgs(1),
+			cmdutil.PopulateFromArgs(f, &opts.Alias),
+		),
 		ValidArgsFunction: backendCompletionFunc(f.Config),
 
 		Example: heredoc.Doc(`
@@ -42,16 +45,10 @@ func newStatusCmd(f *cmdutil.Factory) *cobra.Command {
 			$ axiom auth status my-axiom
 		`),
 
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) == 1 {
-				opts.Alias = args[0]
-			}
-
-			return cmdutil.ChainRunFuncs(
-				cmdutil.NeedsBackends(f),
-				cmdutil.NeedsValidBackend(f, opts.Alias),
-			)(cmd, args)
-		},
+		PreRunE: cmdutil.ChainRunFuncs(
+			cmdutil.NeedsBackends(f),
+			cmdutil.NeedsValidBackend(f, &opts.Alias),
+		),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runStatus(cmd.Context(), opts)
@@ -77,9 +74,8 @@ func runStatus(ctx context.Context, opts *statusOptions) error {
 
 	stop()
 
-	cs := opts.IO.ColorScheme()
-
 	var (
+		cs         = opts.IO.ColorScheme()
 		failed     bool // TODO: Set to true if fetching a backend fails.
 		statusInfo = map[string][]string{}
 	)
@@ -89,7 +85,7 @@ func runStatus(ctx context.Context, opts *statusOptions) error {
 			continue
 		}
 
-		loginInfo := fmt.Sprintf("%s Logged in to %s as %s",
+		loginInfo := fmt.Sprintf("%s Logged in to backend %s as %s",
 			cs.SuccessIcon(), backend.URL, cs.Bold(backend.Username))
 		expireInfo := fmt.Sprintf("%s Your token is about to expire! Run %s %s to refresh",
 			cs.WarningIcon(), cs.Bold("axiom auth refresh"), cs.Bold(v))

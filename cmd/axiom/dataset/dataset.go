@@ -18,7 +18,6 @@ func NewDatasetCmd(f *cmdutil.Factory) *cobra.Command {
 		Long:  "Create, edit and delete datasets.",
 
 		Example: heredoc.Doc(`
-			$ axiom dataset
 			$ axiom dataset create nginx-logs
 			$ axiom dataset delete nginx-logs
 			$ axiom dataset info nginx-logs
@@ -47,13 +46,11 @@ func getDatasetNames(ctx context.Context, f *cmdutil.Factory) ([]string, error) 
 	}
 
 	stop := f.IO.StartProgressIndicator()
-	defer stop()
-
 	datasets, err := client.Datasets.List(ctx, axiomdb.ListOptions{})
 	if err != nil {
+		stop()
 		return nil, err
 	}
-
 	stop()
 
 	datasetNames := make([]string, len(datasets))

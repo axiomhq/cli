@@ -74,16 +74,10 @@ func NewStreamCmd(f *cmdutil.Factory) *cobra.Command {
 				return err
 			}
 
-			if !opts.IO.IsStdinTTY() && len(args) == 0 {
-				return cmdutil.ErrNoPromptArgRequired
-			} else if len(args) == 1 {
-				opts.Dataset = args[0]
-				return nil
-			}
 			return complete(cmd.Context(), opts)
 		},
 
-		RunE: func(cmd *cobra.Command, _ []string) error {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			return run(cmd.Context(), opts)
 		},
 	}
@@ -106,13 +100,11 @@ func complete(ctx context.Context, opts *options) error {
 	}
 
 	stop := opts.IO.StartProgressIndicator()
-	defer stop()
-
 	datasets, err := client.Datasets.List(ctx, axiomdb.ListOptions{})
 	if err != nil {
+		stop()
 		return err
 	}
-
 	stop()
 
 	datasetNames := make([]string, len(datasets))

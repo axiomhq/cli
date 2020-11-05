@@ -109,6 +109,11 @@ func (cs *ColorScheme) Bold(s string) string {
 	return termenv.String(s).Bold().String()
 }
 
+// Title returns styles the string as a title, if the color scheme is enabled.
+func (cs *ColorScheme) Title(s string) string {
+	return termenv.String(s).Foreground(cs.color(White)).Background(cs.color(Magenta)).String()
+}
+
 // SuccessIcon returns the success icon.
 func (cs *ColorScheme) SuccessIcon() string {
 	return cs.Green("✓")
@@ -124,11 +129,6 @@ func (cs *ColorScheme) ErrorIcon() string {
 	return cs.Red("✖")
 }
 
-// Title returns styles the string as a title, if the color scheme is enabled.
-func (cs *ColorScheme) Title(s string) string {
-	return termenv.String(s).Foreground(cs.color(White)).Background(cs.color(Magenta)).String()
-}
-
 func (cs *ColorScheme) IsDark() bool {
 	return cs.dark
 }
@@ -137,14 +137,17 @@ func (cs *ColorScheme) IsDark() bool {
 // functions.
 func (cs *ColorScheme) TemplateFuncs() template.FuncMap {
 	return template.FuncMap{
+		"black":       cs.Black,
 		"red":         cs.Red,
 		"green":       cs.Green,
 		"yellow":      cs.Yellow,
 		"blue":        cs.Blue,
 		"magenta":     cs.Magenta,
 		"cyan":        cs.Cyan,
+		"white":       cs.White,
 		"gray":        cs.Gray,
 		"bold":        cs.Bold,
+		"title":       cs.Title,
 		"successIcon": cs.SuccessIcon,
 		"warningIcon": cs.WarningIcon,
 		"errorIcon":   cs.ErrorIcon,

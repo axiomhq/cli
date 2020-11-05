@@ -27,10 +27,13 @@ func newInfoCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "info <dataset-name>",
-		Short: "Get info of a dataset",
+		Use:   "info [<dataset-name>]",
+		Short: "Get info about a dataset",
 
-		Args:              cobra.MaximumNArgs(1),
+		Args: cmdutil.ChainPositionalArgs(
+			cobra.MaximumNArgs(1),
+			cmdutil.PopulateFromArgs(f, &opts.Name),
+		),
 		ValidArgsFunction: cmdutil.DatasetCompletionFunc(f),
 
 		Example: heredoc.Doc(`
@@ -41,21 +44,12 @@ func newInfoCmd(f *cmdutil.Factory) *cobra.Command {
 			$ axiom dataset info nginx-logs
 		`),
 
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			if err := cmdutil.NeedsDatasets(f)(cmd, args); err != nil {
-				return err
-			}
-
-			if !opts.IO.IsStdinTTY() && len(args) == 0 {
-				return cmdutil.ErrNoPromptArgRequired
-			} else if len(args) == 1 {
-				opts.Name = args[0]
-				return nil
-			}
-			return completeInfo(cmd.Context(), opts)
-		},
+		PreRunE: cmdutil.NeedsDatasets(f),
 
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			if err := completeInfo(cmd.Context(), opts); err != nil {
+				return err
+			}
 			return runInfo(cmd.Context(), opts)
 		},
 	}
@@ -64,6 +58,10 @@ func newInfoCmd(f *cmdutil.Factory) *cobra.Command {
 }
 
 func completeInfo(ctx context.Context, opts *infoOptions) error {
+	if opts.Name != "" {
+		return nil
+	}
+
 	datasetNames, err := getDatasetNames(ctx, opts.Factory)
 	if err != nil {
 		return err
@@ -82,13 +80,11 @@ func runInfo(ctx context.Context, opts *infoOptions) error {
 	}
 
 	progStop := opts.IO.StartProgressIndicator()
-	defer progStop()
-
 	dataset, err := client.Datasets.Info(ctx, opts.Name)
 	if err != nil {
+		progStop()
 		return err
 	}
-
 	progStop()
 
 	pagerStop, err := opts.IO.StartPager(ctx)

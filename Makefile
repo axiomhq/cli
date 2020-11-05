@@ -118,7 +118,7 @@ test: $(GOTESTSUM) ## Run all tests. Run with VERBOSE=1 to get verbose test outp
 	@echo ">> running tests"
 	@$(GOTESTSUM) $(GOTESTSUM_FLAGS) -- $(GO_TEST_FLAGS) ./...
 
-.PHONY: tools ## Build all tools
+.PHONY: tools
 tools: $(GEN_CLI_DOCS) $(GOLANGCI_LINT) $(GORELEASER) $(GOTESTSUM) ## Install all tools into the projects local $GOBIN directory
 
 .PHONY: help

@@ -34,7 +34,10 @@ func newLogoutCmd(f *cmdutil.Factory) *cobra.Command {
 
 		DisableFlagsInUseLine: true,
 
-		Args:              cobra.MaximumNArgs(1),
+		Args: cmdutil.ChainPositionalArgs(
+			cobra.MaximumNArgs(1),
+			cmdutil.PopulateFromArgs(f, &opts.Alias),
+		),
 		ValidArgsFunction: backendCompletionFunc(f.Config),
 
 		Example: heredoc.Doc(`
@@ -45,24 +48,21 @@ func newLogoutCmd(f *cmdutil.Factory) *cobra.Command {
 			$ axiom auth logout axiom-eu-west-1
 		`),
 
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			if !opts.IO.IsStdinTTY() && len(args) == 0 {
-				return cmdutil.ErrNoPromptArgRequired
-			} else if len(args) == 1 {
-				opts.Alias = args[0]
-			}
-
-			if err := cmdutil.ChainRunFuncs(
-				cmdutil.NeedsBackends(f),
-				cmdutil.NeedsValidBackend(f, opts.Alias),
-			)(cmd, args); err != nil {
-				return err
-			}
-
-			return completeLogout(opts)
-		},
+		PreRunE: cmdutil.ChainRunFuncs(
+			cmdutil.NeedsBackends(f),
+			cmdutil.NeedsValidBackend(f, &opts.Alias),
+		),
 
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			if opts.Alias == "" {
+				if err := survey.AskOne(&survey.Select{
+					Message: "Which backend to log out off?",
+					Options: opts.Config.BackendAliases(),
+				}, &opts.Alias, opts.IO.SurveyIO()); err != nil {
+					return err
+				}
+			}
+
 			return runLogout(cmd.Context(), opts)
 		},
 	}
@@ -74,19 +74,13 @@ func newLogoutCmd(f *cmdutil.Factory) *cobra.Command {
 	return cmd
 }
 
-func completeLogout(opts *logoutOptions) error {
-	return survey.AskOne(&survey.Select{
-		Message: "Which backend to log out off?",
-		Options: opts.Config.BackendAliases(),
-	}, &opts.Alias, opts.IO.SurveyIO())
-}
-
 func runLogout(ctx context.Context, opts *logoutOptions) error {
-	cs := opts.IO.ColorScheme()
-
+	// Logging out must be forced if not running interactively.
 	if !opts.IO.IsStdinTTY() && !opts.Force {
 		return cmdutil.ErrSilent
-	} else if !opts.Force {
+	}
+
+	if !opts.Force {
 		msg := fmt.Sprintf("Are you sure you want to log out of backend %q?", opts.Alias)
 		if overwrite, err := surveyext.AskConfirm(msg, opts.IO.SurveyIO()); err != nil {
 			return err
@@ -101,12 +95,14 @@ func runLogout(ctx context.Context, opts *logoutOptions) error {
 	// TODO: Logout, I guess we need ctx in the here soon ;)
 	_ = ctx
 
-	time.Sleep(time.Second * 3)
+	time.Sleep(time.Second * 2)
 
 	stop()
 
 	if opts.IO.IsStdoutTTY() {
-		fmt.Fprintf(opts.IO.ErrOut(), "%s Logged out of %s\n", cs.SuccessIcon(), cs.Bold(opts.Alias))
+		cs := opts.IO.ColorScheme()
+		fmt.Fprintf(opts.IO.ErrOut(), "%s Logged out of backend %s\n",
+			cs.SuccessIcon(), cs.Bold(opts.Alias))
 	}
 
 	delete(opts.Config.Backends, opts.Alias)
