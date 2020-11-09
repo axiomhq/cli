@@ -20,6 +20,3 @@ man
 
 # Local $GOBIN directory for tools
 /bin/
-
-# Dot env files
-.env*

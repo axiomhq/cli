@@ -32,7 +32,7 @@ func (s *TestColorSchemeSuite) TeardownTest() {
 	}
 }
 
-func (s *TestColorSchemeSuite) EnvColorDisabled() {
+func (s *TestColorSchemeSuite) TestEnvColorDisabled() {
 	tests := []struct {
 		name             string
 		envNoColor       string
@@ -87,7 +87,7 @@ func (s *TestColorSchemeSuite) EnvColorDisabled() {
 	}
 }
 
-func (s *TestColorSchemeSuite) EnvColorForced() {
+func (s *TestColorSchemeSuite) TestEnvColorForced() {
 	tests := []struct {
 		name             string
 		envNoColor       string

@@ -22,7 +22,8 @@ var defaultConfig = Config{
 	Backends: make(map[string]Backend),
 
 	ConfigFilePath: defaultConfigFile(),
-	tree:           &toml.Tree{},
+
+	tree: &toml.Tree{},
 }
 
 // Config is the global Axiom CLI configuration.

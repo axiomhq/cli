@@ -47,7 +47,7 @@ archives:
     files:
       - LICENSE
       - README.md
-      - dist/man/{{ .ProjectName }}*.1
+      - man/{{ .ProjectName }}*.1
   - <<: *archive_defaults
     id: windows
     builds: [windows]

@@ -40,7 +40,7 @@ func (s *TestConfigSuite) SetupTest() {
 
 // Make sure TOML configuration is properly loaded and the active backend is
 // overwritten from the environment.
-func (s *TestConfigSuite) Load() {
+func (s *TestConfigSuite) TestLoad() {
 	s.Require().NoError(os.Setenv("AXM_BACKEND", "axiom-eu-west-2"))
 
 	cfg, err := config.LoadFromReader(strings.NewReader(configFile))
@@ -49,13 +49,4 @@ func (s *TestConfigSuite) Load() {
 
 	s.Equal("axiom-eu-west-2", cfg.ActiveBackend)
 	s.Len(cfg.Backends, 2)
-}
-
-// Make sure the active backend is configured, if specified by the user.
-func (s *TestConfigSuite) LoadActiveBackendNotConfigured() {
-	s.Require().NoError(os.Setenv("AXM_BACKEND", "axiom-eu-west-3"))
-
-	cfg, err := config.LoadFromReader(strings.NewReader(configFile))
-	s.Require().EqualError(err, "lel")
-	s.Require().NotEmpty(cfg)
 }

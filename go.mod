@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	axicode.axiom.co/watchmakers/axiomdb v1.2.0
-	github.com/AlecAivazis/survey/v2 v2.2.0
+	github.com/AlecAivazis/survey/v2 v2.2.2
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/briandowns/spinner v1.11.1
 	github.com/cli/cli v1.2.0

@@ -47,6 +47,11 @@ func main() {
 	// Add template functions of the color scheme.
 	cobra.AddTemplateFuncs(f.IO.ColorScheme().TemplateFuncs())
 
+	// Set pager command, if explicitly set.
+	if pager, ok := os.LookupEnv("AXM_PAGER"); ok {
+		f.IO.SetPagerCommand(pager)
+	}
+
 	// Initially load configuration to have it available in completion. However,
 	// the config and backend override flags are only parsed when running
 	// commands. This makes completion only work for the configured backends and
@@ -55,11 +60,6 @@ func main() {
 	if f.Config, err = config.LoadDefault(); err != nil {
 		printError(f.IO.ErrOut(), err, nil)
 		os.Exit(2)
-	}
-
-	// Set pager command, if explicitly set.
-	if pager, ok := os.LookupEnv("AXM_PAGER"); ok {
-		f.IO.SetPagerCommand(pager)
 	}
 
 	// Cancel the application lifecycle context when receiving a signal.

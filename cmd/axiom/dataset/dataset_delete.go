@@ -61,6 +61,10 @@ func newDeleteCmd(f *cmdutil.Factory) *cobra.Command {
 
 	_ = cmd.RegisterFlagCompletionFunc("force", cmdutil.NoCompletion)
 
+	if !opts.IO.IsStdinTTY() {
+		_ = cmd.MarkFlagRequired("force")
+	}
+
 	return cmd
 }
 
