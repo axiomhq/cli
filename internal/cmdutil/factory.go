@@ -3,7 +3,7 @@ package cmdutil
 import (
 	"errors"
 
-	"axicode.axiom.co/watchmakers/axiomdb/client"
+	"github.com/axiomhq/axiom-go"
 
 	"github.com/axiomhq/cli/internal/config"
 	"github.com/axiomhq/cli/pkg/terminal"
@@ -26,10 +26,10 @@ func NewFactory() *Factory {
 
 // Client returns an Axiom client configured to talk to the instance specified
 // by the configuration.
-func (f *Factory) Client() (*client.Client, error) {
+func (f *Factory) Client() (*axiom.Client, error) {
 	backend, ok := f.Config.Backends[f.Config.ActiveBackend]
 	if !ok {
 		return nil, errors.New("no active backend set")
 	}
-	return client.NewClient(backend.URL)
+	return axiom.NewClient(backend.URL, backend.Token)
 }

@@ -10,7 +10,7 @@ var (
 	// error message.
 	ErrSilent = errors.New("ErrSilent")
 	// ErrNoPromptArgRequired is raised when the application is not running
-	// interactively and thus requires an argument on the command line instead
+	// interactively and thus requires an argument on the command-line instead
 	// of prompting for input.
 	ErrNoPromptArgRequired = errors.New("argument required when not running interactively")
 )

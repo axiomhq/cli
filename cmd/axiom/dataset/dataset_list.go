@@ -3,10 +3,8 @@ package dataset
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"time"
 
-	axiomdb "axicode.axiom.co/watchmakers/axiomdb/client"
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 
@@ -44,7 +42,7 @@ func runList(ctx context.Context, f *cmdutil.Factory) error {
 	}
 
 	progStop := f.IO.StartActivityIndicator()
-	datasets, err := client.Datasets.List(ctx, axiomdb.ListOptions{})
+	datasets, err := client.Datasets.List(ctx)
 	if err != nil {
 		progStop()
 		return err
@@ -71,10 +69,9 @@ func runList(ctx context.Context, f *cmdutil.Factory) error {
 	}
 
 	for _, dataset := range datasets {
-		id := strconv.Itoa(int(dataset.ID))
-		tp.AddField(id, cs.Red)
+		tp.AddField(dataset.ID, cs.Red)
 		tp.AddField(dataset.Name, cs.Bold)
-		tp.AddField(dataset.CreatedAt.Format(time.RFC1123), cs.Gray)
+		tp.AddField(dataset.Created.Format(time.RFC1123), cs.Gray)
 		tp.EndRow()
 	}
 	return tp.Render()

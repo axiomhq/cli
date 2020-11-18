@@ -2,16 +2,12 @@ package stream
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
-	axiomdb "axicode.axiom.co/watchmakers/axiomdb/client"
-	swagger "axicode.axiom.co/watchmakers/axiomdb/client/swagger/datasets"
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
-	"github.com/nwidger/jsoncolor"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
@@ -100,7 +96,7 @@ func complete(ctx context.Context, opts *options) error {
 	}
 
 	stop := opts.IO.StartActivityIndicator()
-	datasets, err := client.Datasets.List(ctx, axiomdb.ListOptions{})
+	datasets, err := client.Datasets.List(ctx)
 	if err != nil {
 		stop()
 		return err
@@ -119,10 +115,10 @@ func complete(ctx context.Context, opts *options) error {
 }
 
 func run(ctx context.Context, opts *options) error {
-	client, err := opts.Client()
-	if err != nil {
-		return err
-	}
+	// client, err := opts.Client()
+	// if err != nil {
+	// 	return err
+	// }
 
 	cs := opts.IO.ColorScheme()
 
@@ -130,51 +126,53 @@ func run(ctx context.Context, opts *options) error {
 		fmt.Fprintf(opts.IO.Out(), "Streaming events from dataset %s:\n\n", cs.Bold(opts.Dataset))
 	}
 
-	var enc interface {
-		Encode(interface{}) error
-	}
-	if opts.IO.ColorEnabled() {
-		enc = jsoncolor.NewEncoder(opts.IO.Out())
-	} else {
-		enc = json.NewEncoder(opts.IO.Out())
-	}
+	// var enc interface {
+	// Encode(interface{}) error
+	// }
+	// if opts.IO.ColorEnabled() {
+	// 	enc = jsoncolor.NewEncoder(opts.IO.Out())
+	// } else {
+	// 	enc = json.NewEncoder(opts.IO.Out())
+	// }
 
 	t := time.NewTicker(streamingDuration)
 	defer t.Stop()
 
-	lastRequest := time.Now().Add(-time.Nanosecond)
+	// lastRequest := time.Now().Add(-time.Nanosecond)
 	for {
-		queryCtx, queryCancel := context.WithTimeout(ctx, streamingDuration)
+		// queryCtx, queryCancel := context.WithTimeout(ctx, streamingDuration)
 
-		res, err := client.Datasets.Query(queryCtx, opts.Dataset, swagger.QueryRequest{
-			StartTime: lastRequest,
-			EndTime:   time.Now(),
-		}, axiomdb.QueryOptions{
-			StreamingDuration: streamingDuration,
-		})
-		// if err != nil && !errors.Is(err, context.DeadlineExceeded) && !errors.Is(err, context.Canceled) {
-		if err != nil {
-			queryCancel()
-			return err
-		}
+		// res, err := client.Datasets.Query(queryCtx, opts.Dataset, axiom.QueryRequest{
+		// 	StartTime: lastRequest,
+		// 	EndTime:   time.Now(),
+		// }, axiom.QueryOptions{
+		// 	StreamingDuration: streamingDuration,
+		// })
+		// // if err != nil && !errors.Is(err, context.DeadlineExceeded) && !errors.Is(err, context.Canceled) {
+		// if err != nil {
+		// 	queryCancel()
+		// 	return err
+		// }
 
-		queryCancel()
+		// queryCancel()
 
-		if len(res.Matches) > 0 {
-			lastRequest = res.Matches[len(res.Matches)-1].Time.Add(time.Nanosecond)
+		// if len(res.Matches) > 0 {
+		// 	lastRequest = res.Matches[len(res.Matches)-1].Time.Add(time.Nanosecond)
 
-			for _, entry := range res.Matches {
-				switch opts.Format {
-				case formatJSON:
-					_ = enc.Encode(entry)
-				default:
-					fmt.Fprintf(opts.IO.Out(), "%s\t",
-						cs.Gray(entry.Time.Format(time.RFC1123)))
-					_ = enc.Encode(entry.Data)
-				}
-				fmt.Fprintln(opts.IO.Out())
-			}
-		}
+		// 	for _, entry := range res.Matches {
+		// 		switch opts.Format {
+		// 		case formatJSON:
+		// 			_ = enc.Encode(entry)
+		// 		default:
+		// 			fmt.Fprintf(opts.IO.Out(), "%s\t",
+		// 				cs.Gray(entry.Time.Format(time.RFC1123)))
+		// 			_ = enc.Encode(entry.Data)
+		// 		}
+		// 		fmt.Fprintln(opts.IO.Out())
+		// 	}
+		// }
+
+		fmt.Fprintln(opts.IO.Out(), cs.Gray("Not implemented!"))
 
 		select {
 		case <-ctx.Done():

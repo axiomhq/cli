@@ -57,7 +57,7 @@ go-list-pkg-sources = $(GO) list -f '{{range .GoFiles}}{{$$.Dir}}/{{.}} {{end}}'
 go-pkg-sourcefiles = $(shell $(call go-list-pkg-sources,$(strip $1)))
 
 .PHONY: all
-all: dep fmt lint test build man ## Run dep, generate, fmt, lint, test, build and man
+all: dep fmt lint test build man ## Run dep, fmt, lint, test, build and man
 
 .PHONY: build
 build: $(GORELEASER) dep.stamp $(call go-pkg-sourcefiles, ./...) ## Build the binaries

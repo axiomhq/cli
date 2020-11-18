@@ -33,7 +33,7 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "axiom <command> <subcommand>",
 		Short: "Axiom CLI",
-		Long:  "The power of Axiom on the command line.",
+		Long:  "The power of Axiom on the command-line.",
 
 		SilenceErrors: true,
 		SilenceUsage:  true,

@@ -6,6 +6,7 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
+	"github.com/axiomhq/axiom-go"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
@@ -75,7 +76,10 @@ func runCreate(ctx context.Context, opts *createOptions) error {
 	}
 
 	stop := opts.IO.StartActivityIndicator()
-	if _, err := client.Datasets.CreateDataset(ctx, opts.Name); err != nil {
+	if _, err := client.Datasets.Create(ctx, axiom.CreateDatasetRequest{
+		Name: opts.Name,
+		// TODO(lukasmalkmus): Add the dataset description.
+	}); err != nil {
 		stop()
 		return err
 	}

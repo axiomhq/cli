@@ -86,7 +86,7 @@ release:
 
 brews:
   - name: axiom
-    description: "The power of Axiom on the command line."
+    description: "The power of Axiom on the command-line"
     homepage: "https://axiom.co"
     tap:
       owner: axiomhq

@@ -3,7 +3,6 @@ package dataset
 import (
 	"context"
 
-	axiomdb "axicode.axiom.co/watchmakers/axiomdb/client"
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 
@@ -46,7 +45,7 @@ func getDatasetNames(ctx context.Context, f *cmdutil.Factory) ([]string, error) 
 	}
 
 	stop := f.IO.StartActivityIndicator()
-	datasets, err := client.Datasets.List(ctx, axiomdb.ListOptions{})
+	datasets, err := client.Datasets.List(ctx)
 	if err != nil {
 		stop()
 		return nil, err

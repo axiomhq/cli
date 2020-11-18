@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
@@ -115,8 +116,8 @@ func runInfo(ctx context.Context, opts *infoOptions) error {
 	tp.AddField(strconv.Itoa(int(dataset.NumFields)), nil)
 	tp.AddField(dataset.InputBytesHuman, nil)
 	tp.AddField(dataset.CompressedBytesHuman, nil)
-	tp.AddField(dataset.MinTime, cs.Gray)
-	tp.AddField(dataset.MaxTime, cs.Gray)
+	tp.AddField(dataset.MinTime.Format(time.RFC1123), cs.Gray)
+	tp.AddField(dataset.MaxTime.Format(time.RFC1123), cs.Gray)
 	tp.EndRow()
 
 	return tp.Render()

@@ -9,7 +9,7 @@
 [![License][license_badge]][license]
 [![License Status][license_status_badge]][license_status]
 
-> The [Axiom][1] command line application.
+> The [Axiom][1] command-line application.
 
   [1]: https://axiom.co
 
@@ -26,7 +26,7 @@
 
 ## Introduction
 
-_Axiom CLI_ brings the power of Axiom to the command line.
+_Axiom CLI_ brings the power of Axiom to the command-line.
 
 ## Usage
 

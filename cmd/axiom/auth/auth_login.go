@@ -53,7 +53,7 @@ func newLoginCmd(f *cmdutil.Factory) *cobra.Command {
 			# Interactively authenticate against an Axiom backend:
 			$ axiom auth login
 			
-			# Provide parameters on the command line:
+			# Provide parameters on the command-line:
 			$ echo $MY_AXIOM_PASSWORD | axiom auth login --url="axiom.example.com" --alias="my-axiom" --username="lukas@axiom.co" --password-stdin
 		`),
 

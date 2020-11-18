@@ -10,17 +10,15 @@ on:
     branches:
       - main
 
+# Drop when axiom-go gets open-sourced.
 env:
-  GOPRIVATE: axicode.axiom.co/*
+  GOPRIVATE: github.com/axiomhq/axiom-go
 
 jobs:
   check:
     name: Check
     runs-on: ubuntu-latest
     steps:
-      - name: Setup Axicode
-        run: echo "machine axicode.axiom.co login lukas@axiom.co password ${{ secrets.AXICODE_TOKEN }}" > ~/.netrc
-
       - name: Checkout
         uses: actions/checkout@v2
 
@@ -46,9 +44,6 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - name: Setup Axicode
-        run: echo "machine axicode.axiom.co login lukas@axiom.co password ${{ secrets.AXICODE_TOKEN }}" > ~/.netrc
-
       - name: Checkout
         uses: actions/checkout@v2
 
@@ -73,9 +68,6 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     steps:
-      - name: Setup Axicode
-        run: echo "machine axicode.axiom.co login lukas@axiom.co password ${{ secrets.AXICODE_TOKEN }}" > ~/.netrc
-
       - name: Checkout
         uses: actions/checkout@v2
 
@@ -105,9 +97,6 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - name: Setup Axicode
-        run: echo "machine axicode.axiom.co login lukas@axiom.co password ${{ secrets.AXICODE_TOKEN }}" > ~/.netrc
-
       - name: Checkout
         uses: actions/checkout@v2
 
@@ -137,9 +126,6 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
-      - name: Setup Axicode
-        run: echo "machine axicode.axiom.co login lukas@axiom.co password ${{ secrets.AXICODE_TOKEN }}" > ~/.netrc
-
       - name: Checkout
         uses: actions/checkout@v2
 

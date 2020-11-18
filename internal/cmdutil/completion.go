@@ -5,7 +5,6 @@ import (
 	"strings"
 	"time"
 
-	axiomdb "axicode.axiom.co/watchmakers/axiomdb/client"
 	"github.com/spf13/cobra"
 )
 
@@ -42,7 +41,7 @@ func DatasetCompletionFunc(f *Factory) CompletionFunc {
 			return nil, cobra.ShellCompDirectiveNoFileComp
 		}
 
-		datasets, err := client.Datasets.List(ctx, axiomdb.ListOptions{})
+		datasets, err := client.Datasets.List(ctx)
 		if err != nil {
 			return nil, cobra.ShellCompDirectiveNoFileComp
 		}

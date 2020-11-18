@@ -14,9 +14,8 @@ import (
 	"time"
 	"unicode"
 
-	axiomdb "axicode.axiom.co/watchmakers/axiomdb/client"
-	swagger "axicode.axiom.co/watchmakers/axiomdb/client/swagger/datasets"
 	"github.com/MakeNowJust/heredoc"
+	"github.com/axiomhq/axiom-go"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
@@ -98,7 +97,7 @@ func run(ctx context.Context, opts *options) error {
 
 	var (
 		cs      = opts.IO.ColorScheme()
-		res     swagger.IngestStatus
+		res     axiom.IngestResponse
 		lastErr error
 	)
 	for k, filename := range opts.Filenames {
@@ -137,7 +136,7 @@ func run(ctx context.Context, opts *options) error {
 		}
 
 		var (
-			ingestRes *swagger.IngestStatus
+			ingestRes *axiom.IngestResponse
 			pbr       = opts.IO.StartProgressIndicator(rc, size, title)
 		)
 		if ingestRes, err = ingest(ctx, client, pbr, opts); err != nil {
@@ -178,10 +177,10 @@ func run(ctx context.Context, opts *options) error {
 	return lastErr
 }
 
-func ingest(ctx context.Context, client *axiomdb.Client, r io.Reader, opts *options) (*swagger.IngestStatus, error) {
+func ingest(ctx context.Context, client *axiom.Client, r io.Reader, opts *options) (*axiom.IngestResponse, error) {
 	var (
 		br  = bufio.NewReader(r)
-		typ axiomdb.ContentType
+		typ axiom.ContentType
 	)
 	for {
 		var (
@@ -193,9 +192,9 @@ func ingest(ctx context.Context, client *axiomdb.Client, r io.Reader, opts *opti
 		} else if err != nil {
 			return nil, err
 		} else if c == '[' {
-			typ = axiomdb.JSON
+			typ = axiom.JSON
 		} else if c == '{' {
-			typ = axiomdb.NDJSON
+			typ = axiom.NDJSON
 		} else if unicode.IsSpace(c) {
 			continue
 		} else {
@@ -231,7 +230,7 @@ func ingest(ctx context.Context, client *axiomdb.Client, r io.Reader, opts *opti
 	}
 	r = gzipStream(r, errFunc)
 
-	res, err := client.Datasets.Ingest(ctx, opts.Dataset, r, typ, axiomdb.GZIP, axiomdb.IngestOptions{
+	res, err := client.Datasets.Ingest(ctx, opts.Dataset, r, typ, axiom.GZIP, axiom.IngestOptions{
 		TimestampField:  opts.TimestampField,
 		TimestampFormat: opts.TimestampFormat,
 	})

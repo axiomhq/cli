@@ -3,7 +3,6 @@ package cmdutil
 import (
 	"text/template"
 
-	axiomdb "axicode.axiom.co/watchmakers/axiomdb/client"
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
@@ -143,7 +142,7 @@ func NeedsDatasets(f *Factory) RunFunc {
 			return err
 		}
 
-		datasets, err := client.Datasets.List(cmd.Context(), axiomdb.ListOptions{})
+		datasets, err := client.Datasets.List(cmd.Context())
 		if err != nil {
 			return err
 		}

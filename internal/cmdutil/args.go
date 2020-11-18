@@ -17,7 +17,7 @@ func ChainPositionalArgs(fns ...cobra.PositionalArgs) cobra.PositionalArgs {
 }
 
 // PopulateFromArgs populates the given values with the argumetns given on the
-// command line. It returns an error if the application is not running
+// command-line. It returns an error if the application is not running
 // interactively and has not enough arguments to populate all the given values.
 func PopulateFromArgs(f *Factory, ss ...*string) cobra.PositionalArgs {
 	return func(cmd *cobra.Command, args []string) error {
