@@ -129,7 +129,7 @@ See [LICENSE](LICENSE) for more information.
 [release]: https://github.com/axiomhq/cli/releases/latest
 [release_badge]: https://img.shields.io/github/release/axiomhq/cli.svg?style=flat-square
 [license]: https://opensource.org/licenses/MIT
-[license_badge]: https://img.shields.io/github/license/axiomhq/horcrux.svg?color=blue&style=flat-square
+[license_badge]: https://img.shields.io/github/license/axiomhq/cli.svg?color=blue&style=flat-square
 [license_status]: https://app.fossa.com/projects/git%2Bgithub.com%2Faxiomhq%2Fcli?ref=badge_shield
 [license_status_badge]: https://app.fossa.com/api/projects/git%2Bgithub.com%2Faxiomhq%2Fcli.svg
 [license_status_large]: https://app.fossa.com/projects/git%2Bgithub.com%2Faxiomhq%2Fcli?ref=badge_large
