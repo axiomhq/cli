@@ -2,10 +2,12 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
+	"github.com/axiomhq/axiom-go"
 	"github.com/muesli/reflow/dedent"
 	"github.com/spf13/cobra"
 
@@ -84,11 +86,14 @@ func runStatus(ctx context.Context, opts *statusOptions) error {
 		}
 
 		var info string
-		if user, err := client.Users.Current(ctx); err != nil {
+		if user, err := client.Users.Current(ctx); errors.Is(err, axiom.ErrUnauthenticated) {
+			info = fmt.Sprintf("%s %s", cs.ErrorIcon(), "Invalid credentials")
+			failed = true
+		} else if err != nil {
 			info = fmt.Sprintf("%s %s", cs.ErrorIcon(), err)
 			failed = true
 		} else {
-			info = fmt.Sprintf("%s Logged in as %s", cs.SuccessIcon(), cs.Bold(user.Name))
+			info = fmt.Sprintf("%s Logged in as %s (%s)", cs.SuccessIcon(), cs.Bold(user.Name), user.Emails[0])
 		}
 
 		statusInfo[v] = append(statusInfo[v], info)
@@ -100,7 +105,7 @@ func runStatus(ctx context.Context, opts *statusOptions) error {
 		var buf strings.Builder
 		for _, alias := range deploymentAliases {
 			if alias == opts.Config.ActiveDeployment {
-				fmt.Fprintf(&buf, "%s %s\n", cs.Yellow("‣"), cs.Bold(alias))
+				fmt.Fprintf(&buf, "%s %s\n", cs.Yellow("➜"), cs.Bold(alias))
 			} else {
 				fmt.Fprintf(&buf, "  %s\n", cs.Bold(alias))
 			}
