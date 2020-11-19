@@ -18,11 +18,11 @@ func NewConfigCmd(f *cmdutil.Factory) *cobra.Command {
 		Long:  `Get or set values in the configuration or edit the file in an editor.`,
 
 		Example: heredoc.Doc(`
-			# Get the url of a configured backend:
-			$ axiom config get "backends.my-axiom"
+			# Get the url of a configured deployment:
+			$ axiom config get "deployments.axiom-eu-west-1"
 
-			# Set the url for a configured backend:
-			$ axiom config set "backends.my-axiom" "https://my-axiom.eu-west-1.aws.com"
+			# Set the url for a configured deployment:
+			$ axiom config set "deployments.axiom-eu-west-1" "https://axiom.eu-west-1.aws.com"
 
 			# Open the configuration file in the configured editor:
 			$ axiom config edit

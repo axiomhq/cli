@@ -19,12 +19,12 @@ func newSetCmd(f *cmdutil.Factory) *cobra.Command {
 		ValidArgsFunction: keyCompletionFunc(f.Config),
 
 		Example: heredoc.Doc(`
-			# Set the url for a configured backend:
-			$ axiom config set "backends.my-axiom" "https://my-axiom.eu-west-1.aws.com"
+			# Set the url for a configured deployment:
+			$ axiom config set "deployments.axiom-eu-west-1" "https://axiom.eu-west-1.aws.com"
 
-			# Set the url for a backend configured in the given configuration
+			# Set the url for a deployment configured in the given configuration
 			# file:
-			$ axiom config set "backends.my-axiom" "https://my-axiom.eu-west-1.aws.com" -C /etc/axiom/cli.toml
+			$ axiom config set "deployments.axiom-eu-west-1" "https://axiom.eu-west-1.aws.com" -C /etc/axiom/cli.toml
 		`),
 
 		RunE: func(_ *cobra.Command, args []string) error {

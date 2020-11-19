@@ -26,8 +26,8 @@ import (
 // NewRootCmd creates and returns the root command.
 func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 	var (
-		configFile       string
-		backendOverwrite string
+		configFile          string
+		deploymentOverwrite string
 	)
 
 	cmd := &cobra.Command{
@@ -54,8 +54,8 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 			if configFile != "" {
 				f.Config, err = config.Load(configFile)
 			}
-			if backendOverwrite != "" {
-				f.Config.ActiveBackend = backendOverwrite
+			if deploymentOverwrite != "" {
+				f.Config.ActiveDeployment = deploymentOverwrite
 			}
 			return err
 		},
@@ -80,8 +80,8 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 	// Configuration file overwrite
 	cmd.PersistentFlags().StringVarP(&configFile, "config", "C", "", "Path to configuration file to use")
 
-	// Active backend overwrite
-	cmd.PersistentFlags().StringVarP(&backendOverwrite, "backend", "B", "", "Backend to use by default")
+	// Active deployment overwrite
+	cmd.PersistentFlags().StringVarP(&deploymentOverwrite, "deployment", "D", "", "Deployment to use by default")
 
 	// Core commands
 	cmd.AddCommand(ingestCmd.NewIngestCmd(f))

@@ -19,7 +19,7 @@ func NoCompletion(cmd *cobra.Command, args []string, toComplete string) ([]strin
 }
 
 // DatasetCompletionFunc returns a completion function which completes the
-// datasets from the configured active backend.
+// datasets from the configured active deployment.
 func DatasetCompletionFunc(f *Factory) CompletionFunc {
 	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		// Just complete the first argument.

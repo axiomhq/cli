@@ -68,7 +68,7 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 			"IsCore": "true",
 		},
 
-		PreRunE: cmdutil.NeedsActiveBackend(f),
+		PreRunE: cmdutil.NeedsActiveDeployment(f),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return run(cmd.Context(), opts)
@@ -97,7 +97,7 @@ func run(ctx context.Context, opts *options) error {
 
 	var (
 		cs      = opts.IO.ColorScheme()
-		res     axiom.IngestResponse
+		res     axiom.IngestStatus
 		lastErr error
 	)
 	for k, filename := range opts.Filenames {
@@ -136,7 +136,7 @@ func run(ctx context.Context, opts *options) error {
 		}
 
 		var (
-			ingestRes *axiom.IngestResponse
+			ingestRes *axiom.IngestStatus
 			pbr       = opts.IO.StartProgressIndicator(rc, size, title)
 		)
 		if ingestRes, err = ingest(ctx, client, pbr, opts); err != nil {
@@ -177,7 +177,7 @@ func run(ctx context.Context, opts *options) error {
 	return lastErr
 }
 
-func ingest(ctx context.Context, client *axiom.Client, r io.Reader, opts *options) (*axiom.IngestResponse, error) {
+func ingest(ctx context.Context, client *axiom.Client, r io.Reader, opts *options) (*axiom.IngestStatus, error) {
 	var (
 		br  = bufio.NewReader(r)
 		typ axiom.ContentType

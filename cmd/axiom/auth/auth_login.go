@@ -8,9 +8,9 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
-	"github.com/axiomhq/axiom-go"
 	"github.com/spf13/cobra"
 
+	axiomClient "github.com/axiomhq/cli/internal/client"
 	"github.com/axiomhq/cli/internal/cmdutil"
 	"github.com/axiomhq/cli/internal/config"
 	"github.com/axiomhq/cli/pkg/surveyext"
@@ -19,21 +19,17 @@ import (
 type loginOptions struct {
 	*cmdutil.Factory
 
-	// Url of the backend to authenticate with. If not supplied as an argument,
-	// which is optional, the user will be asked for it.
+	// Url of the deployment to authenticate with. If not supplied as an
+	// argument, which is optional, the user will be asked for it.
 	URL string `survey:"url"`
-	// Alias of the backend for future reference. If not supplied as an
+	// Alias of the deployment for future reference. If not supplied as an
 	// argument, which is optional, the user will be asked for it.
 	Alias string `survey:"alias"`
-	// Username of the user who wants to authenticate against the backend. If
-	// not supplied a an argument, which is optional, the user will be asked for
-	// it.
-	Username string `survey:"username"`
-	// Password of the user who wants to authenticate against the backend. The
-	// user will be asked for it unless "password-stdin" is set.
-	Password string `survey:"password"`
-	// Read password from stdin instead of prompting the user for it.
-	PasswordStdIn bool
+	// Token of the user who wants to authenticate against the deployment. The
+	// user will be asked for it unless "token-stdin" is set.
+	Token string `survey:"token"`
+	// Read token from stdin instead of prompting the user for it.
+	TokenStdIn bool
 	// Force the creation and skip the confirmation prompt.
 	Force bool
 }
@@ -44,29 +40,27 @@ func newLoginCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "login [--url <backend-url>] [(-a|--alias) <backend-alias>] [(-u|--username) <username|email>] [--password-stdin] [-f|--force]",
-		Short: "Login to an Axiom instance",
+		Use:   "login [--url <deployment-url>] [(-a|--alias) <deployment-alias>] [--token-stdin] [-f|--force]",
+		Short: "Login to an Axiom deployment",
 
 		DisableFlagsInUseLine: true,
 
 		Example: heredoc.Doc(`
-			# Interactively authenticate against an Axiom backend:
+			# Interactively authenticate against an Axiom deployment:
 			$ axiom auth login
 			
 			# Provide parameters on the command-line:
-			$ echo $MY_AXIOM_PASSWORD | axiom auth login --url="axiom.example.com" --alias="my-axiom" --username="lukas@axiom.co" --password-stdin
+			$ echo $AXIOM_ACCESS_TOKEN | axiom auth login --url="https://axiom.eu-west-1.aws.com" --alias="axiom-eu-west-1 --token-stdin
 		`),
 
 		PreRunE: func(*cobra.Command, []string) error {
-			if !opts.IO.IsStdinTTY() && !opts.PasswordStdIn {
-				return cmdutil.NewFlagErrorf("--password-stdin required when not running interactively")
-			} else if opts.PasswordStdIn {
+			if !opts.IO.IsStdinTTY() && !opts.TokenStdIn {
+				return cmdutil.NewFlagErrorf("--token-stdin required when not running interactively")
+			} else if opts.TokenStdIn {
 				if opts.URL == "" {
-					return cmdutil.NewFlagErrorf("--url required when --password-stdin is set")
+					return cmdutil.NewFlagErrorf("--url required when --token-stdin is set")
 				} else if opts.Alias == "" {
-					return cmdutil.NewFlagErrorf("--alias required when --password-stdin is set")
-				} else if opts.Username == "" {
-					return cmdutil.NewFlagErrorf("--username required when --password-stdin is set")
+					return cmdutil.NewFlagErrorf("--alias required when --token-stdin is set")
 				}
 				return nil
 			}
@@ -78,23 +72,20 @@ func newLoginCmd(f *cmdutil.Factory) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&opts.URL, "url", "", "Url of the backend")
-	cmd.Flags().StringVarP(&opts.Alias, "alias", "a", "", "Alias of this backend")
-	cmd.Flags().StringVarP(&opts.Username, "username", "u", "", "Username to authenticate with")
-	cmd.Flags().BoolVar(&opts.PasswordStdIn, "password-stdin", false, "Read password from stdin")
+	cmd.Flags().StringVar(&opts.URL, "url", "", "Url of the deployment")
+	cmd.Flags().StringVarP(&opts.Alias, "alias", "a", "", "Alias of this deployment")
+	cmd.Flags().BoolVar(&opts.TokenStdIn, "token-stdin", false, "Read token from stdin")
 	cmd.Flags().BoolVarP(&opts.Force, "force", "f", false, "Skip the confirmation prompt")
 
 	_ = cmd.RegisterFlagCompletionFunc("url", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("alias", cmdutil.NoCompletion)
-	_ = cmd.RegisterFlagCompletionFunc("username", cmdutil.NoCompletion)
-	_ = cmd.RegisterFlagCompletionFunc("password-stdin", cmdutil.NoCompletion)
+	_ = cmd.RegisterFlagCompletionFunc("token-stdin", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("force", cmdutil.NoCompletion)
 
 	if !opts.IO.IsStdinTTY() {
 		_ = cmd.MarkFlagRequired("url")
 		_ = cmd.MarkFlagRequired("alias")
-		_ = cmd.MarkFlagRequired("username")
-		_ = cmd.MarkFlagRequired("password-stdin")
+		_ = cmd.MarkFlagRequired("token-stdin")
 	}
 
 	return cmd
@@ -106,7 +97,7 @@ func completeLogin(opts *loginOptions) error {
 	if opts.URL == "" {
 		questions = append(questions, &survey.Question{
 			Name:   "url",
-			Prompt: &survey.Input{Message: "What is the url of the backend?"},
+			Prompt: &survey.Input{Message: "What is the url of the deployment?"},
 			Validate: survey.ComposeValidators(
 				survey.Required,
 				surveyext.ValidateURL,
@@ -117,7 +108,7 @@ func completeLogin(opts *loginOptions) error {
 	if opts.Alias == "" {
 		questions = append(questions, &survey.Question{
 			Name:   "alias",
-			Prompt: &survey.Input{Message: "Under which name should the backend be referenced in the future?"},
+			Prompt: &survey.Input{Message: "Under which name should the deployment be referenced in the future?"},
 			Validate: survey.ComposeValidators(
 				survey.Required,
 				survey.MinLength(5),
@@ -125,24 +116,14 @@ func completeLogin(opts *loginOptions) error {
 		})
 	}
 
-	if opts.Username == "" {
+	if opts.Token == "" {
 		questions = append(questions, &survey.Question{
-			Name:   "username",
-			Prompt: &survey.Input{Message: "What is your username?"},
+			Name:   "token",
+			Prompt: &survey.Password{Message: "What is your access token?"},
 			Validate: survey.ComposeValidators(
 				survey.Required,
-				survey.MinLength(5),
-			),
-		})
-	}
-
-	if opts.Password == "" {
-		questions = append(questions, &survey.Question{
-			Name:   "password",
-			Prompt: &survey.Password{Message: "What is your password?"},
-			Validate: survey.ComposeValidators(
-				survey.Required,
-				survey.MinLength(5),
+				survey.MinLength(36),
+				survey.MaxLength(36),
 			),
 		})
 	}
@@ -151,26 +132,26 @@ func completeLogin(opts *loginOptions) error {
 }
 
 func runLogin(ctx context.Context, opts *loginOptions) error {
-	// Read password from stdin, if the appropriate option is set.
-	if opts.PasswordStdIn {
+	// Read token from stdin, if the appropriate option is set.
+	if opts.TokenStdIn {
 		contents, err := ioutil.ReadAll(opts.IO.In())
 		if err != nil {
 			return err
 		}
 
-		opts.Password = strings.TrimSuffix(string(contents), "\n")
-		opts.Password = strings.TrimSuffix(opts.Password, "\r")
+		opts.Token = strings.TrimSuffix(string(contents), "\n")
+		opts.Token = strings.TrimSuffix(opts.Token, "\r")
 	}
 
-	// If a backend with the alias exists in the config, we ask the user if he
+	// If a deployment with the alias exists in the config, we ask the user if he
 	// wants to overwrite it, if "--force" is not set. When no TTY is attached,
 	// we abort and return, not overwritting anything.
-	if _, ok := opts.Config.Backends[opts.Alias]; ok && !opts.Force {
+	if _, ok := opts.Config.Deployments[opts.Alias]; ok && !opts.Force {
 		if !opts.IO.IsStdinTTY() {
 			return cmdutil.ErrSilent
 		}
 
-		msg := fmt.Sprintf("Backend with alias %q already configured! Overwrite?", opts.Alias)
+		msg := fmt.Sprintf("Deployment with alias %q already configured! Overwrite?", opts.Alias)
 		if overwrite, err := surveyext.AskConfirm(msg, opts.IO.SurveyIO()); err != nil {
 			return err
 		} else if !overwrite {
@@ -178,30 +159,22 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 		}
 	}
 
+	client, err := axiomClient.New(opts.URL, opts.Token)
+	if err != nil {
+		return err
+	}
+
 	stop := opts.IO.StartActivityIndicator()
 	defer stop()
 
-	client, err := axiom.NewClient(opts.URL, opts.Password)
+	user, err := client.Users.Current(ctx)
 	if err != nil {
 		return err
 	}
 
-	valid, err := client.Authentication.Valid(ctx)
-	if err != nil {
-		return err
-	} else if !valid {
-		if opts.IO.IsStderrTTY() {
-			cs := opts.IO.ColorScheme()
-			fmt.Fprintf(opts.IO.ErrOut(), "%s Invalid authentication credentials\n",
-				cs.ErrorIcon())
-		}
-		return cmdutil.ErrSilent
-	}
-
-	opts.Config.Backends[opts.Alias] = config.Backend{
-		URL:      opts.URL,
-		Username: opts.Username,
-		Token:    opts.Password,
+	opts.Config.Deployments[opts.Alias] = config.Deployment{
+		URL:   opts.URL,
+		Token: opts.Token,
 	}
 
 	if err := opts.Config.Write(); err != nil {
@@ -212,8 +185,8 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 
 	if opts.IO.IsStderrTTY() {
 		cs := opts.IO.ColorScheme()
-		fmt.Fprintf(opts.IO.ErrOut(), "%s Logged in to backend %s (%s) as %s\n",
-			cs.SuccessIcon(), cs.Bold(opts.Alias), opts.URL, cs.Bold(opts.Username))
+		fmt.Fprintf(opts.IO.ErrOut(), "%s Logged in to deployment %s (%s) as %s\n",
+			cs.SuccessIcon(), cs.Bold(opts.Alias), opts.URL, cs.Bold(user.Name))
 	}
 
 	return nil

@@ -11,37 +11,37 @@ import (
 )
 
 var (
-	noBackendsMsg = heredoc.Doc(`
-		{{ errorIcon }} No backends configured!
+	noDeploymentsMsg = heredoc.Doc(`
+		{{ errorIcon }} No deployments configured!
 
-		  Setup a backend by logging into it:
+		  Setup a deployment by logging into it:
 		  $ {{ bold "axiom auth login" }}
 	`)
 
-	badBackendMsg = heredoc.Doc(`
-		{{ errorIcon }} Chosen backend {{ bold .Backend }} is not configured!
+	badDeploymentMsg = heredoc.Doc(`
+		{{ errorIcon }} Chosen deployment {{ bold .Deployment }} is not configured!
 	`)
 
-	badActiveBackendMsg = heredoc.Doc(`
-		{{ errorIcon }} Chosen backend {{ bold .Backend }} is not configured!
+	badActiveDeploymentMsg = heredoc.Doc(`
+		{{ errorIcon }} Chosen deployment {{ bold .Deployment }} is not configured!
 
-		  Select a backend which is persisted by setting the {{ bold "active_backend" }}
+		  Select a deployment which is persisted by setting the {{ bold "active_deployment" }}
 		  key in the configuration file currently in use:
 		  $ {{ bold "axiom auth select" }}
 		  
-		  Select a backend by setting the {{ bold "AXM_BACKEND" }} environment variable. This
+		  Select a deployment by setting the {{ bold "AXM_DEPLOYMENT" }} environment variable. This
 		  overwrittes the choice made in the configuration file: 
-		  $ {{ bold "export AXM_BACKEND=my-axiom" }}
+		  $ {{ bold "export AXM_DEPLOYMENT=axiom-eu-west-1" }}
 
-		  Select a backend by setting the {{ bold "-B" }} or {{ bold "--backend" }} flag. This overwrittes
-		  the choice made in the configuration file or the environment: 
-		  $ {{ bold .CommandPath }} {{ bold "-B=my-axiom" }}
+		  Select a deployment by setting the {{ bold "-D" }} or {{ bold "--deployment" }} flag. This
+		  overwrittes the choice made in the configuration file or the environment: 
+		  $ {{ bold .CommandPath }} {{ bold "-D=axiom-eu-west-1" }}
 	`)
 
 	noDatasetsMsg = heredoc.Doc(`
-		{{ errorIcon }} No datasets present on configured backend {{ bold .Backend }}!
+		{{ errorIcon }} No datasets present on configured deployment {{ bold .Deployment }}!
 
-		  Explicitly create a datatset on the configured backend:
+		  Explicitly create a datatset on the configured deployment:
 		  $ {{ bold "axiom dataset create" }}
 		  $ {{ bold "axiom dataset create nginx-logs" }}
 
@@ -74,59 +74,59 @@ func NeedsRootPersistentPreRunE() RunFunc {
 	}
 }
 
-// NeedsActiveBackend makes sure an active backend is configured. If not, it
-// asks for one when the application is running interactively. If no backends to
+// NeedsActiveDeployment makes sure an active deployment is configured. If not, it
+// asks for one when the application is running interactively. If no deployments to
 // select from are configured or the application is not running interactively,
 // an error is printed and a silent error returned.
-func NeedsActiveBackend(f *Factory) RunFunc {
+func NeedsActiveDeployment(f *Factory) RunFunc {
 	return func(cmd *cobra.Command, _ []string) error {
-		// If no backends are configured, print an error message.
-		if len(f.Config.Backends) == 0 {
-			return execTemplateSilent(f.IO, noBackendsMsg, nil)
+		// If no deployments are configured, print an error message.
+		if len(f.Config.Deployments) == 0 {
+			return execTemplateSilent(f.IO, noDeploymentsMsg, nil)
 		}
 
-		// If the given backend is configured, that's all we need. If it is not
+		// If the given deployment is configured, that's all we need. If it is not
 		// configured, but given, print an error message.
-		if _, ok := f.Config.Backends[f.Config.ActiveBackend]; ok {
+		if _, ok := f.Config.Deployments[f.Config.ActiveDeployment]; ok {
 			return nil
-		} else if f.Config.ActiveBackend != "" {
-			return execTemplateSilent(f.IO, badActiveBackendMsg, map[string]string{
-				"Backend":     f.Config.ActiveBackend,
+		} else if f.Config.ActiveDeployment != "" {
+			return execTemplateSilent(f.IO, badActiveDeploymentMsg, map[string]string{
+				"Deployment":  f.Config.ActiveDeployment,
 				"CommandPath": cmd.CommandPath(),
 			})
 		}
 
-		// When not running interactively and no active backend is given, the
-		// backend to use must be provided as a flag.
-		if !f.IO.IsStdinTTY() && f.Config.ActiveBackend == "" {
-			return NewFlagErrorf("--backend or -B required when not running interactively")
+		// When not running interactively and no active deployment is given, the
+		// deployment to use must be provided as a flag.
+		if !f.IO.IsStdinTTY() && f.Config.ActiveDeployment == "" {
+			return NewFlagErrorf("--deployment or -D required when not running interactively")
 		}
 
 		return survey.AskOne(&survey.Select{
-			Message: "Which backend to use?",
-			Options: f.Config.BackendAliases(),
-		}, &f.Config.ActiveBackend, f.IO.SurveyIO())
+			Message: "Which deployment to use?",
+			Options: f.Config.DeploymentAliases(),
+		}, &f.Config.ActiveDeployment, f.IO.SurveyIO())
 	}
 }
 
-// NeedsBackends prints an error message and errors silently if no backends are
+// NeedsDeployments prints an error message and errors silently if no deployments are
 // configured.
-func NeedsBackends(f *Factory) RunFunc {
+func NeedsDeployments(f *Factory) RunFunc {
 	return func(cmd *cobra.Command, _ []string) error {
-		if len(f.Config.Backends) == 0 {
-			return execTemplateSilent(f.IO, noBackendsMsg, nil)
+		if len(f.Config.Deployments) == 0 {
+			return execTemplateSilent(f.IO, noDeploymentsMsg, nil)
 		}
 		return nil
 	}
 }
 
-// NeedsValidBackend prints an error message and errors silently if the given
-// backend is not configured. An empty alias is not evaluated.
-func NeedsValidBackend(f *Factory, alias *string) RunFunc {
+// NeedsValidDeployment prints an error message and errors silently if the given
+// deployment is not configured. An empty alias is not evaluated.
+func NeedsValidDeployment(f *Factory, alias *string) RunFunc {
 	return func(cmd *cobra.Command, _ []string) error {
-		if _, ok := f.Config.Backends[*alias]; !ok && *alias != "" {
-			return execTemplateSilent(f.IO, badBackendMsg, map[string]string{
-				"Backend": *alias,
+		if _, ok := f.Config.Deployments[*alias]; !ok && *alias != "" {
+			return execTemplateSilent(f.IO, badDeploymentMsg, map[string]string{
+				"Deployment": *alias,
 			})
 		}
 		return nil
@@ -134,7 +134,7 @@ func NeedsValidBackend(f *Factory, alias *string) RunFunc {
 }
 
 // NeedsDatasets prints an error message and errors silently if no datasets are
-// available on the configured backend.
+// available on the configured deployment.
 func NeedsDatasets(f *Factory) RunFunc {
 	return func(cmd *cobra.Command, _ []string) error {
 		client, err := f.Client()
@@ -149,7 +149,7 @@ func NeedsDatasets(f *Factory) RunFunc {
 
 		if len(datasets) == 0 {
 			return execTemplateSilent(f.IO, noDatasetsMsg, map[string]string{
-				"Backend": f.Config.ActiveBackend,
+				"Deployment": f.Config.ActiveDeployment,
 			})
 		}
 

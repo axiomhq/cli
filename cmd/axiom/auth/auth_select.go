@@ -12,10 +12,10 @@ import (
 
 func newSelectCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "select [<backend-alias>]",
-		Short: "Select an Axiom instance",
+		Use:   "select [<deployment-alias>]",
+		Short: "Select an Axiom deployment",
 		Long: heredoc.Doc(`
-			Select an Axiom instance to use by default and persist the choice in
+			Select an Axiom deployment to use by default and persist the choice in
 			the configuration file.
 		`),
 
@@ -23,29 +23,29 @@ func newSelectCmd(f *cmdutil.Factory) *cobra.Command {
 
 		Args: cmdutil.ChainPositionalArgs(
 			cobra.MaximumNArgs(1),
-			cmdutil.PopulateFromArgs(f, &f.Config.ActiveBackend),
+			cmdutil.PopulateFromArgs(f, &f.Config.ActiveDeployment),
 		),
-		ValidArgsFunction: backendCompletionFunc(f.Config),
+		ValidArgsFunction: deploymentCompletionFunc(f.Config),
 
 		Example: heredoc.Doc(`
-			# Select the backend to use by default:
+			# Select the deployment to use by default:
 			$ axiom auth select
 			
-			# Specify the backend to use by default:
+			# Specify the deployment to use by default:
 			$ axiom auth select axiom-eu-west-1
 		`),
 
 		PreRunE: cmdutil.ChainRunFuncs(
-			cmdutil.NeedsBackends(f),
-			cmdutil.NeedsValidBackend(f, &f.Config.ActiveBackend),
+			cmdutil.NeedsDeployments(f),
+			cmdutil.NeedsValidDeployment(f, &f.Config.ActiveDeployment),
 		),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if f.Config.ActiveBackend == "" {
+			if f.Config.ActiveDeployment == "" {
 				if err := survey.AskOne(&survey.Select{
-					Message: "Which backend to select?",
-					Options: f.Config.BackendAliases(),
-				}, &f.Config.ActiveBackend, f.IO.SurveyIO()); err != nil {
+					Message: "Which deployment to select?",
+					Options: f.Config.DeploymentAliases(),
+				}, &f.Config.ActiveDeployment, f.IO.SurveyIO()); err != nil {
 					return err
 				}
 			}
@@ -55,8 +55,8 @@ func newSelectCmd(f *cmdutil.Factory) *cobra.Command {
 			}
 
 			cs := f.IO.ColorScheme()
-			fmt.Fprintf(f.IO.ErrOut(), "%s Now using backend %s by default\n",
-				cs.SuccessIcon(), cs.Bold(f.Config.ActiveBackend))
+			fmt.Fprintf(f.IO.ErrOut(), "%s Now using deployment %s by default\n",
+				cs.SuccessIcon(), cs.Bold(f.Config.ActiveDeployment))
 
 			return nil
 		},

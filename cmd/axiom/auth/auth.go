@@ -39,14 +39,14 @@ func NewAuthCmd(f *cmdutil.Factory) *cobra.Command {
 	return cmd
 }
 
-func backendCompletionFunc(config *config.Config) cmdutil.CompletionFunc {
+func deploymentCompletionFunc(config *config.Config) cmdutil.CompletionFunc {
 	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		// Just complete the first argument.
 		if len(args) > 0 {
 			return cmdutil.NoCompletion(cmd, args, toComplete)
 		}
 
-		aliases := config.BackendAliases()
+		aliases := config.DeploymentAliases()
 		res := make([]string, 0, len(aliases))
 		for _, alias := range aliases {
 			if strings.HasPrefix(alias, toComplete) {

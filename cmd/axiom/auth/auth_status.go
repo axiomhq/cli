@@ -6,17 +6,17 @@ import (
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/axiomhq/axiom-go"
 	"github.com/muesli/reflow/dedent"
 	"github.com/spf13/cobra"
 
+	axiomClient "github.com/axiomhq/cli/internal/client"
 	"github.com/axiomhq/cli/internal/cmdutil"
 )
 
 type statusOptions struct {
 	*cmdutil.Factory
 
-	// Alias of the backend to check the authentication status for.
+	// Alias of the deployment to check the authentication status for.
 	Alias string
 }
 
@@ -26,7 +26,7 @@ func newStatusCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "status [<backend-alias>]",
+		Use:   "status [<deployment-alias>]",
 		Short: "View authentication status",
 
 		DisableFlagsInUseLine: true,
@@ -35,19 +35,19 @@ func newStatusCmd(f *cmdutil.Factory) *cobra.Command {
 			cobra.MaximumNArgs(1),
 			cmdutil.PopulateFromArgs(f, &opts.Alias),
 		),
-		ValidArgsFunction: backendCompletionFunc(f.Config),
+		ValidArgsFunction: deploymentCompletionFunc(f.Config),
 
 		Example: heredoc.Doc(`
-			# Check authentication status of all configured backends:
+			# Check authentication status of all configured deployments:
 			$ axiom auth status
 			
-			# Check authentication status of a specified backend:
-			$ axiom auth status my-axiom
+			# Check authentication status of a specified deployment:
+			$ axiom auth status axiom-eu-west-1
 		`),
 
 		PreRunE: cmdutil.ChainRunFuncs(
-			cmdutil.NeedsBackends(f),
-			cmdutil.NeedsValidBackend(f, &opts.Alias),
+			cmdutil.NeedsDeployments(f),
+			cmdutil.NeedsValidDeployment(f, &opts.Alias),
 		),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -59,9 +59,9 @@ func newStatusCmd(f *cmdutil.Factory) *cobra.Command {
 }
 
 func runStatus(ctx context.Context, opts *statusOptions) error {
-	backendAliases := opts.Config.BackendAliases()
+	deploymentAliases := opts.Config.DeploymentAliases()
 	if opts.Alias != "" {
-		backendAliases = []string{opts.Alias}
+		deploymentAliases = []string{opts.Alias}
 	}
 
 	stop := opts.IO.StartActivityIndicator()
@@ -72,28 +72,23 @@ func runStatus(ctx context.Context, opts *statusOptions) error {
 		failed     bool
 		statusInfo = map[string][]string{}
 	)
-	for _, v := range backendAliases {
-		backend, ok := opts.Config.Backends[v]
+	for _, v := range deploymentAliases {
+		deployment, ok := opts.Config.Deployments[v]
 		if !ok {
 			continue
 		}
 
-		client, err := axiom.NewClient(backend.URL, backend.Token)
+		client, err := axiomClient.New(deployment.URL, deployment.Token)
 		if err != nil {
 			return err
 		}
 
 		var info string
-		if valid, err := client.Authentication.Valid(ctx); err != nil {
+		if user, err := client.Users.Current(ctx); err != nil {
 			info = fmt.Sprintf("%s %s", cs.ErrorIcon(), err)
 			failed = true
-		} else if !valid {
-			info = fmt.Sprintf("%s Invalid authentication credentials",
-				cs.ErrorIcon())
-			failed = true
 		} else {
-			info = fmt.Sprintf("%s Logged in to backend %s as %s",
-				cs.SuccessIcon(), backend.URL, cs.Bold(backend.Username))
+			info = fmt.Sprintf("%s Logged in as %s", cs.SuccessIcon(), cs.Bold(user.Name))
 		}
 
 		statusInfo[v] = append(statusInfo[v], info)
@@ -103,8 +98,8 @@ func runStatus(ctx context.Context, opts *statusOptions) error {
 
 	if opts.IO.IsStderrTTY() {
 		var buf strings.Builder
-		for _, alias := range backendAliases {
-			if alias == opts.Config.ActiveBackend {
+		for _, alias := range deploymentAliases {
+			if alias == opts.Config.ActiveDeployment {
 				fmt.Fprintf(&buf, "%s %s\n", cs.Yellow("‣"), cs.Bold(alias))
 			} else {
 				fmt.Fprintf(&buf, "  %s\n", cs.Bold(alias))

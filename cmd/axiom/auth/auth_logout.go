@@ -16,8 +16,8 @@ import (
 type logoutOptions struct {
 	*cmdutil.Factory
 
-	// Alias of the backend to delete. If not supplied as an argument, which is
-	// optional, the user will be asked for it.
+	// Alias of the deployment to delete. If not supplied as an argument, which
+	// is optional, the user will be asked for it.
 	Alias string
 	// Force the deleteion and skip the confirmation prompt.
 	Force bool
@@ -29,8 +29,8 @@ func newLogoutCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{ //nolint:dupl
-		Use:   "logout [<backend-alias>] [-f|--force]",
-		Short: "Logout of an Axiom instance",
+		Use:   "logout [<deployment-alias>] [-f|--force]",
+		Short: "Logout of an Axiom deployment",
 
 		DisableFlagsInUseLine: true,
 
@@ -38,26 +38,26 @@ func newLogoutCmd(f *cmdutil.Factory) *cobra.Command {
 			cobra.MaximumNArgs(1),
 			cmdutil.PopulateFromArgs(f, &opts.Alias),
 		),
-		ValidArgsFunction: backendCompletionFunc(f.Config),
+		ValidArgsFunction: deploymentCompletionFunc(f.Config),
 
 		Example: heredoc.Doc(`
-			# Select the backend to log out of:
+			# Select the deployment to log out of:
 			$ axiom auth logout
 			
-			# Log out of a specified backend:
+			# Log out of a specified deployment:
 			$ axiom auth logout axiom-eu-west-1
 		`),
 
 		PreRunE: cmdutil.ChainRunFuncs(
-			cmdutil.NeedsBackends(f),
-			cmdutil.NeedsValidBackend(f, &opts.Alias),
+			cmdutil.NeedsDeployments(f),
+			cmdutil.NeedsValidDeployment(f, &opts.Alias),
 		),
 
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if opts.Alias == "" {
 				if err := survey.AskOne(&survey.Select{
-					Message: "Which backend to log out off?",
-					Options: opts.Config.BackendAliases(),
+					Message: "Which deployment to log out off?",
+					Options: opts.Config.DeploymentAliases(),
 				}, &opts.Alias, opts.IO.SurveyIO()); err != nil {
 					return err
 				}
@@ -81,7 +81,7 @@ func runLogout(ctx context.Context, opts *logoutOptions) error {
 	}
 
 	if !opts.Force {
-		msg := fmt.Sprintf("Are you sure you want to log out of backend %q?", opts.Alias)
+		msg := fmt.Sprintf("Are you sure you want to log out of deployment %q?", opts.Alias)
 		if overwrite, err := surveyext.AskConfirm(msg, opts.IO.SurveyIO()); err != nil {
 			return err
 		} else if !overwrite {
@@ -101,13 +101,13 @@ func runLogout(ctx context.Context, opts *logoutOptions) error {
 
 	if opts.IO.IsStdoutTTY() {
 		cs := opts.IO.ColorScheme()
-		fmt.Fprintf(opts.IO.ErrOut(), "%s Logged out of backend %s\n",
+		fmt.Fprintf(opts.IO.ErrOut(), "%s Logged out of deployment %s\n",
 			cs.SuccessIcon(), cs.Bold(opts.Alias))
 	}
 
-	delete(opts.Config.Backends, opts.Alias)
-	if opts.Config.ActiveBackend == opts.Alias {
-		opts.Config.ActiveBackend = ""
+	delete(opts.Config.Deployments, opts.Alias)
+	if opts.Config.ActiveDeployment == opts.Alias {
+		opts.Config.ActiveDeployment = ""
 	}
 
 	return opts.Config.Write()

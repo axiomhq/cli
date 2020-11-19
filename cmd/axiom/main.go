@@ -53,9 +53,9 @@ func main() {
 	}
 
 	// Initially load configuration to have it available in completion. However,
-	// the config and backend override flags are only parsed when running
-	// commands. This makes completion only work for the configured backends and
-	// not the overwritten ones.
+	// the config and deployment override flags are only parsed when running
+	// commands. This makes completion only work for the configured deployments
+	// and not the overwritten ones.
 	var err error
 	if f.Config, err = config.LoadDefault(); err != nil {
 		printError(f.IO.ErrOut(), err, nil)

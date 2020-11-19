@@ -21,12 +21,12 @@ func newGetCmd(f *cmdutil.Factory) *cobra.Command {
 		ValidArgsFunction: keyCompletionFunc(f.Config),
 
 		Example: heredoc.Doc(`
-			# Get the url of a configured backend:
-			$ axiom config get "backends.my-axiom"
+			# Get the url of a configured deployment:
+			$ axiom config get "deployments.axiom-eu-west-1
 			
-			# Get the url of a backend configured in the given configuration
+			# Get the url of a deployment configured in the given configuration
 			# file:
-			$ axiom config get "backends.my-axiom" -C /etc/axiom/cli.toml
+			$ axiom config get "deployments.axiom-eu-west-1 -C /etc/axiom/cli.toml
 		`),
 
 		RunE: func(_ *cobra.Command, args []string) error {

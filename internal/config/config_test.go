@@ -11,19 +11,17 @@ import (
 )
 
 var configFile = `
-active_backend = "axiom-eu-west-1"
+active_deployment = "axiom-eu-west-1"
 
-[backends]
+[deployments]
 
-[backends.axiom-eu-west-1]
+[deployments.axiom-eu-west-1]
 url = "axiom-eu-west-1.aws.com"
-username = "lukas@axiom.co"
-password = "this-is-obviously-stupid"
+token = "this-is-obviously-stupid"
 
-[backends.axiom-eu-west-2]
+[deployments.axiom-eu-west-2]
 url = "axiom-eu-west-2.aws.com"
-username = "seif@axiom.co"
-password = "this-is-obviously-more-stupid"
+token = "this-is-obviously-more-stupid"
 `
 
 type TestConfigSuite struct {
@@ -35,18 +33,18 @@ func TestFileSystem(t *testing.T) {
 }
 
 func (s *TestConfigSuite) SetupTest() {
-	s.Require().NoError(os.Unsetenv("AXM_BACKEND"))
+	s.Require().NoError(os.Unsetenv("AXM_DEPLOYMENT"))
 }
 
-// Make sure TOML configuration is properly loaded and the active backend is
+// Make sure TOML configuration is properly loaded and the active deployment is
 // overwritten from the environment.
 func (s *TestConfigSuite) TestLoad() {
-	s.Require().NoError(os.Setenv("AXM_BACKEND", "axiom-eu-west-2"))
+	s.Require().NoError(os.Setenv("AXM_DEPLOYMENT", "axiom-eu-west-2"))
 
 	cfg, err := config.LoadFromReader(strings.NewReader(configFile))
 	s.Require().NoError(err)
 	s.Require().NotEmpty(cfg)
 
-	s.Equal("axiom-eu-west-2", cfg.ActiveBackend)
-	s.Len(cfg.Backends, 2)
+	s.Equal("axiom-eu-west-2", cfg.ActiveDeployment)
+	s.Len(cfg.Deployments, 2)
 }

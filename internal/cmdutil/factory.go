@@ -5,6 +5,7 @@ import (
 
 	"github.com/axiomhq/axiom-go"
 
+	axiomClient "github.com/axiomhq/cli/internal/client"
 	"github.com/axiomhq/cli/internal/config"
 	"github.com/axiomhq/cli/pkg/terminal"
 )
@@ -24,12 +25,11 @@ func NewFactory() *Factory {
 	}
 }
 
-// Client returns an Axiom client configured to talk to the instance specified
-// by the configuration.
+// Client returns an Axiom client configured to talk to the active deployment.
 func (f *Factory) Client() (*axiom.Client, error) {
-	backend, ok := f.Config.Backends[f.Config.ActiveBackend]
+	deployment, ok := f.Config.Deployments[f.Config.ActiveDeployment]
 	if !ok {
-		return nil, errors.New("no active backend set")
+		return nil, errors.New("no active deployment set")
 	}
-	return axiom.NewClient(backend.URL, backend.Token)
+	return axiomClient.New(deployment.URL, deployment.Token)
 }

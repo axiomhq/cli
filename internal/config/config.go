@@ -19,7 +19,7 @@ func defaultConfigFile() string {
 }
 
 var defaultConfig = Config{
-	Backends: make(map[string]Backend),
+	Deployments: make(map[string]Deployment),
 
 	ConfigFilePath: defaultConfigFile(),
 
@@ -28,19 +28,18 @@ var defaultConfig = Config{
 
 // Config is the global Axiom CLI configuration.
 type Config struct {
-	ActiveBackend string             `toml:"active_backend" envconfig:"backend"`
-	Backends      map[string]Backend `toml:"backends"`
+	ActiveDeployment string                `toml:"active_deployment" envconfig:"deployment"`
+	Deployments      map[string]Deployment `toml:"deployments"`
 
 	ConfigFilePath string `toml:"-"`
 
 	tree *toml.Tree
 }
 
-// Backend is the configuration for an Axiom instance.
-type Backend struct {
-	URL      string `toml:"url"`
-	Username string `toml:"username"`
-	Token    string `toml:"token"`
+// Deployment is the configuration for an Axiom instance.
+type Deployment struct {
+	URL   string `toml:"url"`
+	Token string `toml:"token"`
 }
 
 // LoadDefault tries to load the default configuration. It behaves like Load()
@@ -87,10 +86,10 @@ func LoadFromReader(r io.Reader) (config *Config, err error) {
 		return config, err
 	}
 
-	// If only one backend is configured, make it the active one.
-	if len(config.Backends) == 1 {
-		for k := range config.Backends {
-			config.ActiveBackend = k
+	// If only one deployment is configured, make it the active one.
+	if len(config.Deployments) == 1 {
+		for k := range config.Deployments {
+			config.ActiveDeployment = k
 			break
 		}
 	}
@@ -98,10 +97,10 @@ func LoadFromReader(r io.Reader) (config *Config, err error) {
 	return config, nil
 }
 
-// BackendAliases returns a sorted slice of backend aliases.
-func (c *Config) BackendAliases() []string {
-	res := make([]string, 0, len(c.Backends))
-	for k := range c.Backends {
+// DeploymentAliases returns a sorted slice of deployment aliases.
+func (c *Config) DeploymentAliases() []string {
+	res := make([]string, 0, len(c.Deployments))
+	for k := range c.Deployments {
 		res = append(res, k)
 	}
 	sort.Strings(res)
@@ -137,12 +136,11 @@ func (c *Config) Set(key, value string) error {
 
 // Keys which are valid arguments to Get() and Set().
 func (c *Config) Keys() []string {
-	res := make([]string, 0, len(c.Backends)*4+1) // 3 fields for each backend plus the "active_backend" one
-	res = append(res, "active_backend")
-	for k := range c.Backends {
-		base := strings.Join([]string{"backends", k}, ".")
+	res := make([]string, 0, len(c.Deployments)*2+1) // 2 fields for each deployment plus the "active_deployment" one
+	res = append(res, "active_deployment")
+	for k := range c.Deployments {
+		base := strings.Join([]string{"deployments", k}, ".")
 		res = append(res, strings.Join([]string{base, "url"}, "."))
-		res = append(res, strings.Join([]string{base, "username"}, "."))
 		res = append(res, strings.Join([]string{base, "token"}, "."))
 	}
 	sort.Strings(res)

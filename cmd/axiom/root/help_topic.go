@@ -9,7 +9,7 @@ import (
 
 var topics = map[string]string{
 	"environment": `
-		AXM_BACKEND: The backend to use by default. Overwrittes the choice
+		AXM_DEPLOYMENT: The deployment to use by default. Overwrittes the choice
 		loaded from the configuration file.
 		
 		AXM_PAGER, PAGER (in order of precedence): A terminal paging program to
