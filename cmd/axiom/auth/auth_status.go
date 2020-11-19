@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/MakeNowJust/heredoc"
+	"github.com/axiomhq/axiom-go"
 	"github.com/muesli/reflow/dedent"
 	"github.com/spf13/cobra"
 
@@ -67,16 +67,9 @@ func runStatus(ctx context.Context, opts *statusOptions) error {
 	stop := opts.IO.StartActivityIndicator()
 	defer stop()
 
-	// TODO: Get authentication status, I guess we need ctx in here soon ;)
-	_ = ctx
-
-	time.Sleep(time.Second * 2)
-
-	stop()
-
 	var (
 		cs         = opts.IO.ColorScheme()
-		failed     bool // TODO: Set to true if fetching a backend fails.
+		failed     bool
 		statusInfo = map[string][]string{}
 	)
 	for _, v := range backendAliases {
@@ -85,14 +78,28 @@ func runStatus(ctx context.Context, opts *statusOptions) error {
 			continue
 		}
 
-		loginInfo := fmt.Sprintf("%s Logged in to backend %s as %s",
-			cs.SuccessIcon(), backend.URL, cs.Bold(backend.Username))
-		expireInfo := fmt.Sprintf("%s Your token is about to expire! Run %s %s to refresh",
-			cs.WarningIcon(), cs.Bold("axiom auth refresh"), cs.Bold(v))
+		client, err := axiom.NewClient(backend.URL, backend.Token)
+		if err != nil {
+			return err
+		}
 
-		statusInfo[v] = append(statusInfo[v], loginInfo)
-		statusInfo[v] = append(statusInfo[v], expireInfo)
+		var info string
+		if valid, err := client.Authentication.Valid(ctx); err != nil {
+			info = fmt.Sprintf("%s %s", cs.ErrorIcon(), err)
+			failed = true
+		} else if !valid {
+			info = fmt.Sprintf("%s Invalid authentication credentials",
+				cs.ErrorIcon())
+			failed = true
+		} else {
+			info = fmt.Sprintf("%s Logged in to backend %s as %s",
+				cs.SuccessIcon(), backend.URL, cs.Bold(backend.Username))
+		}
+
+		statusInfo[v] = append(statusInfo[v], info)
 	}
+
+	stop()
 
 	if opts.IO.IsStderrTTY() {
 		var buf strings.Builder

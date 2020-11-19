@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strings"
-	"time"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
+	"github.com/axiomhq/axiom-go"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
@@ -181,12 +181,22 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 	stop := opts.IO.StartActivityIndicator()
 	defer stop()
 
-	// TODO: Login, I guess we need ctx in the here soon ;)
-	_ = ctx
+	client, err := axiom.NewClient(opts.URL, opts.Password)
+	if err != nil {
+		return err
+	}
 
-	time.Sleep(time.Second * 2)
-
-	stop()
+	valid, err := client.Authentication.Valid(ctx)
+	if err != nil {
+		return err
+	} else if !valid {
+		if opts.IO.IsStderrTTY() {
+			cs := opts.IO.ColorScheme()
+			fmt.Fprintf(opts.IO.ErrOut(), "%s Invalid authentication credentials\n",
+				cs.ErrorIcon())
+		}
+		return cmdutil.ErrSilent
+	}
 
 	opts.Config.Backends[opts.Alias] = config.Backend{
 		URL:      opts.URL,
@@ -197,6 +207,8 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 	if err := opts.Config.Write(); err != nil {
 		return err
 	}
+
+	stop()
 
 	if opts.IO.IsStderrTTY() {
 		cs := opts.IO.ColorScheme()

@@ -99,9 +99,9 @@ func runInfo(ctx context.Context, opts *infoOptions) error {
 
 	if opts.IO.IsStdoutTTY() {
 		fmt.Fprintf(opts.IO.Out(), "Showing info of dataset %s:\n\n", cs.Bold(dataset.DisplayName))
-		tp.AddField("Number of Events", cs.Bold)
-		tp.AddField("Number of Blocks", cs.Bold)
-		tp.AddField("Number of Fields", cs.Bold)
+		tp.AddField("Events", cs.Bold)
+		tp.AddField("Blocks", cs.Bold)
+		tp.AddField("Fields", cs.Bold)
 		tp.AddField("Ingested Bytes", cs.Bold)
 		tp.AddField("Compressed Bytes", cs.Bold)
 		tp.AddField("Min Time", cs.Bold)
