@@ -34,6 +34,7 @@ func NewDatasetCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.AddCommand(newDeleteCmd(f))
 	cmd.AddCommand(newInfoCmd(f))
 	cmd.AddCommand(newListCmd(f))
+	cmd.AddCommand(newStatsCmd(f))
 
 	return cmd
 }

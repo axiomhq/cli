@@ -70,8 +70,8 @@ func runList(ctx context.Context, f *cmdutil.Factory) error {
 	}
 
 	for _, dataset := range datasets {
-		tp.AddField(dataset.ID, cs.Red)
-		tp.AddField(dataset.Name, cs.Bold)
+		tp.AddField(dataset.ID, cs.Bold)
+		tp.AddField(dataset.Name, nil)
 		tp.AddField(dataset.Description, nil)
 		tp.AddField(dataset.Created.Format(time.RFC1123), cs.Gray)
 		tp.EndRow()

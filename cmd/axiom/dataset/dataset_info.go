@@ -98,7 +98,7 @@ func runInfo(ctx context.Context, opts *infoOptions) error {
 	tp := terminal.NewTablePrinter(opts.IO)
 
 	if opts.IO.IsStdoutTTY() {
-		fmt.Fprintf(opts.IO.Out(), "Showing info of dataset %s:\n\n", cs.Bold(dataset.DisplayName))
+		fmt.Fprintf(opts.IO.Out(), "Showing info of dataset %s:\n\n", cs.Bold(dataset.Name))
 		tp.AddField("Events", cs.Bold)
 		tp.AddField("Blocks", cs.Bold)
 		tp.AddField("Fields", cs.Bold)
