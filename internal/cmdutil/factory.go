@@ -3,7 +3,7 @@ package cmdutil
 import (
 	"errors"
 
-	"github.com/axiomhq/axiom-go"
+	"github.com/axiomhq/axiom-go/axiom"
 
 	axiomClient "github.com/axiomhq/cli/internal/client"
 	"github.com/axiomhq/cli/internal/config"

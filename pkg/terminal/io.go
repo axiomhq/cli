@@ -16,7 +16,7 @@ import (
 	"github.com/mattn/go-colorable"
 	"github.com/mattn/go-isatty"
 	"github.com/schollz/progressbar/v3"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 
 	"github.com/axiomhq/cli/pkg/doc"
 )
@@ -224,7 +224,7 @@ func (io *IO) TerminalWidth() int {
 	}
 
 	f := io.origOut.(*os.File)
-	if w, _, err := terminal.GetSize(int(f.Fd())); err == nil {
+	if w, _, err := term.GetSize(int(f.Fd())); err == nil {
 		return w
 	}
 

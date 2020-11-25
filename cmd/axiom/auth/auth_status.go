@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/axiomhq/axiom-go"
+	"github.com/axiomhq/axiom-go/axiom"
 	"github.com/muesli/reflow/dedent"
 	"github.com/spf13/cobra"
 

@@ -3,12 +3,12 @@ module github.com/axiomhq/cli
 go 1.15
 
 require (
-	github.com/AlecAivazis/survey/v2 v2.2.2
+	github.com/AlecAivazis/survey/v2 v2.2.3
 	github.com/MakeNowJust/heredoc v1.0.0
-	github.com/axiomhq/axiom-go v0.0.0-20201123204648-7ccd51afdc4e
+	github.com/axiomhq/axiom-go v0.0.0-20201125185516-8cc55867861f
 	github.com/briandowns/spinner v1.11.1
-	github.com/cli/cli v1.2.1
-	github.com/golangci/golangci-lint v1.32.2
+	github.com/cli/cli v1.3.0
+	github.com/golangci/golangci-lint v1.33.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/goreleaser/goreleaser v0.147.2
 	github.com/kelseyhightower/envconfig v1.4.0
@@ -18,10 +18,11 @@ require (
 	github.com/muesli/reflow v0.2.0
 	github.com/muesli/termenv v0.7.4
 	github.com/pelletier/go-toml v1.8.1
-	github.com/schollz/progressbar/v3 v3.7.1
+	github.com/schollz/progressbar/v3 v3.7.2
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.6.1
-	golang.org/x/crypto v0.0.0-20201112155050-0c6587e931a9
+	golang.org/x/crypto v0.0.0-20201124201722-c8d3bf9c5392 // indirect
+	golang.org/x/term v0.0.0-20201117132131-f5c789dd3221
 	gotest.tools/gotestsum v0.6.0
 )

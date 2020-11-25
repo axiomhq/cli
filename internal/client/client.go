@@ -1,7 +1,7 @@
 package client
 
 import (
-	"github.com/axiomhq/axiom-go"
+	"github.com/axiomhq/axiom-go/axiom"
 
 	"github.com/axiomhq/cli/pkg/version"
 )
