@@ -95,7 +95,7 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 	// Additional commands
 	cmd.AddCommand(authCmd.NewAuthCmd(f))
 	cmd.AddCommand(completionCmd.NewCompletionCmd(f))
-	cmd.AddCommand(versionCmd.NewVersionCmd(version.Print("Axiom CLI")))
+	cmd.AddCommand(versionCmd.NewVersionCmd(f, version.Print("Axiom CLI")))
 
 	// Help topics
 	cmd.AddCommand(newHelpTopic(f.IO, "environment"))

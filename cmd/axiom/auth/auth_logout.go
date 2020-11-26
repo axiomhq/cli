@@ -1,9 +1,7 @@
 package auth
 
 import (
-	"context"
 	"fmt"
-	"time"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
@@ -16,8 +14,8 @@ import (
 type logoutOptions struct {
 	*cmdutil.Factory
 
-	// Alias of the deployment to delete. If not supplied as an argument, which
-	// is optional, the user will be asked for it.
+	// Alias of the deployment to delete. If not supplied as a flag, which is
+	// optional, the user will be asked for it.
 	Alias string
 	// Force the deleteion and skip the confirmation prompt.
 	Force bool
@@ -53,7 +51,7 @@ func newLogoutCmd(f *cmdutil.Factory) *cobra.Command {
 			cmdutil.NeedsValidDeployment(f, &opts.Alias),
 		),
 
-		RunE: func(cmd *cobra.Command, _ []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			if opts.Alias == "" {
 				if err := survey.AskOne(&survey.Select{
 					Message: "Which deployment to log out off?",
@@ -63,7 +61,7 @@ func newLogoutCmd(f *cmdutil.Factory) *cobra.Command {
 				}
 			}
 
-			return runLogout(cmd.Context(), opts)
+			return runLogout(opts)
 		},
 	}
 
@@ -71,10 +69,14 @@ func newLogoutCmd(f *cmdutil.Factory) *cobra.Command {
 
 	_ = cmd.RegisterFlagCompletionFunc("force", cmdutil.NoCompletion)
 
+	if !opts.IO.IsStdinTTY() {
+		_ = cmd.MarkFlagRequired("force")
+	}
+
 	return cmd
 }
 
-func runLogout(ctx context.Context, opts *logoutOptions) error {
+func runLogout(opts *logoutOptions) error {
 	// Logging out must be forced if not running interactively.
 	if !opts.IO.IsStdinTTY() && !opts.Force {
 		return cmdutil.ErrSilent
@@ -88,16 +90,6 @@ func runLogout(ctx context.Context, opts *logoutOptions) error {
 			return cmdutil.ErrSilent
 		}
 	}
-
-	stop := opts.IO.StartActivityIndicator()
-	defer stop()
-
-	// TODO: Logout, I guess we need ctx in the here soon ;)
-	_ = ctx
-
-	time.Sleep(time.Second * 2)
-
-	stop()
 
 	if opts.IO.IsStdoutTTY() {
 		cs := opts.IO.ColorScheme()

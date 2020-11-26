@@ -17,10 +17,11 @@ func NewDatasetCmd(f *cmdutil.Factory) *cobra.Command {
 		Long:  "Create, edit and delete datasets.",
 
 		Example: heredoc.Doc(`
-			$ axiom dataset create nginx-logs
-			$ axiom dataset delete nginx-logs
-			$ axiom dataset info nginx-logs
+			$ axiom dataset create --name nginx-logs --description "All Nginx logs"
 			$ axiom dataset list
+			$ axiom dataset info nginx-logs
+			$ axiom dataset update nginx-logs --description "Some Nginx logs"
+			$ axiom dataset delete nginx-logs
 		`),
 
 		Annotations: map[string]string{
@@ -35,6 +36,7 @@ func NewDatasetCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.AddCommand(newInfoCmd(f))
 	cmd.AddCommand(newListCmd(f))
 	cmd.AddCommand(newStatsCmd(f))
+	cmd.AddCommand(newUpdateCmd(f))
 
 	return cmd
 }

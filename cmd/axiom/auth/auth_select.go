@@ -15,8 +15,8 @@ func newSelectCmd(f *cmdutil.Factory) *cobra.Command {
 		Use:   "select [<deployment-alias>]",
 		Short: "Select an Axiom deployment",
 		Long: heredoc.Doc(`
-			Select an Axiom deployment to use by default and persist the choice in
-			the configuration file.
+			Select an Axiom deployment to use by default and persist the choice
+			in the configuration file.
 		`),
 
 		DisableFlagsInUseLine: true,

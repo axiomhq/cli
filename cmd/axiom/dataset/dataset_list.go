@@ -60,7 +60,6 @@ func runList(ctx context.Context, f *cmdutil.Factory) error {
 
 	if f.IO.IsStdoutTTY() {
 		fmt.Fprintf(f.IO.Out(), "Showing %s:\n\n", utils.Pluralize(cs, "dataset", len(datasets)))
-		tp.AddField("ID", cs.Bold)
 		tp.AddField("Name", cs.Bold)
 		tp.AddField("Description", cs.Bold)
 		tp.AddField("Created", cs.Bold)
@@ -70,7 +69,6 @@ func runList(ctx context.Context, f *cmdutil.Factory) error {
 	}
 
 	for _, dataset := range datasets {
-		tp.AddField(dataset.ID, cs.Bold)
 		tp.AddField(dataset.Name, nil)
 		tp.AddField(dataset.Description, nil)
 		tp.AddField(dataset.Created.Format(time.RFC1123), cs.Gray)

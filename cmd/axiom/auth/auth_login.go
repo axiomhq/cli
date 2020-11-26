@@ -19,11 +19,11 @@ import (
 type loginOptions struct {
 	*cmdutil.Factory
 
-	// Url of the deployment to authenticate with. If not supplied as an
-	// argument, which is optional, the user will be asked for it.
+	// Url of the deployment to authenticate with. If not supplied as a flag,
+	// which is optional, the user will be asked for it.
 	URL string `survey:"url"`
-	// Alias of the deployment for future reference. If not supplied as an
-	// argument, which is optional, the user will be asked for it.
+	// Alias of the deployment for future reference. If not supplied as a flag,
+	// which is optional, the user will be asked for it.
 	Alias string `survey:"alias"`
 	// Token of the user who wants to authenticate against the deployment. The
 	// user will be asked for it unless "token-stdin" is set.
@@ -73,7 +73,7 @@ func newLoginCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&opts.URL, "url", "", "Url of the deployment")
-	cmd.Flags().StringVarP(&opts.Alias, "alias", "a", "", "Alias of this deployment")
+	cmd.Flags().StringVarP(&opts.Alias, "alias", "a", "", "Alias of the deployment")
 	cmd.Flags().BoolVar(&opts.TokenStdIn, "token-stdin", false, "Read token from stdin")
 	cmd.Flags().BoolVarP(&opts.Force, "force", "f", false, "Skip the confirmation prompt")
 
@@ -86,13 +86,14 @@ func newLoginCmd(f *cmdutil.Factory) *cobra.Command {
 		_ = cmd.MarkFlagRequired("url")
 		_ = cmd.MarkFlagRequired("alias")
 		_ = cmd.MarkFlagRequired("token-stdin")
+		_ = cmd.MarkFlagRequired("force")
 	}
 
 	return cmd
 }
 
 func completeLogin(opts *loginOptions) error {
-	questions := make([]*survey.Question, 0, 4)
+	questions := make([]*survey.Question, 0, 3)
 
 	if opts.URL == "" {
 		questions = append(questions, &survey.Question{

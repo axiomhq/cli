@@ -15,9 +15,12 @@ import (
 type createOptions struct {
 	*cmdutil.Factory
 
-	// Name of the dataset to create. If not supplied as an argument, which is
+	// Name of the dataset to create. If not supplied as a flag, which is
 	// optional, the user will be asked for it.
-	Name string
+	Name string `survey:"name"`
+	// Description of the dataset to create. If not supplied as a flag, which is
+	// optional, the user will be asked for it.
+	Description string `survey:"description"`
 }
 
 func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
@@ -26,22 +29,19 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "create [<dataset-name>]",
+		Use:   "create [(-n|--name) <dataset-name>] [(-d|--description) <dataset-description>]",
 		Short: "Create a dataset",
 
 		Aliases: []string{"new"},
 
-		Args: cmdutil.ChainPositionalArgs(
-			cobra.MaximumNArgs(1),
-			cmdutil.PopulateFromArgs(f, &opts.Name),
-		),
+		DisableFlagsInUseLine: true,
 
 		Example: heredoc.Doc(`
 			# Interactively create a dataset:
 			$ axiom dataset create
 			
-			# Create a dataset and provide the dataset name as an argument:
-			$ axiom dataset create nginx-logs
+			# Create a dataset and provide the parameters on the command-line:
+			$ axiom dataset create --name nginx-logs --description "All Nginx logs"
 		`),
 
 		RunE: func(cmd *cobra.Command, _ []string) error {
@@ -52,21 +52,42 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 		},
 	}
 
+	cmd.Flags().StringVarP(&opts.Name, "name", "n", "", "Name of the deployment")
+	cmd.Flags().StringVarP(&opts.Description, "description", "d", "", "Description of the deployment")
+
+	_ = cmd.RegisterFlagCompletionFunc("name", cmdutil.DatasetCompletionFunc(f))
+	_ = cmd.RegisterFlagCompletionFunc("description", cmdutil.NoCompletion)
+
+	if !opts.IO.IsStdinTTY() {
+		_ = cmd.MarkFlagRequired("name")
+		_ = cmd.MarkFlagRequired("description")
+	}
+
 	return cmd
 }
 
 func completeCreate(opts *createOptions) error {
-	if opts.Name != "" {
-		return nil
+	questions := make([]*survey.Question, 0, 2)
+
+	if opts.Name == "" {
+		questions = append(questions, &survey.Question{
+			Name:   "name",
+			Prompt: &survey.Input{Message: "What is the name of the dataset?"},
+			Validate: survey.ComposeValidators(
+				survey.Required,
+				survey.MinLength(3),
+			),
+		})
 	}
 
-	v := survey.ComposeValidators(
-		survey.Required,
-		survey.MinLength(3),
-	)
-	return survey.AskOne(&survey.Input{
-		Message: "What is the name of the dataset?",
-	}, &opts.Name, opts.IO.SurveyIO(), survey.WithValidator(v))
+	if opts.Description == "" {
+		questions = append(questions, &survey.Question{
+			Name:   "description",
+			Prompt: &survey.Input{Message: "What is the description of the dataset?"},
+		})
+	}
+
+	return survey.Ask(questions, opts, opts.IO.SurveyIO())
 }
 
 func runCreate(ctx context.Context, opts *createOptions) error {
@@ -76,9 +97,9 @@ func runCreate(ctx context.Context, opts *createOptions) error {
 	}
 
 	stop := opts.IO.StartActivityIndicator()
-	if _, err := client.Datasets.Create(ctx, axiom.CreateDatasetRequest{
-		Name: opts.Name,
-		// TODO(lukasmalkmus): Add the dataset description.
+	if _, err := client.Datasets.Create(ctx, axiom.DatasetCreateRequest{
+		Name:        opts.Name,
+		Description: opts.Description,
 	}); err != nil {
 		stop()
 		return err

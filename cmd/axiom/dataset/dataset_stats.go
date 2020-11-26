@@ -18,11 +18,18 @@ func newStatsCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "stats",
 		Short: "Get statistics about all datasets",
+		Long: heredoc.Doc(`
+			Get statistics about all datasets.
+
+			This operation is more expensive compared to calling "list". When
+			just the dataset name, description or creation time are needed,
+			"list" is preferred.
+		`),
 
 		DisableFlagsInUseLine: true,
 
 		Example: heredoc.Doc(`
-			# List statstics about all datasets:
+			# Get statstics about all datasets:
 			$ axiom dataset stats
 		`),
 
@@ -61,6 +68,7 @@ func runStats(ctx context.Context, f *cmdutil.Factory) error {
 
 	if f.IO.IsStdoutTTY() {
 		fmt.Fprintf(f.IO.Out(), "Showing statistics of all dataset:\n\n")
+		tp.AddField("Name", cs.Bold)
 		tp.AddField("Name", cs.Bold)
 		tp.AddField("Events", cs.Bold)
 		tp.AddField("Blocks", cs.Bold)

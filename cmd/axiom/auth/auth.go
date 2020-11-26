@@ -19,10 +19,9 @@ func NewAuthCmd(f *cmdutil.Factory) *cobra.Command {
 
 		Example: heredoc.Doc(`
 			$ axiom auth login
-			$ axiom auth logout
-			$ axiom auth refresh
-			$ axiom auth select
 			$ axiom auth status
+			$ axiom auth select
+			$ axiom auth logout
 		`),
 
 		Annotations: map[string]string{
@@ -32,7 +31,6 @@ func NewAuthCmd(f *cmdutil.Factory) *cobra.Command {
 
 	cmd.AddCommand(newLoginCmd(f))
 	cmd.AddCommand(newLogoutCmd(f))
-	cmd.AddCommand(newRefreshCmd(f))
 	cmd.AddCommand(newSelectCmd(f))
 	cmd.AddCommand(newStatusCmd(f))
 

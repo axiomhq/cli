@@ -3,7 +3,6 @@ package stream
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -14,12 +13,8 @@ import (
 )
 
 const (
-	formatJSON = "JSON"
-
 	streamingDuration = time.Second * 3
 )
-
-var validFormats = []string{formatJSON}
 
 type options struct {
 	*cmdutil.Factory
@@ -38,7 +33,7 @@ func NewStreamCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "stream [<dataset-name>] [(-f|--format=)JSON]",
+		Use:   "stream [<dataset-name>]",
 		Short: "Livestream data",
 		Long:  `Livestream data from an Axiom dataset.`,
 
@@ -56,9 +51,6 @@ func NewStreamCmd(f *cmdutil.Factory) *cobra.Command {
 			
 			# Stream the "nginx-logs" dataset:
 			$ axiom stream nginx-logs
-
-			# Stream the "nginx-logs" dataset and output in JSON format:
-			$ axiom stream nginx-logs -f JSON
 		`),
 
 		Annotations: map[string]string{
@@ -77,10 +69,6 @@ func NewStreamCmd(f *cmdutil.Factory) *cobra.Command {
 			return run(cmd.Context(), opts)
 		},
 	}
-
-	cmd.Flags().StringVarP(&opts.Format, "format", "f", "", "Format to output data in")
-
-	_ = cmd.RegisterFlagCompletionFunc("format", formatCompletion)
 
 	return cmd
 }
@@ -180,14 +168,4 @@ func run(ctx context.Context, opts *options) error {
 		case <-t.C:
 		}
 	}
-}
-
-func formatCompletion(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	res := make([]string, 0, len(validFormats))
-	for _, validFormat := range validFormats {
-		if strings.HasPrefix(validFormat, toComplete) {
-			res = append(res, validFormat)
-		}
-	}
-	return res, cobra.ShellCompDirectiveNoFileComp
 }
