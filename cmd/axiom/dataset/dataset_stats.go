@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/MakeNowJust/heredoc"
@@ -83,15 +82,7 @@ func runStats(ctx context.Context, f *cmdutil.Factory) error {
 	}
 
 	for _, dataset := range stats.Datasets {
-		// FIXME(luaksmalkmus): Just in place till API works properly :)
-		firstDotIdx := strings.Index(dataset.Name, ".")
-		lastDotIdx := strings.LastIndex(dataset.Name, ".")
-		name := dataset.Name[firstDotIdx+1:]
-		if firstDotIdx < lastDotIdx {
-			name = dataset.Name[firstDotIdx+1 : lastDotIdx]
-		}
-
-		tp.AddField(name, cs.Bold)
+		tp.AddField(dataset.Name, nil)
 		tp.AddField(strconv.Itoa(int(dataset.NumEvents)), nil)
 		tp.AddField(strconv.Itoa(int(dataset.NumBlocks)), nil)
 		tp.AddField(strconv.Itoa(int(dataset.NumFields)), nil)
