@@ -10,7 +10,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"sync"
 	"time"
 	"unicode"
 
@@ -217,48 +216,27 @@ func ingest(ctx context.Context, client *axiom.Client, r io.Reader, opts *option
 	alreadyRead := bytes.NewReader(buf)
 	r = io.MultiReader(alreadyRead, r)
 
-	// Apply compression and capture the error.
-	var (
-		compressErr    error
-		compressErrMtx = new(sync.Mutex)
-	)
-	errFunc := func(err error) {
-		compressErrMtx.Lock()
-		defer compressErrMtx.Unlock()
-
-		compressErr = err
-	}
-	r = gzipStream(r, errFunc)
-
-	res, err := client.Datasets.Ingest(ctx, opts.Dataset, r, typ, axiom.GZIP, axiom.IngestOptions{
+	res, err := client.Datasets.Ingest(ctx, opts.Dataset, gzipStream(r), typ, axiom.GZIP, axiom.IngestOptions{
 		TimestampField:  opts.TimestampField,
 		TimestampFormat: opts.TimestampFormat,
 	})
 	if err != nil {
-		compressErrMtx.Lock()
-		defer compressErrMtx.Unlock()
-
-		if compressErr != nil {
-			return nil, compressErr
-		}
 		return nil, err
 	}
 
 	return res, nil
 }
 
-func gzipStream(r io.Reader, errFunc func(error)) io.Reader {
+func gzipStream(r io.Reader) io.Reader {
 	pr, pw := io.Pipe()
 	go func(r io.Reader) {
-		defer pw.Close()
-
 		// Does not fail when using a predefined compression level.
 		gzw, _ := gzip.NewWriterLevel(pw, gzip.BestSpeed)
-		defer gzw.Close()
 
-		if _, err := io.Copy(gzw, r); err != nil {
-			errFunc(fmt.Errorf("error compressing data to ingest: %w", err))
-		}
+		_, err := io.Copy(gzw, r)
+
+		_ = gzw.Close()
+		_ = pw.CloseWithError(err)
 	}(r)
 
 	return pr
