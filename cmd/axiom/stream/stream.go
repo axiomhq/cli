@@ -2,18 +2,29 @@ package stream
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
+	"github.com/axiomhq/axiom-go/axiom"
+	"github.com/nwidger/jsoncolor"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
 )
 
 const (
-	streamingDuration = time.Second * 3
+	formatJSON = "JSON"
+)
+
+var validFormats = []string{formatJSON}
+
+const (
+	streamingDuration = time.Second * 2
 )
 
 type options struct {
@@ -33,7 +44,7 @@ func NewStreamCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "stream [<dataset-name>]",
+		Use:   "stream [<dataset-name>] [(-f|--format=)JSON]",
 		Short: "Livestream data",
 		Long:  `Livestream data from an Axiom dataset.`,
 
@@ -70,6 +81,10 @@ func NewStreamCmd(f *cmdutil.Factory) *cobra.Command {
 		},
 	}
 
+	cmd.Flags().StringVarP(&opts.Format, "format", "f", "", "Format to output data in")
+
+	_ = cmd.RegisterFlagCompletionFunc("format", formatCompletion)
+
 	return cmd
 }
 
@@ -103,10 +118,10 @@ func complete(ctx context.Context, opts *options) error {
 }
 
 func run(ctx context.Context, opts *options) error {
-	// client, err := opts.Client()
-	// if err != nil {
-	// 	return err
-	// }
+	client, err := opts.Client()
+	if err != nil {
+		return err
+	}
 
 	cs := opts.IO.ColorScheme()
 
@@ -114,53 +129,50 @@ func run(ctx context.Context, opts *options) error {
 		fmt.Fprintf(opts.IO.Out(), "Streaming events from dataset %s:\n\n", cs.Bold(opts.Dataset))
 	}
 
-	// var enc interface {
-	// Encode(interface{}) error
-	// }
-	// if opts.IO.ColorEnabled() {
-	// 	enc = jsoncolor.NewEncoder(opts.IO.Out())
-	// } else {
-	// 	enc = json.NewEncoder(opts.IO.Out())
-	// }
+	var enc interface {
+		Encode(interface{}) error
+	}
+	if opts.IO.ColorEnabled() {
+		enc = jsoncolor.NewEncoder(opts.IO.Out())
+	} else {
+		enc = json.NewEncoder(opts.IO.Out())
+	}
 
 	t := time.NewTicker(streamingDuration)
 	defer t.Stop()
 
-	// lastRequest := time.Now().Add(-time.Nanosecond)
+	lastRequest := time.Now().Add(-time.Nanosecond)
 	for {
-		// queryCtx, queryCancel := context.WithTimeout(ctx, streamingDuration)
+		queryCtx, queryCancel := context.WithTimeout(ctx, streamingDuration)
 
-		// res, err := client.Datasets.Query(queryCtx, opts.Dataset, axiom.QueryRequest{
-		// 	StartTime: lastRequest,
-		// 	EndTime:   time.Now(),
-		// }, axiom.QueryOptions{
-		// 	StreamingDuration: streamingDuration,
-		// })
-		// // if err != nil && !errors.Is(err, context.DeadlineExceeded) && !errors.Is(err, context.Canceled) {
-		// if err != nil {
-		// 	queryCancel()
-		// 	return err
-		// }
+		res, err := client.Datasets.Query(queryCtx, opts.Dataset, axiom.Query{
+			StartTime: lastRequest,
+			EndTime:   time.Now(),
+		}, axiom.QueryOptions{
+			StreamingDuration: streamingDuration,
+		})
+		if err != nil && !errors.Is(err, context.DeadlineExceeded) && !errors.Is(err, context.Canceled) {
+			queryCancel()
+			return err
+		}
 
-		// queryCancel()
+		queryCancel()
 
-		// if len(res.Matches) > 0 {
-		// 	lastRequest = res.Matches[len(res.Matches)-1].Time.Add(time.Nanosecond)
+		if res != nil && len(res.Matches) > 0 {
+			lastRequest = res.Matches[len(res.Matches)-1].Time.Add(time.Nanosecond)
 
-		// 	for _, entry := range res.Matches {
-		// 		switch opts.Format {
-		// 		case formatJSON:
-		// 			_ = enc.Encode(entry)
-		// 		default:
-		// 			fmt.Fprintf(opts.IO.Out(), "%s\t",
-		// 				cs.Gray(entry.Time.Format(time.RFC1123)))
-		// 			_ = enc.Encode(entry.Data)
-		// 		}
-		// 		fmt.Fprintln(opts.IO.Out())
-		// 	}
-		// }
-
-		fmt.Fprintln(opts.IO.Out(), cs.Gray("Not implemented!"))
+			for _, entry := range res.Matches {
+				switch opts.Format {
+				case formatJSON:
+					_ = enc.Encode(entry)
+				default:
+					fmt.Fprintf(opts.IO.Out(), "%s\t",
+						cs.Gray(entry.Time.Format(time.RFC1123)))
+					_ = enc.Encode(entry.Data)
+				}
+				fmt.Fprintln(opts.IO.Out())
+			}
+		}
 
 		select {
 		case <-ctx.Done():
@@ -168,4 +180,14 @@ func run(ctx context.Context, opts *options) error {
 		case <-t.C:
 		}
 	}
+}
+
+func formatCompletion(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	res := make([]string, 0, len(validFormats))
+	for _, validFormat := range validFormats {
+		if strings.HasPrefix(validFormat, toComplete) {
+			res = append(res, validFormat)
+		}
+	}
+	return res, cobra.ShellCompDirectiveNoFileComp
 }
