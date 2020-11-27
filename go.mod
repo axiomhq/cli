@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/AlecAivazis/survey/v2 v2.2.3
 	github.com/MakeNowJust/heredoc v1.0.0
-	github.com/axiomhq/axiom-go v0.0.0-20201126163716-4571b3ba1f11
+	github.com/axiomhq/axiom-go v0.0.0-20201126224724-43549f597db0
 	github.com/briandowns/spinner v1.11.1
 	github.com/cli/cli v1.3.0
 	github.com/golangci/golangci-lint v1.33.0
