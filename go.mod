@@ -5,12 +5,12 @@ go 1.15
 require (
 	github.com/AlecAivazis/survey/v2 v2.2.3
 	github.com/MakeNowJust/heredoc v1.0.0
-	github.com/axiomhq/axiom-go v0.0.0-20201128012335-b12c5ee6f1d4
+	github.com/axiomhq/axiom-go v0.0.0-20201130010403-1c07d88d5abf
 	github.com/briandowns/spinner v1.11.1
 	github.com/cli/cli v1.3.0
 	github.com/golangci/golangci-lint v1.33.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
-	github.com/goreleaser/goreleaser v0.147.2
+	github.com/goreleaser/goreleaser v0.148.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/mattn/go-colorable v0.1.8
 	github.com/mattn/go-isatty v0.0.12

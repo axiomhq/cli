@@ -10,7 +10,7 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
-	"github.com/axiomhq/axiom-go/axiom"
+	"github.com/axiomhq/axiom-go/axiom/query"
 	"github.com/nwidger/jsoncolor"
 	"github.com/spf13/cobra"
 
@@ -145,10 +145,10 @@ func run(ctx context.Context, opts *options) error {
 	for {
 		queryCtx, queryCancel := context.WithTimeout(ctx, streamingDuration)
 
-		res, err := client.Datasets.Query(queryCtx, opts.Dataset, axiom.Query{
+		res, err := client.Datasets.Query(queryCtx, opts.Dataset, query.Query{
 			StartTime: lastRequest,
 			EndTime:   time.Now(),
-		}, axiom.QueryOptions{
+		}, query.Options{
 			StreamingDuration: streamingDuration,
 		})
 		if err != nil && !errors.Is(err, context.DeadlineExceeded) && !errors.Is(err, context.Canceled) {
