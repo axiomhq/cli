@@ -5,8 +5,8 @@ go 1.15
 require (
 	github.com/AlecAivazis/survey/v2 v2.2.3
 	github.com/MakeNowJust/heredoc v1.0.0
-	github.com/axiomhq/axiom-go v0.0.0-20201130010403-1c07d88d5abf
-	github.com/briandowns/spinner v1.11.1
+	github.com/axiomhq/axiom-go v0.0.0-20201130174607-e1b686c3a6f0
+	github.com/briandowns/spinner v1.12.0
 	github.com/cli/cli v1.3.0
 	github.com/golangci/golangci-lint v1.33.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
@@ -19,11 +19,11 @@ require (
 	github.com/muesli/termenv v0.7.4
 	github.com/nwidger/jsoncolor v0.3.0
 	github.com/pelletier/go-toml v1.8.1
-	github.com/schollz/progressbar/v3 v3.7.2
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.6.1
 	golang.org/x/crypto v0.0.0-20201124201722-c8d3bf9c5392 // indirect
+	golang.org/x/sys v0.0.0-20201113135734-0a15ea8d9b02 // indirect
 	golang.org/x/term v0.0.0-20201117132131-f5c789dd3221
 	gotest.tools/gotestsum v0.6.0
 )

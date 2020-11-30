@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"time"
 	"unicode"
 
@@ -94,56 +93,28 @@ func run(ctx context.Context, opts *options) error {
 		return err
 	}
 
+	stop := opts.IO.StartActivityIndicator()
+
 	var (
-		cs      = opts.IO.ColorScheme()
 		res     axiom.IngestStatus
 		lastErr error
 	)
-	for k, filename := range opts.Filenames {
-		var (
-			rc    io.ReadCloser
-			size  int64
-			title string
-		)
-		if filename == "-" {
-			rc = opts.IO.In()
-			size = -1
-			title = cs.Bold("stdin")
-		} else {
-			var f *os.File
-			if f, err = os.Open(filename); err != nil {
-				rc.Close()
-				lastErr = err
-				break
-			}
-			rc = f
-
-			var stat os.FileInfo
-			if stat, err = f.Stat(); err != nil {
-				rc.Close()
-				lastErr = err
-				break
-			}
-
-			size = stat.Size()
-			title = cs.Bold(filepath.Base(f.Name()))
-		}
-
-		if l := len(opts.Filenames); l > 1 {
-			prefix := fmt.Sprintf("[%d/%d]", k+1, l)
-			title = fmt.Sprintf("%s %s", cs.Green(prefix), title)
-		}
-
-		var (
-			ingestRes *axiom.IngestStatus
-			pbr       = opts.IO.StartProgressIndicator(rc, size, title)
-		)
-		if ingestRes, err = ingest(ctx, client, pbr, opts); err != nil {
-			rc.Close()
-			lastErr = fmt.Errorf("could not ingest into dataset %q: %w", opts.Dataset, err)
+	for _, filename := range opts.Filenames {
+		var f *os.File
+		if f, err = os.Open(filename); err != nil {
+			lastErr = err
 			break
 		}
-		rc.Close()
+
+		var ingestRes *axiom.IngestStatus
+		if ingestRes, err = ingest(ctx, client, f, opts); err != nil {
+			_ = f.Close()
+			lastErr = fmt.Errorf("could not ingest %q into dataset %q: %w", filename, opts.Dataset, err)
+			break
+		} else if err = f.Close(); err != nil {
+			lastErr = fmt.Errorf("failed to close %q: %w", filename, err)
+			break
+		}
 
 		res.Ingested += ingestRes.Ingested
 		res.Failed += ingestRes.Failed
@@ -152,7 +123,11 @@ func run(ctx context.Context, opts *options) error {
 		res.Failures = append(res.Failures, ingestRes.Failures...)
 	}
 
+	stop()
+
 	if opts.IO.IsStderrTTY() {
+		cs := opts.IO.ColorScheme()
+
 		if res.Ingested > 0 {
 			fmt.Fprintf(opts.IO.ErrOut(), "%s Ingested %s\n",
 				cs.SuccessIcon(),
@@ -216,7 +191,12 @@ func ingest(ctx context.Context, client *axiom.Client, r io.Reader, opts *option
 	alreadyRead := bytes.NewReader(buf)
 	r = io.MultiReader(alreadyRead, r)
 
-	res, err := client.Datasets.Ingest(ctx, opts.Dataset, gzipStream(r), typ, axiom.GZIP, axiom.IngestOptions{
+	// Apply GZIP compression.
+	if r, err = axiom.GZIPStreamer(r, gzip.BestSpeed); err != nil {
+		return nil, err
+	}
+
+	res, err := client.Datasets.Ingest(ctx, opts.Dataset, r, typ, axiom.GZIP, axiom.IngestOptions{
 		TimestampField:  opts.TimestampField,
 		TimestampFormat: opts.TimestampFormat,
 	})
@@ -225,19 +205,4 @@ func ingest(ctx context.Context, client *axiom.Client, r io.Reader, opts *option
 	}
 
 	return res, nil
-}
-
-func gzipStream(r io.Reader) io.Reader {
-	pr, pw := io.Pipe()
-	go func(r io.Reader) {
-		// Does not fail when using a predefined compression level.
-		gzw, _ := gzip.NewWriterLevel(pw, gzip.BestSpeed)
-
-		_, err := io.Copy(gzw, r)
-
-		_ = gzw.Close()
-		_ = pw.CloseWithError(err)
-	}(r)
-
-	return pr
 }

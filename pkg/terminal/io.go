@@ -15,7 +15,6 @@ import (
 	"github.com/google/shlex"
 	"github.com/mattn/go-colorable"
 	"github.com/mattn/go-isatty"
-	"github.com/schollz/progressbar/v3"
 	"golang.org/x/term"
 
 	"github.com/axiomhq/cli/pkg/doc"
@@ -65,10 +64,16 @@ func NewIO() *IO {
 	io.colorScheme = NewColorScheme(io.colorEnabled)
 
 	if io.isStdoutTTY && io.isStderrTTY {
+		color := "fgMagenta"
+		if io.colorScheme.dark {
+			color = "fgHiMagenta"
+		}
+
 		io.activityIndicator = spinner.New(
 			spinner.CharSets[spinnerType],
 			time.Millisecond*150,
 			spinner.WithWriter(io.errOut),
+			spinner.WithColor(color),
 		)
 	}
 
@@ -184,27 +189,6 @@ func (io *IO) StartActivityIndicator() func() {
 	io.activityIndicator.Start()
 
 	return func() { io.activityIndicator.Stop() }
-}
-
-// StartProgressIndicator starts a progress bar with the given limit and title
-// that indicates progress made reading from r. When no TTY is attached, this is
-// a nop.
-func (io *IO) StartProgressIndicator(r io.Reader, limit int64, title string) io.Reader {
-	if !io.isStdoutTTY || !io.isStderrTTY {
-		return r
-	}
-
-	bar := progressbar.NewOptions64(limit,
-		progressbar.OptionSetWriter(io.errOut),
-		progressbar.OptionClearOnFinish(),
-		progressbar.OptionShowBytes(true),
-		progressbar.OptionSetPredictTime(true),
-		progressbar.OptionSetDescription(title),
-		progressbar.OptionSpinnerType(spinnerType),
-	)
-
-	pbr := progressbar.NewReader(r, bar)
-	return &pbr
 }
 
 // SurveyIO returns an options that makes itself the IO for survey questions.
