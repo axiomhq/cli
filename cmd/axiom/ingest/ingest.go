@@ -100,18 +100,24 @@ func run(ctx context.Context, opts *options) error {
 		lastErr error
 	)
 	for _, filename := range opts.Filenames {
-		var f *os.File
-		if f, err = os.Open(filename); err != nil {
-			lastErr = err
-			break
+		var rc io.ReadCloser
+		if filename == "-" {
+			rc = opts.IO.In()
+			filename = "stdin" // Enhance printed output
+		} else {
+			if rc, err = os.Open(filename); err != nil {
+				_ = rc.Close()
+				lastErr = err
+				break
+			}
 		}
 
 		var ingestRes *axiom.IngestStatus
-		if ingestRes, err = ingest(ctx, client, f, opts); err != nil {
-			_ = f.Close()
+		if ingestRes, err = ingest(ctx, client, rc, opts); err != nil {
+			_ = rc.Close()
 			lastErr = fmt.Errorf("could not ingest %q into dataset %q: %w", filename, opts.Dataset, err)
 			break
-		} else if err = f.Close(); err != nil {
+		} else if err = rc.Close(); err != nil {
 			lastErr = fmt.Errorf("failed to close %q: %w", filename, err)
 			break
 		}
