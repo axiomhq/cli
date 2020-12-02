@@ -1,6 +1,7 @@
 package version
 
 import (
+	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
@@ -11,7 +12,12 @@ func NewVersionCmd(f *cmdutil.Factory, version string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "version",
 		Short: "Print version",
-		Long:  `Print the version and build details.`,
+		Long: heredoc.Doc(`
+			Print the version and build details.
+			
+			When an active deployment is configured, its version will be fetched
+			and printed as well.
+		`),
 
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if _, ok := f.Config.Deployments[f.Config.ActiveDeployment]; !ok {
@@ -35,7 +41,7 @@ func NewVersionCmd(f *cmdutil.Factory, version string) *cobra.Command {
 			cs := f.IO.ColorScheme()
 
 			cmd.Println(version)
-			cmd.Printf("\nAxiom UI, release %s (%s)\n",
+			cmd.Printf("\nAxiom, release %s (%s)\n",
 				deploymentVersion, cs.Bold(f.Config.ActiveDeployment))
 
 			return nil

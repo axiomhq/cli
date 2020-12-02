@@ -17,7 +17,7 @@ func NewCompletionCmd(f *cmdutil.Factory) *cobra.Command {
 			
 			When installing Axiom CLI through a package manager, however, it's
 			possible that no additional shell configuration is necessary to gain
-			completion support. For Homebrew, see https://docs.brew.sh/Shell-Completion
+			completion support. For Homebrew, see https://docs.brew.sh/Shell-Completion.
 		`),
 
 		Example: heredoc.Doc(`
