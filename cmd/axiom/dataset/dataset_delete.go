@@ -92,7 +92,7 @@ func runDelete(ctx context.Context, opts *deleteOptions) error {
 
 	if !opts.Force {
 		msg := fmt.Sprintf("Delete dataset %q?", opts.Name)
-		if overwrite, err := surveyext.AskConfirm(msg, opts.IO.SurveyIO()); err != nil {
+		if overwrite, err := surveyext.AskConfirm(msg, false, opts.IO.SurveyIO()); err != nil {
 			return err
 		} else if !overwrite {
 			return cmdutil.ErrSilent

@@ -55,7 +55,7 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 		Example: heredoc.Doc(`
 			# Pipe the contents of a JSON logfile into a dataset named
 			# "nginx-logs":
-			$ echo nginx-logs.json | axiom ingest nginx-logs
+			$ cat nginx-logs.json | axiom ingest nginx-logs
 
 			# Ingest all files inside /var/logs/nginx with extension ".log" into
 			# a dataset named nginx-logs:

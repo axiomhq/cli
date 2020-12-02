@@ -84,7 +84,7 @@ func runLogout(opts *logoutOptions) error {
 
 	if !opts.Force {
 		msg := fmt.Sprintf("Are you sure you want to log out of deployment %q?", opts.Alias)
-		if overwrite, err := surveyext.AskConfirm(msg, opts.IO.SurveyIO()); err != nil {
+		if overwrite, err := surveyext.AskConfirm(msg, true, opts.IO.SurveyIO()); err != nil {
 			return err
 		} else if !overwrite {
 			return cmdutil.ErrSilent

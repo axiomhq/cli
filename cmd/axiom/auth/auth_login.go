@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
+	"github.com/axiomhq/axiom-go/axiom"
 	"github.com/spf13/cobra"
 
 	axiomClient "github.com/axiomhq/cli/internal/client"
@@ -21,7 +23,7 @@ type loginOptions struct {
 
 	// Url of the deployment to authenticate with. If not supplied as a flag,
 	// which is optional, the user will be asked for it.
-	URL string `survey:"url"`
+	URL string
 	// Alias of the deployment for future reference. If not supplied as a flag,
 	// which is optional, the user will be asked for it.
 	Alias string `survey:"alias"`
@@ -50,7 +52,7 @@ func newLoginCmd(f *cmdutil.Factory) *cobra.Command {
 			$ axiom auth login
 			
 			# Provide parameters on the command-line:
-			$ echo $AXIOM_ACCESS_TOKEN | axiom auth login --url="https://axiom.eu-west-1.aws.com" --alias="axiom-eu-west-1 --token-stdin
+			$ echo $AXIOM_ACCESS_TOKEN | axiom auth login --url="https://axiom.eu-west-1.aws.com" --alias="axiom-eu-west-1" --token-stdin
 		`),
 
 		PreRunE: func(*cobra.Command, []string) error {
@@ -93,23 +95,48 @@ func newLoginCmd(f *cmdutil.Factory) *cobra.Command {
 }
 
 func completeLogin(opts *loginOptions) error {
-	questions := make([]*survey.Question, 0, 3)
+	var res string
+	if err := survey.AskOne(&survey.Select{
+		Message: "Which kind of Axiom deployment are you using?",
+		Options: []string{"Cloud", "Selfhost"},
+	}, &res); err != nil {
+		return err
+	}
+	if res == "Cloud" {
+		opts.URL = axiom.CloudURL
+	}
 
 	if opts.URL == "" {
-		questions = append(questions, &survey.Question{
-			Name:   "url",
-			Prompt: &survey.Input{Message: "What is the url of the deployment?"},
-			Validate: survey.ComposeValidators(
+		if err := survey.AskOne(&survey.Input{Message: "What is the url of the deployment?"},
+			&opts.URL,
+			survey.WithValidator(survey.ComposeValidators(
 				survey.Required,
 				surveyext.ValidateURL,
-			),
-		})
+			)),
+		); err != nil {
+			return err
+		}
+		if res == "Cloud" {
+			opts.URL = axiom.CloudURL
+		}
 	}
+
+	// Make a useful suggestion for the alias to use (subdomain) but omit the
+	// sugesstion if a deployment with that alias is already configured.
+	hostRef := firstSubDomain(opts.URL)
+	if _, ok := opts.Config.Deployments[hostRef]; ok {
+		hostRef = ""
+	}
+
+	questions := make([]*survey.Question, 0, 2)
 
 	if opts.Alias == "" {
 		questions = append(questions, &survey.Question{
-			Name:   "alias",
-			Prompt: &survey.Input{Message: "Under which name should the deployment be referenced in the future?"},
+			Name: "alias",
+			Prompt: &survey.Input{
+				Message: "Under which name should the deployment be referenced in the future?",
+				Default: hostRef,
+			},
 			Validate: survey.ComposeValidators(
 				survey.Required,
 				survey.MinLength(5),
@@ -120,7 +147,7 @@ func completeLogin(opts *loginOptions) error {
 	if opts.Token == "" {
 		questions = append(questions, &survey.Question{
 			Name:   "token",
-			Prompt: &survey.Password{Message: "What is your access token?"},
+			Prompt: &survey.Password{Message: "What is your personal access or ingest token?"},
 			Validate: survey.ComposeValidators(
 				survey.Required,
 				survey.MinLength(36),
@@ -153,7 +180,7 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 		}
 
 		msg := fmt.Sprintf("Deployment with alias %q already configured! Overwrite?", opts.Alias)
-		if overwrite, err := surveyext.AskConfirm(msg, opts.IO.SurveyIO()); err != nil {
+		if overwrite, err := surveyext.AskConfirm(msg, false, opts.IO.SurveyIO()); err != nil {
 			return err
 		} else if !overwrite {
 			return cmdutil.ErrSilent
@@ -165,12 +192,27 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 		return err
 	}
 
-	stop := opts.IO.StartActivityIndicator()
-	defer stop()
+	if opts.IO.IsStdinTTY() {
+		msg := "If you supplied a personal access token, it can be validated. Run authentication check?"
+		if runAuthCheck, err := surveyext.AskConfirm(msg, true, opts.IO.SurveyIO()); err != nil {
+			return err
+		} else if runAuthCheck {
+			stop := opts.IO.StartActivityIndicator()
+			defer stop()
 
-	user, err := client.Users.Current(ctx)
-	if err != nil {
-		return err
+			user, err := client.Users.Current(ctx)
+			if err != nil {
+				return err
+			}
+
+			stop()
+
+			if opts.IO.IsStderrTTY() {
+				cs := opts.IO.ColorScheme()
+				fmt.Fprintf(opts.IO.ErrOut(), "%s Logged in to deployment %s (%s) as %s\n",
+					cs.SuccessIcon(), cs.Bold(opts.Alias), opts.URL, cs.Bold(user.Name))
+			}
+		}
 	}
 
 	opts.Config.Deployments[opts.Alias] = config.Deployment{
@@ -182,13 +224,20 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 		return err
 	}
 
-	stop()
+	return nil
+}
 
-	if opts.IO.IsStderrTTY() {
-		cs := opts.IO.ColorScheme()
-		fmt.Fprintf(opts.IO.ErrOut(), "%s Logged in to deployment %s (%s) as %s\n",
-			cs.SuccessIcon(), cs.Bold(opts.Alias), opts.URL, cs.Bold(user.Name))
+func firstSubDomain(s string) string {
+	u, err := url.ParseRequestURI(s)
+	if err != nil {
+		return ""
 	}
 
-	return nil
+	var hostRef string
+	hostRefParts := strings.Split(u.Host, ".")
+	if len(hostRefParts) > 0 {
+		hostRef = hostRefParts[0]
+	}
+
+	return strings.TrimLeft(hostRef, u.Scheme)
 }
