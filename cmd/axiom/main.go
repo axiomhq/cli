@@ -12,11 +12,14 @@ import (
 
 	surveyCore "github.com/AlecAivazis/survey/v2/core"
 	surveyTerm "github.com/AlecAivazis/survey/v2/terminal"
+	"github.com/mgutz/ansi"
+	"github.com/muesli/termenv"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/cmd/axiom/root"
 	"github.com/axiomhq/cli/internal/cmdutil"
 	"github.com/axiomhq/cli/internal/config"
+	"github.com/axiomhq/cli/pkg/terminal"
 )
 
 func init() {
@@ -42,6 +45,16 @@ func main() {
 	// color.
 	if !f.IO.ColorEnabled() {
 		surveyCore.DisableColor = true
+	} else {
+		surveyCore.TemplateFuncsWithColor["color"] = func(style string) string {
+			if style == "white" {
+				color := terminal.Gray.Color(f.IO.ColorScheme().IsDark())
+				return fmt.Sprintf("%s%sm", termenv.CSI, f.IO.ColorScheme().Code(color))
+			}
+
+			// TODO(lukasmalkmus): Find a better way using termenv.
+			return ansi.ColorCode(style)
+		}
 	}
 
 	// Add template functions of the color scheme.

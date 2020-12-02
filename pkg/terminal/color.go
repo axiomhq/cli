@@ -41,18 +41,20 @@ var (
 // ColorScheme - when enabled - returns colored string sequences. If not, they
 // are returned unchanged.
 type ColorScheme struct {
-	enabled      bool
-	dark         bool
 	colorProfile termenv.Profile
+
+	enabled bool
+	dark    bool
 }
 
 // NewColorScheme creates a new color scheme. If not enabled, it will return the
 // string sequences unchanged.
 func NewColorScheme(enabled bool) *ColorScheme {
 	return &ColorScheme{
-		enabled:      enabled,
-		dark:         termenv.HasDarkBackground(),
 		colorProfile: termenv.ColorProfile(),
+
+		enabled: enabled,
+		dark:    termenv.HasDarkBackground(),
 	}
 }
 
@@ -129,8 +131,14 @@ func (cs *ColorScheme) ErrorIcon() string {
 	return cs.Red("✖")
 }
 
+// IsDark returns true if the terminals background is dark.
 func (cs *ColorScheme) IsDark() bool {
 	return cs.dark
+}
+
+// Code returns the escape sequence for the given foreground color.
+func (cs *ColorScheme) Code(s string) string {
+	return cs.colorProfile.Color(s).Sequence(false)
 }
 
 // TemplateFuncs maps the color schemes functions to a map of template
