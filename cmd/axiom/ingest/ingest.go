@@ -93,7 +93,7 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.Flags().StringSliceVarP(&opts.Filenames, "file", "f", nil, "File to ingest")
 	cmd.Flags().StringVar(&opts.TimestampField, "timestamp-field", "", "Field to take the ingestion time from")
 	cmd.Flags().StringVar(&opts.TimestampFormat, "timestamp-format", "", "Format the timestamp is formatted in")
-	cmd.Flags().DurationVar(&opts.FlushEvery, "flush-every", time.Second, "Buffer flush interval for newline delimited JSON streams of unkown length")
+	cmd.Flags().DurationVar(&opts.FlushEvery, "flush-every", time.Second, "Buffer flush interval for newline delimited JSON streams of unknown length")
 	cmd.Flags().BoolVarP(&opts.Compression, "compression", "c", true, "Enable gzip compression")
 
 	_ = cmd.RegisterFlagCompletionFunc("timestamp-field", cmdutil.NoCompletion)
