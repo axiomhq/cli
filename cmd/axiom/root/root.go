@@ -1,6 +1,8 @@
 package root
 
 import (
+	"os"
+
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 
@@ -25,11 +27,6 @@ import (
 
 // NewRootCmd creates and returns the root command.
 func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
-	var (
-		configFile          string
-		deploymentOverwrite string
-	)
-
 	cmd := &cobra.Command{
 		Use:   "axiom <command> <subcommand>",
 		Short: "Axiom CLI",
@@ -51,13 +48,23 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 		},
 
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) (err error) {
-			if configFile != "" {
-				f.Config, err = config.Load(configFile)
+			if fl := cmd.Flag("config"); fl.Changed {
+				if f.Config, err = config.Load(fl.Value.String()); err != nil {
+					return err
+				}
 			}
-			if deploymentOverwrite != "" {
-				f.Config.ActiveDeployment = deploymentOverwrite
+
+			if fl := cmd.Flag("deployment"); fl.Changed {
+				f.Config.ActiveDeployment = fl.Value.String()
 			}
-			return err
+			if fl := cmd.Flag("token"); fl.Changed {
+				f.Config.TokenOverride = fl.Value.String()
+			}
+			if fl := cmd.Flag("url"); fl.Changed {
+				f.Config.URLOverride = fl.Value.String()
+			}
+
+			return nil
 		},
 	}
 
@@ -77,11 +84,11 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.SetUsageFunc(rootUsageFunc)
 	cmd.SetFlagErrorFunc(rootFlagErrrorFunc)
 
-	// Configuration file overwrite
-	cmd.PersistentFlags().StringVarP(&configFile, "config", "C", "", "Path to configuration file to use")
-
-	// Active deployment overwrite
-	cmd.PersistentFlags().StringVarP(&deploymentOverwrite, "deployment", "D", "", "Deployment to use by default")
+	// Overrides
+	cmd.PersistentFlags().StringP("config", "C", "", "Path to configuration file to use")
+	cmd.PersistentFlags().StringP("deployment", "D", "", "Deployment to use")
+	cmd.PersistentFlags().StringP("token", "T", os.Getenv("AXM_TOKEN"), "Token to use")
+	cmd.PersistentFlags().StringP("url", "U", os.Getenv("AXM_URL"), "Url to use")
 
 	// Core commands
 	cmd.AddCommand(ingestCmd.NewIngestCmd(f))

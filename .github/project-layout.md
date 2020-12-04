@@ -21,16 +21,9 @@ If code can be imported and used in other projects, then it should live in the
 `/pkg` directory. If the code is not or should not be reusable, that code should
 live in the `/internal` directory.
 
-It's common to have a small main function that imports and invokes the code from
-the `/internal` and `/pkg` directories.
-
 ### `/internal`
 
 Private application and library code.
-
-Put actual application code in the `/internal` directory (e.g.,
-`/internal/myapp`) and the code shared by those apps in the `/internal/pkg`
-directory (e.g., `/internal/pkg/myprivlib`).
 
 ### `/pkg`
 

@@ -31,9 +31,37 @@ type Config struct {
 	ActiveDeployment string                `toml:"active_deployment" envconfig:"deployment"`
 	Deployments      map[string]Deployment `toml:"deployments"`
 
+	URLOverride   string `toml:"-" envconfig:"url"`
+	TokenOverride string `toml:"-" envconfig:"token"`
+
 	ConfigFilePath string `toml:"-"`
 
 	tree *toml.Tree
+}
+
+// GetActiveDeployment returns the configured deployment with overrides applied,
+// if given.
+func (c *Config) GetActiveDeployment() (Deployment, bool) {
+	dep, ok := c.Deployments[c.ActiveDeployment]
+	if !ok {
+		if c.URLOverride != "" || c.TokenOverride != "" {
+			dep = Deployment{
+				URL:   c.URLOverride,
+				Token: c.TokenOverride,
+			}
+			return dep, true
+		}
+		return Deployment{}, false
+	}
+
+	if c.URLOverride != "" {
+		dep.URL = c.URLOverride
+	}
+	if c.TokenOverride != "" {
+		dep.Token = c.TokenOverride
+	}
+
+	return dep, true
 }
 
 // Deployment is the configuration for an Axiom instance.

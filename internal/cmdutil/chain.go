@@ -74,9 +74,9 @@ func NeedsRootPersistentPreRunE() RunFunc {
 	}
 }
 
-// NeedsActiveDeployment makes sure an active deployment is configured. If not, it
-// asks for one when the application is running interactively. If no deployments to
-// select from are configured or the application is not running interactively,
+// NeedsActiveDeployment makes sure an active deployment is configured. If not,
+// it asks for one when the application is running interactively. If no
+// deployments are configured or the application is not running interactively,
 // an error is printed and a silent error returned.
 func NeedsActiveDeployment(f *Factory) RunFunc {
 	return func(cmd *cobra.Command, _ []string) error {
@@ -85,9 +85,9 @@ func NeedsActiveDeployment(f *Factory) RunFunc {
 			return execTemplateSilent(f.IO, noDeploymentsMsg, nil)
 		}
 
-		// If the given deployment is configured, that's all we need. If it is not
-		// configured, but given, print an error message.
-		if _, ok := f.Config.Deployments[f.Config.ActiveDeployment]; ok {
+		// If the given deployment is configured, that's all we need. If it is
+		// not configured, but given, print an error message.
+		if _, ok := f.Config.GetActiveDeployment(); ok {
 			return nil
 		} else if f.Config.ActiveDeployment != "" {
 			return execTemplateSilent(f.IO, badActiveDeploymentMsg, map[string]string{
@@ -109,8 +109,8 @@ func NeedsActiveDeployment(f *Factory) RunFunc {
 	}
 }
 
-// NeedsDeployments prints an error message and errors silently if no deployments are
-// configured.
+// NeedsDeployments prints an error message and errors silently if no
+// deployments are configured.
 func NeedsDeployments(f *Factory) RunFunc {
 	return func(cmd *cobra.Command, _ []string) error {
 		if len(f.Config.Deployments) == 0 {

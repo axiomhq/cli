@@ -22,11 +22,6 @@ import (
 	"github.com/axiomhq/cli/pkg/terminal"
 )
 
-func init() {
-	// Prevent an anoying prompt on windows.
-	cobra.MousetrapHelpText = ""
-}
-
 func main() {
 	// Setup signal handling.
 	term := make(chan os.Signal, 1)
@@ -55,6 +50,13 @@ func main() {
 			// TODO(lukasmalkmus): Find a better way using termenv.
 			return ansi.ColorCode(style)
 		}
+	}
+
+	// Enable running gh from Windows File Explorer's address bar. Without this,
+	// the user is told to stop and run from a terminal.
+	// https://github.com/cli/cli/blob/trunk/cmd/gh/main.go#L70
+	if len(os.Args) > 1 && os.Args[1] != "" {
+		cobra.MousetrapHelpText = ""
 	}
 
 	// Add template functions of the color scheme.

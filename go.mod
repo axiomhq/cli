@@ -8,6 +8,7 @@ require (
 	github.com/axiomhq/axiom-go v0.0.0-20201202122315-e8e96f43b1c3
 	github.com/briandowns/spinner v1.12.0
 	github.com/cli/cli v1.3.0
+	github.com/dustin/go-humanize v1.0.0
 	github.com/golangci/golangci-lint v1.33.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/goreleaser/goreleaser v0.148.0

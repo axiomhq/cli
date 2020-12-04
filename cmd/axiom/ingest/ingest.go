@@ -14,6 +14,7 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/axiomhq/axiom-go/axiom"
+	"github.com/dustin/go-humanize"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
@@ -29,8 +30,13 @@ type options struct {
 	Filenames []string
 	// TimestampField to take the ingestion time from.
 	TimestampField string
-	// TimestampFormat the timestamp is formatted with.
+	// TimestampFormat the timestamp is formatted in.
 	TimestampFormat string
+	// FlushEvery flushes the ingestion buffer after the specified duration. It
+	// is only valid when ingesting a stream of newline delimited JSON objects.
+	FlushEvery time.Duration
+	// Compression enables gzip compression.
+	Compression bool
 }
 
 // NewIngestCmd creates and returns the ingest command.
@@ -40,7 +46,7 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "ingest <dataset-name> (-|(-f|--file) <filename>...) [--timestamp-field <timestamp-field>] [--timestamp-format <timestamp-format>]",
+		Use:   "ingest <dataset-name> (-|(-f|--file) <filename>...) [--timestamp-field <timestamp-field>] [--timestamp-format <timestamp-format>] [--flush-every <duration>] [(-c|--compression=)TRUE|FALSE]",
 		Short: "Ingest data",
 		Long:  `Ingest data into an Axiom dataset.`,
 
@@ -69,13 +75,18 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 		PreRunE: cmdutil.NeedsActiveDeployment(f),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(opts.Filenames) == 0 {
+				opts.Filenames = []string{"-"}
+			}
 			return run(cmd.Context(), opts)
 		},
 	}
 
-	cmd.Flags().StringSliceVarP(&opts.Filenames, "file", "f", []string{"-"}, "File to ingest")
-	cmd.Flags().StringVar(&opts.TimestampField, "timestamp-field", "_time", "Field to take the ingestion time from")
-	cmd.Flags().StringVar(&opts.TimestampFormat, "timestamp-format", "", "Format the timestamp is formatted with")
+	cmd.Flags().StringSliceVarP(&opts.Filenames, "file", "f", nil, "File to ingest")
+	cmd.Flags().StringVar(&opts.TimestampField, "timestamp-field", "", "Field to take the ingestion time from")
+	cmd.Flags().StringVar(&opts.TimestampFormat, "timestamp-format", "", "Format the timestamp is formatted in")
+	cmd.Flags().DurationVar(&opts.FlushEvery, "flush-every", 5*time.Second, "Buffer flush interval for newline delimited JSON streams")
+	cmd.Flags().BoolVarP(&opts.Compression, "compression", "c", true, "Enable gzip compression")
 
 	_ = cmd.RegisterFlagCompletionFunc("timestamp-field", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("timestamp-format", cmdutil.NoCompletion)
@@ -106,14 +117,33 @@ func run(ctx context.Context, opts *options) error {
 			filename = "stdin" // Enhance printed output
 		} else {
 			if rc, err = os.Open(filename); err != nil {
-				_ = rc.Close()
 				lastErr = err
 				break
 			}
 		}
 
+		var (
+			r   io.Reader
+			typ axiom.ContentType
+		)
+		if r, typ, err = detectContentType(rc); err != nil {
+			_ = rc.Close()
+			lastErr = fmt.Errorf("could not detect %q content type: %w", filename, err)
+			break
+		}
+
+		enc := axiom.Identity
+		if opts.Compression {
+			if r, err = axiom.GZIPStreamer(r, gzip.BestSpeed); err != nil {
+				_ = rc.Close()
+				lastErr = fmt.Errorf("could not apply compression to %q: %w", filename, err)
+				break
+			}
+			enc = axiom.GZIP
+		}
+
 		var ingestRes *axiom.IngestStatus
-		if ingestRes, err = ingest(ctx, client, rc, opts); err != nil {
+		if ingestRes, err = ingest(ctx, client, r, typ, enc, opts); err != nil {
 			_ = rc.Close()
 			lastErr = fmt.Errorf("could not ingest %q into dataset %q: %w", filename, opts.Dataset, err)
 			break
@@ -124,6 +154,7 @@ func run(ctx context.Context, opts *options) error {
 
 		res.Ingested += ingestRes.Ingested
 		res.Failed += ingestRes.Failed
+		res.ProcessedBytes += ingestRes.ProcessedBytes
 		res.BlocksCreated += ingestRes.BlocksCreated
 		res.WALLength += ingestRes.WALLength
 		res.Failures = append(res.Failures, ingestRes.Failures...)
@@ -135,9 +166,10 @@ func run(ctx context.Context, opts *options) error {
 		cs := opts.IO.ColorScheme()
 
 		if res.Ingested > 0 {
-			fmt.Fprintf(opts.IO.ErrOut(), "%s Ingested %s\n",
+			fmt.Fprintf(opts.IO.ErrOut(), "%s Ingested %s (%s)\n",
 				cs.SuccessIcon(),
 				utils.Pluralize(cs, "event", int(res.Ingested)),
+				humanize.Bytes(res.ProcessedBytes),
 			)
 		}
 
@@ -157,7 +189,21 @@ func run(ctx context.Context, opts *options) error {
 	return lastErr
 }
 
-func ingest(ctx context.Context, client *axiom.Client, r io.Reader, opts *options) (*axiom.IngestStatus, error) {
+func ingest(ctx context.Context, client *axiom.Client, r io.Reader, typ axiom.ContentType, enc axiom.ContentEncoding, opts *options) (*axiom.IngestStatus, error) {
+	res, err := client.Datasets.Ingest(ctx, opts.Dataset, r, typ, enc, axiom.IngestOptions{
+		TimestampField:  opts.TimestampField,
+		TimestampFormat: opts.TimestampFormat,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// detectContentType detects the content type of an io.Reader's data. It returns
+// a new reader which must be used in place of the old one.
+func detectContentType(r io.Reader) (io.Reader, axiom.ContentType, error) {
 	var (
 		br  = bufio.NewReader(r)
 		typ axiom.ContentType
@@ -168,9 +214,9 @@ func ingest(ctx context.Context, client *axiom.Client, r io.Reader, opts *option
 			err error
 		)
 		if c, _, err = br.ReadRune(); err == io.EOF {
-			return nil, errors.New("couldn't find beginning of valid JSON")
+			return nil, 0, errors.New("couldn't find beginning of valid JSON")
 		} else if err != nil {
-			return nil, err
+			return nil, 0, err
 		} else if c == '[' {
 			typ = axiom.JSON
 		} else if c == '{' {
@@ -178,11 +224,11 @@ func ingest(ctx context.Context, client *axiom.Client, r io.Reader, opts *option
 		} else if unicode.IsSpace(c) {
 			continue
 		} else {
-			return nil, errors.New("cannot determine content type")
+			return nil, 0, errors.New("cannot determine content type")
 		}
 
 		if err = br.UnreadRune(); err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		break
 	}
@@ -192,23 +238,10 @@ func ingest(ctx context.Context, client *axiom.Client, r io.Reader, opts *option
 	bufSize := br.Buffered()
 	buf, err := br.Peek(bufSize)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	alreadyRead := bytes.NewReader(buf)
 	r = io.MultiReader(alreadyRead, r)
 
-	// Apply GZIP compression.
-	if r, err = axiom.GZIPStreamer(r, gzip.BestSpeed); err != nil {
-		return nil, err
-	}
-
-	res, err := client.Datasets.Ingest(ctx, opts.Dataset, r, typ, axiom.GZIP, axiom.IngestOptions{
-		TimestampField:  opts.TimestampField,
-		TimestampFormat: opts.TimestampFormat,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
+	return r, typ, nil
 }

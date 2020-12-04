@@ -9,11 +9,17 @@ import (
 
 var topics = map[string]string{
 	"environment": `
-		AXM_DEPLOYMENT: The deployment to use by default. Overwrittes the choice
-		loaded from the configuration file.
+		AXM_DEPLOYMENT: The deployment to use. Overwrittes the choice loaded
+		from the configuration file.
 		
 		AXM_PAGER, PAGER (in order of precedence): A terminal paging program to
 		send standard output to, e.g. "less".
+
+		AXM_TOKEN: Token The access token to use. Overwrittes the choice loaded
+		from the configuration file.
+
+		AXM_URL: The deployment url to use. Overwrittes the choice loaded from
+		the configuration file.
 
 		VISUAL, EDITOR (in order of precedence): The editor to use for authoring
 		text.

@@ -27,7 +27,7 @@ func NewFactory() *Factory {
 
 // Client returns an Axiom client configured to talk to the active deployment.
 func (f *Factory) Client() (*axiom.Client, error) {
-	deployment, ok := f.Config.Deployments[f.Config.ActiveDeployment]
+	deployment, ok := f.Config.GetActiveDeployment()
 	if !ok {
 		return nil, errors.New("no active deployment set")
 	}

@@ -20,7 +20,7 @@ func NewVersionCmd(f *cmdutil.Factory, version string) *cobra.Command {
 		`),
 
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			if _, ok := f.Config.Deployments[f.Config.ActiveDeployment]; !ok {
+			if _, ok := f.Config.GetActiveDeployment(); !ok {
 				cmd.Println(version)
 				return nil
 			}
