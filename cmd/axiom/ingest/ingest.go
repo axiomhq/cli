@@ -70,7 +70,7 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 
 			# Pipe the contents of a log generator into a dataset named
 			# "gen-logs". If the length of the data stream is unknown, the
-			# "-flush-every" flag must be passed to ship the data to the server
+			# "--flush-every" flag must be passed to ship the data to the server
 			# after the specified duration instead of waiting for EOF. This is
 			# only valid for newline delimited JSON.
 			$ ./loggen -ndjson | axiom ingest gen-logs
@@ -141,7 +141,7 @@ func run(ctx context.Context, opts *options, flushEverySet bool) error {
 		}
 
 		if flushEverySet && typ != axiom.NDJSON {
-			return errors.New("-flush-every not valid when content type is not newline delimited JSON")
+			return errors.New("--flush-every not valid when content type is not newline delimited JSON")
 		}
 
 		var ingestRes *axiom.IngestStatus
