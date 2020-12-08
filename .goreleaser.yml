@@ -88,6 +88,7 @@ brews:
   - name: axiom
     description: "The power of Axiom on the command-line"
     homepage: "https://axiom.co"
+    license: "MIT"
     tap:
       owner: axiomhq
       name: homebrew-tap
@@ -97,8 +98,6 @@ brews:
       email: hello@axiom.co
     skip_upload: auto
     folder: Formula
-    custom_block: |
-      license "MIT"
     install: |
       bin.install "{{ .ProjectName }}"
       man1.install Dir["dist/man/{{ .ProjectName }}*.1"]
