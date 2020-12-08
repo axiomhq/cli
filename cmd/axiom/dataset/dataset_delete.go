@@ -33,10 +33,7 @@ func newDeleteCmd(f *cmdutil.Factory) *cobra.Command {
 
 		Aliases: []string{"remove"},
 
-		Args: cmdutil.ChainPositionalArgs(
-			cobra.MaximumNArgs(1),
-			cmdutil.PopulateFromArgs(f, &opts.Name),
-		),
+		Args:              cmdutil.PopulateFromArgs(f, &opts.Name),
 		ValidArgsFunction: cmdutil.DatasetCompletionFunc(f),
 
 		Example: heredoc.Doc(`

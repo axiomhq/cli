@@ -21,10 +21,7 @@ func newSelectCmd(f *cmdutil.Factory) *cobra.Command {
 
 		DisableFlagsInUseLine: true,
 
-		Args: cmdutil.ChainPositionalArgs(
-			cobra.MaximumNArgs(1),
-			cmdutil.PopulateFromArgs(f, &f.Config.ActiveDeployment),
-		),
+		Args:              cmdutil.PopulateFromArgs(f, &f.Config.ActiveDeployment),
 		ValidArgsFunction: deploymentCompletionFunc(f.Config),
 
 		Example: heredoc.Doc(`

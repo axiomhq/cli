@@ -12,6 +12,7 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
 	"github.com/axiomhq/axiom-go/axiom"
 	"github.com/dustin/go-humanize"
@@ -24,7 +25,8 @@ import (
 type options struct {
 	*cmdutil.Factory
 
-	// Dataset to query.
+	// Dataset to ingest into. If not supplied as an argument, which is
+	// optional, the user will be asked for it.
 	Dataset string
 	// Filenames of the files to ingest. If not set, will read from Stdin.
 	Filenames []string
@@ -53,10 +55,7 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 
 		DisableFlagsInUseLine: true,
 
-		Args: cmdutil.ChainPositionalArgs(
-			cobra.ExactArgs(1),
-			cmdutil.PopulateFromArgs(f, &opts.Dataset),
-		),
+		Args:              cmdutil.PopulateFromArgs(f, &opts.Dataset),
 		ValidArgsFunction: cmdutil.DatasetCompletionFunc(f),
 
 		Example: heredoc.Doc(`
@@ -80,11 +79,19 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 			"IsCore": "true",
 		},
 
-		PreRunE: cmdutil.NeedsActiveDeployment(f),
+		PreRunE: cmdutil.ChainRunFuncs(
+			cmdutil.NeedsActiveDeployment(f),
+			cmdutil.NeedsDatasets(f),
+		),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
+			// When no files are specified, stdin is the file to use.
 			if len(opts.Filenames) == 0 {
 				opts.Filenames = []string{"-"}
+			}
+
+			if err := complete(cmd.Context(), opts); err != nil {
+				return err
 			}
 			return run(cmd.Context(), opts, cmd.Flag("flush-every").Changed)
 		},
@@ -104,6 +111,35 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	return cmd
+}
+
+func complete(ctx context.Context, opts *options) error {
+	if opts.Dataset != "" {
+		return nil
+	}
+
+	client, err := opts.Client()
+	if err != nil {
+		return err
+	}
+
+	stop := opts.IO.StartActivityIndicator()
+	datasets, err := client.Datasets.List(ctx)
+	if err != nil {
+		stop()
+		return err
+	}
+	stop()
+
+	datasetNames := make([]string, len(datasets))
+	for i, dataset := range datasets {
+		datasetNames[i] = dataset.Name
+	}
+
+	return survey.AskOne(&survey.Select{
+		Message: "Which dataset to ingest into?",
+		Options: datasetNames,
+	}, &opts.Dataset, opts.IO.SurveyIO())
 }
 
 func run(ctx context.Context, opts *options, flushEverySet bool) error {

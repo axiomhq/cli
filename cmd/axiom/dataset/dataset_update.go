@@ -32,10 +32,7 @@ func newUpdateCmd(f *cmdutil.Factory) *cobra.Command {
 		Use:   "update [<dataset-name>] [(-d|--description) <dataset-description>]",
 		Short: "Update a dataset",
 
-		Args: cmdutil.ChainPositionalArgs(
-			cobra.MaximumNArgs(1),
-			cmdutil.PopulateFromArgs(f, &opts.Name),
-		),
+		Args:              cmdutil.PopulateFromArgs(f, &opts.Name),
 		ValidArgsFunction: cmdutil.DatasetCompletionFunc(f),
 
 		DisableFlagsInUseLine: true,

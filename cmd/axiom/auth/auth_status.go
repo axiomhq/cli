@@ -33,10 +33,7 @@ func newStatusCmd(f *cmdutil.Factory) *cobra.Command {
 
 		DisableFlagsInUseLine: true,
 
-		Args: cmdutil.ChainPositionalArgs(
-			cobra.MaximumNArgs(1),
-			cmdutil.PopulateFromArgs(f, &opts.Alias),
-		),
+		Args:              cmdutil.PopulateFromArgs(f, &opts.Alias),
 		ValidArgsFunction: deploymentCompletionFunc(f.Config),
 
 		Example: heredoc.Doc(`

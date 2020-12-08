@@ -31,10 +31,7 @@ func newInfoCmd(f *cmdutil.Factory) *cobra.Command {
 		Use:   "info [<dataset-name>]",
 		Short: "Get info about a dataset",
 
-		Args: cmdutil.ChainPositionalArgs(
-			cobra.MaximumNArgs(1),
-			cmdutil.PopulateFromArgs(f, &opts.Name),
-		),
+		Args:              cmdutil.PopulateFromArgs(f, &opts.Name),
 		ValidArgsFunction: cmdutil.DatasetCompletionFunc(f),
 
 		Example: heredoc.Doc(`
