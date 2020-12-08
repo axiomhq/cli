@@ -92,6 +92,9 @@ brews:
       owner: axiomhq
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TOKEN }}"
+    commit_author:
+      name: axiom-automation
+      email: hello@axiom.co
     skip_upload: auto
     folder: Formula
     custom_block: |
