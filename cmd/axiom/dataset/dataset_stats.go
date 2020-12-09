@@ -68,7 +68,6 @@ func runStats(ctx context.Context, f *cmdutil.Factory) error {
 	if f.IO.IsStdoutTTY() {
 		fmt.Fprintf(f.IO.Out(), "Showing statistics of all dataset:\n\n")
 		tp.AddField("Name", cs.Bold)
-		tp.AddField("Name", cs.Bold)
 		tp.AddField("Events", cs.Bold)
 		tp.AddField("Blocks", cs.Bold)
 		tp.AddField("Fields", cs.Bold)
