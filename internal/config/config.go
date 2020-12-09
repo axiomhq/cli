@@ -13,6 +13,12 @@ import (
 	"github.com/pelletier/go-toml"
 )
 
+// All available token types.
+const (
+	Ingest   = "ingest"
+	Personal = "personal"
+)
+
 func defaultConfigFile() string {
 	dir, _ := homedir.Dir()
 	return path.Join(dir, ".axiom.toml")
@@ -66,8 +72,9 @@ func (c *Config) GetActiveDeployment() (Deployment, bool) {
 
 // Deployment is the configuration for an Axiom instance.
 type Deployment struct {
-	URL   string `toml:"url"`
-	Token string `toml:"token"`
+	URL       string `toml:"url"`
+	Token     string `toml:"token"`
+	TokenType string `toml:"token_type"`
 }
 
 // LoadDefault tries to load the default configuration. It behaves like Load()

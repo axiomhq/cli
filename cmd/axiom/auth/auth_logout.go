@@ -88,15 +88,15 @@ func runLogout(opts *logoutOptions) error {
 		}
 	}
 
+	delete(opts.Config.Deployments, opts.Alias)
+	if opts.Config.ActiveDeployment == opts.Alias {
+		opts.Config.ActiveDeployment = ""
+	}
+
 	if opts.IO.IsStdoutTTY() {
 		cs := opts.IO.ColorScheme()
 		fmt.Fprintf(opts.IO.ErrOut(), "%s Logged out of deployment %s\n",
 			cs.SuccessIcon(), cs.Bold(opts.Alias))
-	}
-
-	delete(opts.Config.Deployments, opts.Alias)
-	if opts.Config.ActiveDeployment == opts.Alias {
-		opts.Config.ActiveDeployment = ""
 	}
 
 	return opts.Config.Write()

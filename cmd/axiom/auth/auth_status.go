@@ -13,6 +13,7 @@ import (
 
 	axiomClient "github.com/axiomhq/cli/internal/client"
 	"github.com/axiomhq/cli/internal/cmdutil"
+	"github.com/axiomhq/cli/internal/config"
 )
 
 type statusOptions struct {
@@ -77,20 +78,27 @@ func runStatus(ctx context.Context, opts *statusOptions) error {
 			continue
 		}
 
-		client, err := axiomClient.New(deployment.URL, deployment.Token)
-		if err != nil {
-			return err
-		}
-
 		var info string
-		if user, err := client.Users.Current(ctx); errors.Is(err, axiom.ErrUnauthenticated) {
-			info = fmt.Sprintf("%s %s", cs.ErrorIcon(), "Invalid credentials")
-			failed = true
-		} else if err != nil {
-			info = fmt.Sprintf("%s %s", cs.ErrorIcon(), err)
-			failed = true
+		if deployment.TokenType == config.Personal {
+			client, err := axiomClient.New(deployment.URL, deployment.Token)
+			if err != nil {
+				return err
+			}
+
+			user, err := client.Users.Current(ctx)
+			if errors.Is(err, axiom.ErrUnauthenticated) {
+				info = fmt.Sprintf("%s %s", cs.ErrorIcon(), "Invalid credentials")
+				failed = true
+			} else if err != nil {
+				info = fmt.Sprintf("%s %s", cs.ErrorIcon(), err)
+				failed = true
+			} else {
+				info = fmt.Sprintf("%s Logged in as %s (%s)", cs.SuccessIcon(),
+					cs.Bold(user.Name), user.Emails[0])
+			}
 		} else {
-			info = fmt.Sprintf("%s Logged in as %s (%s)", cs.SuccessIcon(), cs.Bold(user.Name), user.Emails[0])
+			// We cannot validate ingest tokens without actually ingesting.
+			info = fmt.Sprintf("%s Using ingest token", cs.WarningIcon())
 		}
 
 		statusInfo[v] = append(statusInfo[v], info)

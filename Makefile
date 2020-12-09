@@ -15,17 +15,15 @@ RELEASE         := $(shell git describe --tags 2>/dev/null || git rev-parse --sh
 USER            := $(shell whoami)
 
 # GO TOOLS
-GEN_CLI_DOCS		:= bin/gen-cli-docs
-GOLANGCI_LINT		:= bin/golangci-lint
-GORELEASER			:= bin/goreleaser
-GOTESTSUM			:= bin/gotestsum
-
-# DIRECTORIES
-BUILD_DIR		:= dist
-MANPAGES_DIR	:= man
+GEN_CLI_DOCS	:= bin/gen-cli-docs
+GOLANGCI_LINT	:= bin/golangci-lint
+GORELEASER		:= bin/goreleaser
+GOTESTSUM		:= bin/gotestsum
 
 # MISC
 COVERPROFILE	:= coverage.out
+DIST_DIR		:= dist
+MANPAGES_DIR	:= man
 
 # TAGS
 GOTAGS := osusergo netgo static_build
@@ -67,7 +65,7 @@ build: $(GORELEASER) dep.stamp $(call go-pkg-sourcefiles, ./...) ## Build the bi
 .PHONY: clean
 clean: ## Remove build and test artifacts
 	@echo ">> cleaning up artifacts"
-	@rm -rf $(BUILD_DIR) $(COVERPROFILE)
+	@rm -rf $(DIST_DIR) $(COVERPROFILE)
 
 .PHONY: cover
 cover: $(COVERPROFILE) ## Calculate the code coverage score

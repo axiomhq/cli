@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	formatJSON = "JSON"
+	formatJSON = "json"
 )
 
 var validFormats = []string{formatJSON}
@@ -44,7 +44,7 @@ func NewStreamCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "stream [<dataset-name>] [(-f|--format=)JSON]",
+		Use:   "stream [<dataset-name>] [(-f|--format=)json]",
 		Short: "Livestream data",
 		Long:  `Livestream data from an Axiom dataset.`,
 
@@ -179,7 +179,7 @@ func run(ctx context.Context, opts *options) error {
 	}
 }
 
-func formatCompletion(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func formatCompletion(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	res := make([]string, 0, len(validFormats))
 	for _, validFormat := range validFormats {
 		if strings.HasPrefix(validFormat, toComplete) {

@@ -18,6 +18,8 @@ import (
 	"github.com/axiomhq/cli/pkg/surveyext"
 )
 
+var validTokenTypes = []string{string(config.Personal), string(config.Ingest)}
+
 type loginOptions struct {
 	*cmdutil.Factory
 
@@ -30,6 +32,9 @@ type loginOptions struct {
 	// Token of the user who wants to authenticate against the deployment. The
 	// user will be asked for it unless "token-stdin" is set.
 	Token string `survey:"token"`
+	// TokenType of the supplied token. If not supplied as a flag, which is
+	// optional, the user will be asked for it.
+	TokenType string `survey:"tokenType"`
 	// Read token from stdin instead of prompting the user for it.
 	TokenStdIn bool
 	// Force the creation and skip the confirmation prompt.
@@ -42,7 +47,7 @@ func newLoginCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "login [--url <deployment-url>] [(-a|--alias) <deployment-alias>] [--token-stdin] [-f|--force]",
+		Use:   "login [--url <deployment-url>] [(-a|--alias) <deployment-alias>] [(-t|--token-type=)personal|ingest] [--token-stdin] [-f|--force]",
 		Short: "Login to an Axiom deployment",
 
 		DisableFlagsInUseLine: true,
@@ -63,6 +68,8 @@ func newLoginCmd(f *cmdutil.Factory) *cobra.Command {
 					return cmdutil.NewFlagErrorf("--url required when --token-stdin is set")
 				} else if opts.Alias == "" {
 					return cmdutil.NewFlagErrorf("--alias required when --token-stdin is set")
+				} else if opts.TokenType == "" {
+					return cmdutil.NewFlagErrorf("--token-type required when --token-stdin is set")
 				}
 				return nil
 			}
@@ -70,6 +77,10 @@ func newLoginCmd(f *cmdutil.Factory) *cobra.Command {
 		},
 
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if opts.TokenType != config.Personal && opts.TokenType != config.Ingest {
+				return fmt.Errorf("unknown token type %q (choose %q or %q)",
+					opts.TokenType, config.Personal, config.Ingest)
+			}
 			return runLogin(cmd.Context(), opts)
 		},
 	}
@@ -77,17 +88,20 @@ func newLoginCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.Flags().StringVar(&opts.URL, "url", "", "Url of the deployment")
 	cmd.Flags().StringVarP(&opts.Alias, "alias", "a", "", "Alias of the deployment")
 	cmd.Flags().BoolVar(&opts.TokenStdIn, "token-stdin", false, "Read token from stdin")
+	cmd.Flags().StringVarP(&opts.TokenType, "token-type", "t", "", "Type of the token")
 	cmd.Flags().BoolVarP(&opts.Force, "force", "f", false, "Skip the confirmation prompt")
 
 	_ = cmd.RegisterFlagCompletionFunc("url", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("alias", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("token-stdin", cmdutil.NoCompletion)
+	_ = cmd.RegisterFlagCompletionFunc("token-type", tokenTypeCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("force", cmdutil.NoCompletion)
 
 	if !opts.IO.IsStdinTTY() {
 		_ = cmd.MarkFlagRequired("url")
 		_ = cmd.MarkFlagRequired("alias")
 		_ = cmd.MarkFlagRequired("token-stdin")
+		_ = cmd.MarkFlagRequired("token-type")
 		_ = cmd.MarkFlagRequired("force")
 	}
 
@@ -128,7 +142,7 @@ func completeLogin(opts *loginOptions) error {
 		hostRef = ""
 	}
 
-	questions := make([]*survey.Question, 0, 2)
+	questions := make([]*survey.Question, 0, 3)
 
 	if opts.Alias == "" {
 		questions = append(questions, &survey.Question{
@@ -141,6 +155,16 @@ func completeLogin(opts *loginOptions) error {
 				survey.Required,
 				survey.MinLength(5),
 			),
+		})
+	}
+
+	if opts.TokenType == "" {
+		questions = append(questions, &survey.Question{
+			Name: "tokenType",
+			Prompt: &survey.Select{
+				Message: "What kind of token will you provide?",
+				Options: validTokenTypes,
+			},
 		})
 	}
 
@@ -187,44 +211,36 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 		}
 	}
 
-	client, err := axiomClient.New(opts.URL, opts.Token)
-	if err != nil {
-		return err
-	}
-
-	if opts.IO.IsStdinTTY() {
-		msg := "If you supplied a personal access token, it can be validated. Run authentication check?"
-		if runAuthCheck, err := surveyext.AskConfirm(msg, true, opts.IO.SurveyIO()); err != nil {
+	if opts.TokenType == config.Personal {
+		client, err := axiomClient.New(opts.URL, opts.Token)
+		if err != nil {
 			return err
-		} else if runAuthCheck {
-			stop := opts.IO.StartActivityIndicator()
-			defer stop()
+		}
 
-			user, err := client.Users.Current(ctx)
-			if err != nil {
-				return err
-			}
+		stop := opts.IO.StartActivityIndicator()
+		defer stop()
 
-			stop()
+		user, err := client.Users.Current(ctx)
+		if err != nil {
+			return err
+		}
 
-			if opts.IO.IsStderrTTY() {
-				cs := opts.IO.ColorScheme()
-				fmt.Fprintf(opts.IO.ErrOut(), "%s Logged in to deployment %s (%s) as %s\n",
-					cs.SuccessIcon(), cs.Bold(opts.Alias), opts.URL, cs.Bold(user.Name))
-			}
+		stop()
+
+		if opts.IO.IsStderrTTY() {
+			cs := opts.IO.ColorScheme()
+			fmt.Fprintf(opts.IO.ErrOut(), "%s Logged in to deployment %s (%s) as %s\n",
+				cs.SuccessIcon(), cs.Bold(opts.Alias), opts.URL, cs.Bold(user.Name))
 		}
 	}
 
 	opts.Config.Deployments[opts.Alias] = config.Deployment{
-		URL:   opts.URL,
-		Token: opts.Token,
+		URL:       opts.URL,
+		Token:     opts.Token,
+		TokenType: opts.TokenType,
 	}
 
-	if err := opts.Config.Write(); err != nil {
-		return err
-	}
-
-	return nil
+	return opts.Config.Write()
 }
 
 func firstSubDomain(s string) string {
@@ -240,4 +256,8 @@ func firstSubDomain(s string) string {
 	}
 
 	return strings.TrimLeft(hostRef, u.Scheme)
+}
+
+func tokenTypeCompletion(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {
+	return validTokenTypes, cobra.ShellCompDirectiveNoFileComp
 }

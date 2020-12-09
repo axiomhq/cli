@@ -18,10 +18,12 @@ active_deployment = "axiom-eu-west-1"
 [deployments.axiom-eu-west-1]
 url = "axiom-eu-west-1.aws.com"
 token = "this-is-obviously-stupid"
+token_type = "personal"
 
 [deployments.axiom-eu-west-2]
 url = "axiom-eu-west-2.aws.com"
 token = "this-is-obviously-more-stupid"
+token_type = "ingest"
 `
 
 type TestConfigSuite struct {

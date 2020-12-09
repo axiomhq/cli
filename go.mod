@@ -28,3 +28,5 @@ require (
 	golang.org/x/term v0.0.0-20201207232118-ee85cb95a76b
 	gotest.tools/gotestsum v0.6.0
 )
+
+replace github.com/pelletier/go-toml v1.8.1 => github.com/pelletier/go-toml v1.8.2-0.20201124181426-2e01f733df54
