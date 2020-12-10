@@ -34,7 +34,7 @@ _Axiom CLI_ brings the power of Axiom to the command-line.
 
 #### Download and install the pre-compiled binary manually
 
-Binary releases are evailable on [GitHub Releases][2].
+Binary releases are available on [GitHub Releases][2].
 
   [2]: https://github.com/axiomhq/cli/releases/latest
 
