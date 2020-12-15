@@ -103,9 +103,6 @@ Axiom CLI version 0.1.0
 
 
 
-To learn how to log in to Netlify and start deploying sites, visit the documentation on Netlify.
-
-For a full command reference, see the list below, or visit cli.netlify.com.
 
 ## GOPATH
 
