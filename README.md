@@ -121,6 +121,8 @@ Feel free to submit PRs or to fill issues. Every kind of help is appreciated.
 
 Before committing, `make` should run without any issues.
 
+Kindly check our [contributing](https://github.com/axiomhq/cli/blob/documentation/Contributing.md) guide on how to propose bugfixes and improvements, and submitting pull requests to the project.
+
 More information about the project layout is documented
 [here](.github/project_layout.md).
 
