@@ -22,7 +22,7 @@ This is the home of the Axiom Cli code.
 ## Table of Contents
 
 1. [Introduction](#introduction)
-1. [Th]
+1. [Goal](#Goal)
 1. [Usage](#usage)
 1. [Contributing](#contributing)
 1. [License](#license)
@@ -31,8 +31,8 @@ This is the home of the Axiom Cli code.
 
 The official command line client for [Axiom](https://www.axiom.co/). Axiom CLI brings the power of Axiom to the command-line. 
 
-## The Goal of Axiom CLI
-The Axiom CLI creates, manages, builds and test your Axiom projects. 
+## Goal
+The Goal of the Axiom CLI creates, manages, builds and test your Axiom projects. 
 
 
 ## Usage
