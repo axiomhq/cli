@@ -37,6 +37,8 @@ The Goal of the Axiom CLI creates, manages, builds and test your Axiom projects.
 
 ## Usage
 
+Installing the CLI globally provides access to the Axiom command.
+
 ### Installation
 Axiom Cli requires [Go](https://golang.org/dl/) version 1.11 or above. 
 
