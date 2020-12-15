@@ -37,8 +37,6 @@ The Goal of the Axiom CLI is to create, manage, build and test your Axiom projec
 
 ## Usage
 
-Installing the CLI globally provides access to the Axiom command.
-
 ```shell
 $ axiom <command> 
 $ axiom <command> <subcommand> [flags]
@@ -47,6 +45,9 @@ $ axiom <command> <subcommand> [flags]
 axiom <command> help
 ```
 ### Installation
+
+Installing the CLI globally provides access to the Axiom command.
+
 Axiom Cli requires [Go](https://golang.org/dl/) version 1.11 or above. 
 
 #### Download and install the pre-compiled binary manually
@@ -74,7 +75,7 @@ standard library which break building.**
 
 #### Install from source
 
-This project uses native [go mod][4] support and requires a working Go 1.15
+This project uses native [go mod](https://golang.org/cmd/go/#hdr-Module_maintenance) support and requires a working Go 1.15
 installation.
 
 ```shell
@@ -108,6 +109,13 @@ Help on flags and commands:
 $ axiom --help
 ```
 
+## GOPATH
+
+Make sure your PATH includes the `$GOPATH/bin` directory so your commands can be easily used:
+
+```shell
+export PATH=$PATH:$GOPATH/bin
+```
 ## Contributing
 
 Feel free to submit PRs or to fill issues. Every kind of help is appreciated.
