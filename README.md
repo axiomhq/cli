@@ -9,7 +9,9 @@
 [![License][license_badge]][license]
 [![License Status][license_status_badge]][license_status]
 
-> The [Axiom][1] command-line application.
+This is the home of the Axiom Cli code. 
+
+> The [Axiom][1] command-line application. The Axiom Cli is a fast and straightforward package for interacting with [Axiom](https://axiom.co) from your command line. 
 
   [1]: https://axiom.co
 
@@ -26,7 +28,7 @@
 
 ## Introduction
 
-_Axiom CLI_ brings the power of Axiom to the command-line.
+The official command line client for [Axiom](https://www.axiom.co/). Axiom CLI brings the power of Axiom to the command-line. 
 
 ## Usage
 
