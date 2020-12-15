@@ -104,6 +104,11 @@ Axiom CLI version 0.1.0
 
 ## Documentation
 
+To learn how to log in to Axiom and start gaining instant, actionable insights on all data and start storing and querying unlimited machine data, visit the [documentation on Axiom](https://docs.axiom.co/)
+
+For full command reference, see the list below, or visit cli.axiom.com. 
+
+------------------------
 
 ## GOPATH
 
