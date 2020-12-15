@@ -124,7 +124,7 @@ Before committing, `make` should run without any issues.
 Kindly check our [Contributing](https://github.com/axiomhq/cli/blob/documentation/Contributing.md) guide on how to propose bugfixes and improvements, and submitting pull requests to the project.
 
 More information about the project layout is documented
-[here](.github/project_layout.md).
+[here](https://github.com/axiomhq/cli/blob/documentation/.github/project-layout.md)
 
 ## License
 
