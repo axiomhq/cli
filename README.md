@@ -24,6 +24,7 @@ This is the home of the Axiom Cli code.
 1. [Introduction](#introduction)
 1. [Goal](#Goal)
 1. [Usage](#usage)
+1. [Documentation](#documentation)
 1. [Contributing](#contributing)
 1. [License](#license)
 
@@ -108,6 +109,8 @@ Help on flags and commands:
 ```shell
 $ axiom --help
 ```
+
+## Documentation
 
 ## GOPATH
 
