@@ -24,6 +24,7 @@ This is the home of the Axiom Cli code.
 1. [Introduction](#introduction)
 1. [Goal](#Goal)
 1. [Usage](#usage)
+1. [Installation](#installation)
 1. [Documentation](#documentation)
 1. [Contributing](#contributing)
 1. [License](#license)
@@ -46,7 +47,9 @@ $ axiom <command> <subcommand> [flags]
 Help on flags and commands:
 axiom <command> help
 ```
-### Installation
+------------
+
+## Installation
 
 Installing the CLI globally provides access to the Axiom command.
 
@@ -100,8 +103,6 @@ Axiom CLI version 0.1.0
 ----------------------
 
 ## Documentation
-
-
 
 
 ## GOPATH
