@@ -32,12 +32,20 @@ This is the home of the Axiom Cli code.
 The official command line client for [Axiom](https://www.axiom.co/). Axiom CLI brings the power of Axiom to the command-line. 
 
 ## Goal
-The Goal of the Axiom CLI creates, manages, builds and test your Axiom projects. 
+The Goal of the Axiom CLI is to create, manage, build and test your Axiom projects. 
 
 
 ## Usage
 
 Installing the CLI globally provides access to the Axiom command.
+
+```
+$ axiom <command> 
+$ axiom <command> <subcommand> [flags]
+
+# Run `help` for detailed information about CLI commands
+axiom <command> help
+```
 
 ### Installation
 Axiom Cli requires [Go](https://golang.org/dl/) version 1.11 or above. 
