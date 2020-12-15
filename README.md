@@ -30,6 +30,10 @@ This is the home of the Axiom Cli code.
 
 The official command line client for [Axiom](https://www.axiom.co/). Axiom CLI brings the power of Axiom to the command-line. 
 
+## The Goal of Axiom CLI
+The Axiom CLI creates, manages, builds and test your Axiom projects. 
+
+
 ## Usage
 
 ### Installation
