@@ -39,7 +39,7 @@ The Goal of the Axiom CLI is to create, manage, build and test your Axiom projec
 
 Installing the CLI globally provides access to the Axiom command.
 
-```
+```shell
 $ axiom <command> 
 $ axiom <command> <subcommand> [flags]
 
