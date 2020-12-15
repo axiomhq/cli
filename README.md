@@ -108,8 +108,6 @@ To learn how to log in to Axiom and start gaining instant, actionable insights, 
 
 For full command reference, see the list below, or visit cli.axiom.com. 
 
-------------------------
-
 ## GOPATH
 
 Make sure your PATH includes the `$GOPATH/bin` directory so your commands can be easily used:
