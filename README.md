@@ -46,7 +46,6 @@ $ axiom <command> <subcommand> [flags]
 # Run `help` for detailed information about CLI commands
 axiom <command> help
 ```
-
 ### Installation
 Axiom Cli requires [Go](https://golang.org/dl/) version 1.11 or above. 
 
@@ -56,15 +55,12 @@ Binary releases are available on [GitHub Releases][2].
 
   [2]: https://github.com/axiomhq/cli/releases/latest
 
-#### Install using [Homebrew][3]
+#### Install using [Homebrew](https://brew.sh)
 
 ```shell
 $ brew tap axiomhq/tap
 $ brew install axiom
 ```
-
-  [3]: https://brew.sh
-
 #### Install using `go get`
 
 With a working Go installation (>=1.15), run:
@@ -72,10 +68,9 @@ With a working Go installation (>=1.15), run:
 ```shell
 $ go get -u github.com/axiomhq/cli/cmd/axiom
 ```
-
-Go 1.11 and higher _should_ be sufficient enough to use `go get` but it is not 
+**Go 1.11 and higher should be sufficient enough to use `go get` but it is not 
 guaranteed that the source code does not use more recent additions to the
-standard library which break building.
+standard library which break building.**
 
 #### Install from source
 
