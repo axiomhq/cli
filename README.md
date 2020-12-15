@@ -22,6 +22,7 @@ This is the home of the Axiom Cli code.
 ## Table of Contents
 
 1. [Introduction](#introduction)
+1. [Th]
 1. [Usage](#usage)
 1. [Contributing](#contributing)
 1. [License](#license)
@@ -37,6 +38,7 @@ The Axiom CLI creates, manages, builds and test your Axiom projects.
 ## Usage
 
 ### Installation
+Axiom Cli requires [Go](https://golang.org/dl/) version 1.11 or above. 
 
 #### Download and install the pre-compiled binary manually
 
