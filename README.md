@@ -117,7 +117,9 @@ export PATH=$PATH:$GOPATH/bin
 ```
 ## Contributing
 
-Feel free to submit PRs or to fill issues. Every kind of help is appreciated. Before committing, `make` should run without any issues.
+Feel free to submit PRs or to fill issues. Every kind of help is appreciated. 
+
+Before committing, `make` should run without any issues.
 
 Kindly check our [Contributing](https://github.com/axiomhq/cli/blob/documentation/Contributing.md) guide on how to propose bugfixes and improvements, and submitting pull requests to the project.
 
