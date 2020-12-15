@@ -43,6 +43,7 @@ $ axiom <command>
 $ axiom <command> <subcommand> [flags]
 
 # Run `help` for detailed information about CLI commands
+Help on flags and commands:
 axiom <command> help
 ```
 ### Installation
@@ -74,6 +75,8 @@ $ go get -u github.com/axiomhq/cli/cmd/axiom
 guaranteed that the source code does not use more recent additions to the
 standard library which break building.**
 
+-----------------
+
 #### Install from source
 
 This project uses native [go mod](https://golang.org/cmd/go/#hdr-Module_maintenance) support and requires a working Go 1.15
@@ -84,8 +87,7 @@ $ git clone https://github.com/axiomhq/cli.git
 $ cd cli
 $ make install # Build and install binary into $GOPATH
 ```
-
-  [4]: https://golang.org/cmd/go/#hdr-Module_maintenance
+---------------
 
 #### Validate installation
 
@@ -95,22 +97,15 @@ terminal:
 ```shell
 Axiom CLI version 0.1.0
 ```
-
-### Using the application
-
-CLI usage:
-
-```shell
-$ axiom <command> <subcommand> [flags]
-```
-
-Help on flags and commands:
-
-```shell
-$ axiom --help
-```
+----------------------
 
 ## Documentation
+
+
+
+To learn how to log in to Netlify and start deploying sites, visit the documentation on Netlify.
+
+For a full command reference, see the list below, or visit cli.netlify.com.
 
 ## GOPATH
 
