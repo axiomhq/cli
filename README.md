@@ -33,6 +33,7 @@
 The official command line client for [Axiom](https://www.axiom.co/). Axiom CLI brings the power of Axiom to the command-line. 
 
 ## Goal
+
 The Goal of the Axiom CLI is to create, manage, build and test your Axiom projects. 
 
 ## Usage
@@ -144,14 +145,19 @@ For full command reference, see the list below, or visit cli.axiom.com.
 | axiom completion bash |      Generate shell completion script for bash                                       |
 | axiom completion fish |      Generate shell completion script for fish                                       |
 | axiom completion powershell | Generate shell completion script for powershell                                |
-| axiom completion zsh   |     Generate shell completion script for zsh   
-                                     |
+| axiom completion zsh   |     Generate shell completion script for zsh                                        |
 
+### LEARN MORE
+```shell
+# To get help on any information
+ `axiom help`
 
+# For more information about a command.
+`axiom <command> --help'
+'axiom <command> <subcommand> --help' 
 
-
-               
-
+Read the manual at https://docs.axiom.co/cli
+```
 ## GOPATH
 
 Make sure your PATH includes the `$GOPATH/bin` directory so your commands can be easily used:
