@@ -35,16 +35,6 @@ brings the power of Axiom to the command-line.
 The Goal of the Axiom CLI is to create, manage, build and test your Axiom
 projects. 
 
-## Usage
-
-```shell
-$ axiom <command> 
-$ axiom <command> <subcommand> [flags]
-
-# Run `help` for detailed information about commands
-$ axiom help <command>
-```
-
 ## Installation
 
 Installing the CLI globally provides access to the Axiom command.
@@ -85,6 +75,15 @@ terminal:
 
 ```shell
 Axiom CLI version 0.1.0
+```
+## Usage
+
+```shell
+$ axiom <command> 
+$ axiom <command> <subcommand> [flags]
+
+# Run `help` for detailed information about commands
+$ axiom help <command>
 ```
 
 ## Documentation
