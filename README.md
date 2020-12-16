@@ -137,6 +137,7 @@ For full command reference, see the list below, or visit cli.axiom.com.
 | axiom config edit     |      Edit the configuration file                                                     |
 | axiom dataset create  |      Create a dataset                                                                |
 | axiom dataset list    |      List all datasets                                                               |
+| axiom dataset info    |      Get info about a dataset                                                        |
 
 
 
