@@ -25,7 +25,6 @@
 1. [Installation](#installation)
 1. [Documentation](#documentation)
 1. [Commands](#commands)
-1. [GOPATH](#gopath)
 1. [Contributing](#contributing)
 1. [License](#license)
 
@@ -47,7 +46,7 @@ $ axiom <command> <subcommand> [flags]
 Help on flags and commands:
 $ axiom <command> help
 ```
-------------
+---
 
 ## Installation
 
@@ -78,7 +77,7 @@ $ go get -u github.com/axiomhq/cli/cmd/axiom
 guaranteed that the source code does not use more recent additions to the
 standard library which break building.**
 
------------------
+----
 
 #### Install from source
 
@@ -90,7 +89,7 @@ $ git clone https://github.com/axiomhq/cli.git
 $ cd cli
 $ make install # Build and install binary into $GOPATH
 ```
----------------
+----
 
 #### Validate installation
 
@@ -100,7 +99,7 @@ terminal:
 ```shell
 Axiom CLI version 0.1.0
 ```
-----------------------
+----
 
 ## Documentation
 
@@ -159,23 +158,17 @@ $ axiom <command> <subcommand> --help
 
 Read the manual at https://docs.axiom.co/cli
 ```
-## GOPATH
 
-Make sure your PATH includes the `$GOPATH/bin` directory so your commands can be easily used:
-
-```shell
-export PATH=$PATH:$GOPATH/bin
-```
 ## Contributing
 
 Feel free to submit PRs or to fill issues. Every kind of help is appreciated. 
 
 Before committing, `make` should run without any issues.
 
-Kindly check our [Contributing](https://github.com/axiomhq/cli/blob/documentation/Contributing.md) guide on how to propose bugfixes and improvements, and submitting pull requests to the project.
+Kindly check our [Contributing](Contributing.md) guide on how to propose bugfixes and improvements, and submitting pull requests to the project.
 
 More information about the project layout is documented
-[here](https://github.com/axiomhq/cli/blob/documentation/.github/project-layout.md)
+[here](.github/project_layout.md)
 
 ## License
 
