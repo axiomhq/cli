@@ -115,7 +115,7 @@ For full command reference, see the list below, or visit cli.axiom.com.
 | axiom ingest          |        Ingest data                                                                   |
 | axiom stream          |        Live stream data                                                              |
 
-**MANAGEMENT COMMANDS**
+**Management Commands**
 
 | Commands              | Description                                                                          |
 | --------------------- | ------------------------------------------------------------------------------------ |
@@ -123,6 +123,14 @@ For full command reference, see the list below, or visit cli.axiom.com.
 | axiom config          |        Manage Configuration                                                          |
 | axiom dataset         |        Manage datasets                                                               |
 | axiom integrate       |        Integrate axiom into a Project                                                | 
+
+**Additional Commands**
+
+| Commands              | Description                                                                          |
+| --------------------- | ------------------------------------------------------------------------------------ |
+| axiom auth login      |      Login to an Axiom deployment                                                    |
+| axiom auth status     |      View authentication status                                                      |
+| axiom auth select     |      Select an Axiom deployment                                                      |
 
 
 
