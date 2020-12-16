@@ -105,7 +105,7 @@ Axiom CLI version 0.1.0
 
 To learn how to log in to Axiom and start gaining instant, actionable insights, and start storing and querying unlimited machine data, visit the [documentation on Axiom](https://docs.axiom.co/)
 
-For full command reference, see the list below, or visit cli.axiom.com. 
+For full command reference, see the list below, or visit [cli.axiom.com](https://docs.axiom.co/getting-started/index.html)
 
 ## Commands
 
@@ -148,6 +148,7 @@ For full command reference, see the list below, or visit cli.axiom.com.
 | axiom completion zsh   |     Generate shell completion script for zsh                                        |
 
 ##### LEARN MORE
+
 ```shell
 # To get help on any information
  $ axiom help
@@ -168,7 +169,7 @@ Before committing, `make` should run without any issues.
 Kindly check our [Contributing](Contributing.md) guide on how to propose bugfixes and improvements, and submitting pull requests to the project.
 
 More information about the project layout is documented
-[here](.github/project_layout.md)
+[here](project_layout.md)
 
 ## License
 
