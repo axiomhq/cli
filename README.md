@@ -114,7 +114,7 @@ For full command reference, see the list below, or visit cli.axiom.com.
 | axiom ingest          |        Ingest data                                                                   |
 | axiom stream          |        Live stream data                                                              |
 
-** MANAGEMENT COMMANDS**
+**MANAGEMENT COMMANDS**
 
 | Commands              | Description                                                                          |
 | --------------------- | ------------------------------------------------------------------------------------ |
