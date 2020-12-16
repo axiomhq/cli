@@ -25,6 +25,7 @@
 1. [Installation](#installation)
 1. [Documentation](#documentation)
 1. [Commands](#commands)
+1. [GOPATH](#gopath)
 1. [Contributing](#contributing)
 1. [License](#license)
 
@@ -147,7 +148,7 @@ For full command reference, see the list below, or visit cli.axiom.com.
 | axiom completion powershell | Generate shell completion script for powershell                                |
 | axiom completion zsh   |     Generate shell completion script for zsh                                        |
 
-### LEARN MORE
+##### LEARN MORE
 ```shell
 # To get help on any information
  `axiom help`
