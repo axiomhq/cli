@@ -18,8 +18,8 @@ straightforward tool for interacting with [Axiom](https://axiom.co).**
 
 1. [Introduction](#introduction)
 1. [Goal](#Goal)
-1. [Usage](#usage)
 1. [Installation](#installation)
+1. [Usage](#usage)
 1. [Documentation](#documentation)
 1. [Commands](#commands)
 1. [Contributing](#contributing)
