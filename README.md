@@ -24,6 +24,7 @@
 1. [Usage](#usage)
 1. [Installation](#installation)
 1. [Documentation](#documentation)
+1. [Commands](#commands)
 1. [Contributing](#contributing)
 1. [License](#license)
 
@@ -121,6 +122,9 @@ For full command reference, see the list below, or visit cli.axiom.com.
 | axiom auth            |        Manage Authentication State                                                   |
 | axiom config          |        Manage Configuration                                                          |
 | axiom dataset         |        Manage datasets                                                               |
+| axiom integrate       |        Integrate axiom into a Project                                                | 
+
+
 
                
 
