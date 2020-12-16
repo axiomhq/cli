@@ -111,8 +111,17 @@ For full command reference, see the list below, or visit cli.axiom.com.
 
 | Commands              | Description                                                                          |
 | --------------------- | ------------------------------------------------------------------------------------ |
-| Axiom Ingest          |        Ingest data                   
-| Axiom Stream          |        Live stream data                                                              |
+| axiom ingest          |        Ingest data                                                                   |
+| axiom stream          |        Live stream data                                                              |
+
+** MANAGEMENT COMMANDS**
+
+| Commands              | Description                                                                          |
+| --------------------- | ------------------------------------------------------------------------------------ |
+| axiom auth            |        Manage Authentication State                                                   |
+| axiom config          |        Manage Configuration                                                          |
+| axiom dataset         |        Manage datasets                                                               |
+
                
 
 ## GOPATH
