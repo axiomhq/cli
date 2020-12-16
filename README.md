@@ -139,6 +139,8 @@ For full command reference, see the list below, or visit cli.axiom.com.
 | axiom dataset list    |      List all datasets                                                               |
 | axiom dataset info    |      Get info about a dataset                                                        |
 | axiom dataset update  |      Update a dataset                                                                |
+| axiom dataset delete  |      Delete a dataset                                                                |
+| axiom dataset stats   |      Get statistics about all datasets                                               |
 
 
 
