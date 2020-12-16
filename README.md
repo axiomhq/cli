@@ -45,7 +45,7 @@ $ axiom <command> <subcommand> [flags]
 
 # Run `help` for detailed information about CLI commands
 Help on flags and commands:
-axiom <command> help
+$ axiom <command> help
 ```
 ------------
 
@@ -151,11 +151,11 @@ For full command reference, see the list below, or visit cli.axiom.com.
 ##### LEARN MORE
 ```shell
 # To get help on any information
- `axiom help`
+ $ axiom help
 
 # For more information about a command.
-`axiom <command> --help'
-'axiom <command> <subcommand> --help' 
+$ axiom <command> --help
+$ axiom <command> <subcommand> --help
 
 Read the manual at https://docs.axiom.co/cli
 ```
