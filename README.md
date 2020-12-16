@@ -11,9 +11,7 @@
 
 This is the home of the Axiom Cli code.
 
-> The [Axiom][1] command-line application is a fast and straightforward package for interacting with [Axiom](https://axiom.co) from your command line. 
-
-  [1]: https://axiom.co
+**The [Axiom](https://axiom.co) command-line application is a fast and straightforward package for interacting with [Axiom](https://axiom.co) from your command line.**
 
 <p align="center"><img src=".github/img/demo.gif?raw=true"/></p>
 
@@ -35,7 +33,6 @@ The official command line client for [Axiom](https://www.axiom.co/). Axiom CLI b
 
 ## Goal
 The Goal of the Axiom CLI is to create, manage, build and test your Axiom projects. 
-
 
 ## Usage
 
