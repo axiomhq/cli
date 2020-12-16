@@ -132,6 +132,10 @@ For full command reference, see the list below, or visit cli.axiom.com.
 | axiom auth status     |      View authentication status                                                      |
 | axiom auth select     |      Select an Axiom deployment                                                      |
 | axiom auth logout     |      Logout of an Axiom deployment                                                   |
+| axiom config get      |      Get a configuration value                                                       |
+| axiom config set      |      Set a configuration value                                                       |
+| axiom config edit     |      Edit the configuration file                                                     |
+
 
 
 
