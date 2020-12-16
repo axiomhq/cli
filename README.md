@@ -107,6 +107,14 @@ For full command reference, see the list below, or visit cli.axiom.com.
 
 ## Commands
 
+**Core Commands**
+
+| Commands              | Description                                                                          |
+| --------------------- | ------------------------------------------------------------------------------------ |
+| Axiom Ingest          |        Ingest data                   
+| Axiom Stream          |        Live stream data                                                              |
+               
+
 ## GOPATH
 
 Make sure your PATH includes the `$GOPATH/bin` directory so your commands can be easily used:
