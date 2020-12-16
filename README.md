@@ -144,6 +144,8 @@ For full command reference, see the list below, or visit cli.axiom.com.
 | axiom completion bash |      Generate shell completion script for bash                                       |
 | axiom completion fish |      Generate shell completion script for fish                                       |
 | axiom completion powershell | Generate shell completion script for powershell                                |
+| axiom completion zsh   |     Generate shell completion script for zsh   
+                                     |
 
 
 
