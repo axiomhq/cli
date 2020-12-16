@@ -9,7 +9,7 @@
 [![License][license_badge]][license]
 [![License Status][license_status_badge]][license_status]
 
-###### This is the home of the Axiom Cli code.
+#### This is the home of the Axiom Cli code.
 
 **The [Axiom](https://axiom.co) command-line application is a fast and straightforward package for interacting with [Axiom](https://axiom.co) from your command line.**
 
