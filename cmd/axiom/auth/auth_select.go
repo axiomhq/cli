@@ -10,6 +10,8 @@ import (
 	"github.com/axiomhq/cli/internal/cmdutil"
 )
 
+var activeDeployment string
+
 func newSelectCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "select [<deployment-alias>]",
@@ -21,7 +23,7 @@ func newSelectCmd(f *cmdutil.Factory) *cobra.Command {
 
 		DisableFlagsInUseLine: true,
 
-		Args:              cmdutil.PopulateFromArgs(f, &f.Config.ActiveDeployment),
+		Args:              cmdutil.PopulateFromArgs(f, &activeDeployment),
 		ValidArgsFunction: deploymentCompletionFunc(f.Config),
 
 		Example: heredoc.Doc(`
@@ -34,17 +36,19 @@ func newSelectCmd(f *cmdutil.Factory) *cobra.Command {
 
 		PreRunE: cmdutil.ChainRunFuncs(
 			cmdutil.NeedsDeployments(f),
-			cmdutil.NeedsValidDeployment(f, &f.Config.ActiveDeployment),
+			cmdutil.NeedsValidDeployment(f, &activeDeployment),
 		),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if f.Config.ActiveDeployment == "" {
+			if activeDeployment == "" {
 				if err := survey.AskOne(&survey.Select{
 					Message: "Which deployment to select?",
 					Options: f.Config.DeploymentAliases(),
 				}, &f.Config.ActiveDeployment, f.IO.SurveyIO()); err != nil {
 					return err
 				}
+			} else {
+				f.Config.ActiveDeployment = activeDeployment
 			}
 
 			if err := f.Config.Write(); err != nil {
