@@ -26,7 +26,7 @@ func newLogoutCmd(f *cmdutil.Factory) *cobra.Command {
 		Factory: f,
 	}
 
-	cmd := &cobra.Command{ //nolint:dupl
+	cmd := &cobra.Command{
 		Use:   "logout [<deployment-alias>] [-f|--force]",
 		Short: "Logout of an Axiom deployment",
 
