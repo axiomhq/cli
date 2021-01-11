@@ -17,9 +17,9 @@ builds:
         - -tags="osusergo netgo static_build"
       ldflags:
         - -s -w -extldflags "-fno-PIC -static"
-        - -X github.com/axiomhq/cli/pkg/version.release={{.Version}}
-        - -X github.com/axiomhq/cli/pkg/version.revision={{.ShortCommit}}
-        - -X github.com/axiomhq/cli/pkg/version.buildDate={{.CommitDate}}
+        - -X github.com/axiomhq/cli/pkg/version.release={{ .Version }}
+        - -X github.com/axiomhq/cli/pkg/version.revision={{ .ShortCommit }}
+        - -X github.com/axiomhq/cli/pkg/version.buildDate={{ .CommitDate }}
         - -X github.com/axiomhq/cli/pkg/version.buildUser=goreleaser
       mod_timestamp: "{{ .CommitTimestamp }}"
     id: darwin
@@ -96,7 +96,7 @@ release:
     owner: axiomhq
     name: cli
   prerelease: auto
-  name_template: Axiom CLI v{{.Version}}
+  name_template: Axiom CLI v{{ .Version }}
 
 brews:
   - name: axiom
