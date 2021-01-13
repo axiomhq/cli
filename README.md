@@ -173,8 +173,6 @@ See [LICENSE](LICENSE) for more information.
 
 [docs]: https://docs.axiom.co
 [docs_badge]: https://img.shields.io/badge/docs-reference-blue.svg?style=flat-square
-[godoc]: https://github.com/axiomhq/cli/axiom
-[godoc_badge]: https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square&ghcache=unused
 [go_workflow]: https://github.com/axiomhq/cli/actions?query=workflow%3Ago
 [go_workflow_badge]: https://img.shields.io/github/workflow/status/axiomhq/cli/go?style=flat-square&ghcache=unused
 [coverage]: https://codecov.io/gh/axiomhq/cli
