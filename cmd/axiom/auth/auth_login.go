@@ -234,6 +234,7 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 		}
 	}
 
+	opts.Config.ActiveDeployment = opts.Alias
 	opts.Config.Deployments[opts.Alias] = config.Deployment{
 		URL:       opts.URL,
 		Token:     opts.Token,
