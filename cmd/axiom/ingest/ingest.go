@@ -38,8 +38,6 @@ type options struct {
 	// is only valid when ingesting a stream of newline delimited JSON objects
 	// of unknown length.
 	FlushEvery time.Duration
-	// Compression enables gzip compression.
-	Compression bool
 }
 
 // NewIngestCmd creates and returns the ingest command.
@@ -54,17 +52,20 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 		Long: heredoc.Doc(`
 			Ingest data into an Axiom dataset.
 
-			Supported formats are: Newline delimited JSON (NDJSON), and an array of JSON objects.
-			The input format is automatically detected.
+			Supported formats are: Newline delimited JSON (NDJSON), and an array
+			of JSON objects. The input format is automatically detected.
 
-			Each object is assigned an event timestamp from the configured timestamp field (default "_time").
-			If the there is no timestamp field Axiom will assign the server side time of reception.
-			The timestamp format can be configured by specifying a pattern with the reference date:
+			Each object is assigned an event timestamp from the configured
+			timestamp field (default "_time"). If the there is no timestamp
+			field Axiom will assign the server side time of reception. The
+			timestamp format can be configured by specifying a pattern with the
+			reference date:
 
 				Mon Jan 2 15:04:05 -0700 MST 2006
 
-			Omitted elements in the pattern are treated as zero or one as applicable.
-			See the Go reference documentation for examples: https://pkg.go.dev/time#pkg-constants
+			Omitted elements in the pattern are treated as zero or one as
+			applicable. See the Go reference documentation for examples:
+			https://pkg.go.dev/time#pkg-constants
 		`),
 
 		DisableFlagsInUseLine: true,
@@ -88,7 +89,8 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 			# only valid for newline delimited JSON.
 			$ ./loggen -ndjson | axiom ingest gen-logs
 
-			# Send a set of gzip compressed JSON logs to a dataset called "my-logs":
+			# Send a set of gzip compressed JSON logs to a dataset called
+			# "my-logs":
 			$ zcat log*.gz | axiom ingest my-logs
 		`),
 
@@ -118,7 +120,6 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.Flags().StringVar(&opts.TimestampField, "timestamp-field", "", "Field to take the ingestion time from (defaults to _time)")
 	cmd.Flags().StringVar(&opts.TimestampFormat, "timestamp-format", "", "Format used in the the timestamp field. Default uses a heuristic parser. Must be expressed using the reference time 'Mon Jan 2 15:04:05 -0700 MST 2006'")
 	cmd.Flags().DurationVar(&opts.FlushEvery, "flush-every", time.Second, "Buffer flush interval for newline delimited JSON streams of unknown length")
-	cmd.Flags().BoolVarP(&opts.Compression, "compression", "c", true, "Enable compression when uploading to Axiom")
 
 	_ = cmd.RegisterFlagCompletionFunc("timestamp-field", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("timestamp-format", cmdutil.NoCompletion)
@@ -300,16 +301,12 @@ func ingestEvery(ctx context.Context, client *axiom.Client, r io.Reader, opts *o
 }
 
 func ingest(ctx context.Context, client *axiom.Client, r io.Reader, typ axiom.ContentType, opts *options) (*axiom.IngestStatus, error) {
-	enc := axiom.Identity
-	if opts.Compression {
-		var err error
-		if r, err = axiom.GZIPStreamer(r, gzip.BestSpeed); err != nil {
-			return nil, fmt.Errorf("could not apply compression: %w", err)
-		}
-		enc = axiom.GZIP
+	gzr, err := axiom.GZIPStreamer(r, gzip.BestSpeed)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply compression: %w", err)
 	}
 
-	res, err := client.Datasets.Ingest(ctx, opts.Dataset, r, typ, enc, axiom.IngestOptions{
+	res, err := client.Datasets.Ingest(ctx, opts.Dataset, gzr, typ, axiom.GZIP, axiom.IngestOptions{
 		TimestampField:  opts.TimestampField,
 		TimestampFormat: opts.TimestampFormat,
 	})
