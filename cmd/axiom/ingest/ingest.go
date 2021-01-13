@@ -49,9 +49,14 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "ingest <dataset-name> (-|(-f|--file) <filename>...) [--timestamp-field <timestamp-field>] [--timestamp-format <timestamp-format>] [--flush-every <duration>] [(-c|--compression=)TRUE|FALSE]",
+		Use:   "ingest <dataset-name> (-f|--file) <filename> [ ...] [--timestamp-field <timestamp-field>] [--timestamp-format <timestamp-format>] [--flush-every <duration>] [(-c|--compression=)TRUE|FALSE]",
 		Short: "Ingest data",
-		Long:  `Ingest data into an Axiom dataset.`,
+		Long: heredoc.Doc(`
+			Ingest data into an Axiom dataset.
+
+			Supported formats are: Newline delimited JSON (NDJSON), and an array of JSON objects.
+			The input format is automatically detected.
+		`),
 
 		DisableFlagsInUseLine: true,
 
@@ -97,11 +102,11 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringSliceVarP(&opts.Filenames, "file", "f", nil, "File to ingest")
+	cmd.Flags().StringSliceVarP(&opts.Filenames, "file", "f", nil, "File(s) to ingest (- to read from stdin). Compressed input not supported")
 	cmd.Flags().StringVar(&opts.TimestampField, "timestamp-field", "", "Field to take the ingestion time from")
 	cmd.Flags().StringVar(&opts.TimestampFormat, "timestamp-format", "", "Format the timestamp is formatted in")
 	cmd.Flags().DurationVar(&opts.FlushEvery, "flush-every", time.Second, "Buffer flush interval for newline delimited JSON streams of unknown length")
-	cmd.Flags().BoolVarP(&opts.Compression, "compression", "c", true, "Enable gzip compression")
+	cmd.Flags().BoolVarP(&opts.Compression, "compression", "c", true, "Enable compression when uploading to Axiom")
 
 	_ = cmd.RegisterFlagCompletionFunc("timestamp-field", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("timestamp-format", cmdutil.NoCompletion)
