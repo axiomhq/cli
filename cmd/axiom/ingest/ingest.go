@@ -87,6 +87,9 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 			# after the specified duration instead of waiting for EOF. This is
 			# only valid for newline delimited JSON.
 			$ ./loggen -ndjson | axiom ingest gen-logs
+
+			# Send a set of gzip compressed JSON logs to a dataset called "my-logs":
+			$ zcat log*.gz | axiom ingest my-logs
 		`),
 
 		Annotations: map[string]string{
@@ -111,7 +114,7 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringSliceVarP(&opts.Filenames, "file", "f", nil, "File(s) to ingest (- to read from stdin). Compressed input not supported")
+	cmd.Flags().StringSliceVarP(&opts.Filenames, "file", "f", nil, "File(s) to ingest (- to read from stdin). If stdin is a pipe the default value is -, otherwise this is a required parameter")
 	cmd.Flags().StringVar(&opts.TimestampField, "timestamp-field", "", "Field to take the ingestion time from (defaults to _time)")
 	cmd.Flags().StringVar(&opts.TimestampFormat, "timestamp-format", "", "Format used in the the timestamp field. Default uses a heuristic parser. Must be expressed using the reference time 'Mon Jan 2 15:04:05 -0700 MST 2006'")
 	cmd.Flags().DurationVar(&opts.FlushEvery, "flush-every", time.Second, "Buffer flush interval for newline delimited JSON streams of unknown length")
