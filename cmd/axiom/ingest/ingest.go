@@ -49,9 +49,23 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "ingest <dataset-name> (-|(-f|--file) <filename>...) [--timestamp-field <timestamp-field>] [--timestamp-format <timestamp-format>] [--flush-every <duration>] [(-c|--compression=)TRUE|FALSE]",
+		Use:   "ingest <dataset-name> [(-f|--file) <filename> [ ...]] [--timestamp-field <timestamp-field>] [--timestamp-format <timestamp-format>] [--flush-every <duration>] [(-c|--compression=)TRUE|FALSE]",
 		Short: "Ingest data",
-		Long:  `Ingest data into an Axiom dataset.`,
+		Long: heredoc.Doc(`
+			Ingest data into an Axiom dataset.
+
+			Supported formats are: Newline delimited JSON (NDJSON), and an array of JSON objects.
+			The input format is automatically detected.
+
+			Each object is assigned an event timestamp from the configured timestamp field (default "_time").
+			If the there is no timestamp field Axiom will assign the server side time of reception.
+			The timestamp format can be configured by specifying a pattern with the reference date:
+
+				Mon Jan 2 15:04:05 -0700 MST 2006
+
+			Omitted elements in the pattern are treated as zero or one as applicable.
+			See the Go reference documentation for examples: https://pkg.go.dev/time#pkg-constants
+		`),
 
 		DisableFlagsInUseLine: true,
 
@@ -73,6 +87,9 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 			# after the specified duration instead of waiting for EOF. This is
 			# only valid for newline delimited JSON.
 			$ ./loggen -ndjson | axiom ingest gen-logs
+
+			# Send a set of gzip compressed JSON logs to a dataset called "my-logs":
+			$ zcat log*.gz | axiom ingest my-logs
 		`),
 
 		Annotations: map[string]string{
@@ -97,11 +114,11 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringSliceVarP(&opts.Filenames, "file", "f", nil, "File to ingest")
-	cmd.Flags().StringVar(&opts.TimestampField, "timestamp-field", "", "Field to take the ingestion time from")
-	cmd.Flags().StringVar(&opts.TimestampFormat, "timestamp-format", "", "Format the timestamp is formatted in")
+	cmd.Flags().StringSliceVarP(&opts.Filenames, "file", "f", nil, "File(s) to ingest (- to read from stdin). If stdin is a pipe the default value is -, otherwise this is a required parameter")
+	cmd.Flags().StringVar(&opts.TimestampField, "timestamp-field", "", "Field to take the ingestion time from (defaults to _time)")
+	cmd.Flags().StringVar(&opts.TimestampFormat, "timestamp-format", "", "Format used in the the timestamp field. Default uses a heuristic parser. Must be expressed using the reference time 'Mon Jan 2 15:04:05 -0700 MST 2006'")
 	cmd.Flags().DurationVar(&opts.FlushEvery, "flush-every", time.Second, "Buffer flush interval for newline delimited JSON streams of unknown length")
-	cmd.Flags().BoolVarP(&opts.Compression, "compression", "c", true, "Enable gzip compression")
+	cmd.Flags().BoolVarP(&opts.Compression, "compression", "c", true, "Enable compression when uploading to Axiom")
 
 	_ = cmd.RegisterFlagCompletionFunc("timestamp-field", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("timestamp-format", cmdutil.NoCompletion)
