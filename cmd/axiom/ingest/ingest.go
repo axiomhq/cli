@@ -49,13 +49,22 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "ingest <dataset-name> (-f|--file) <filename> [ ...] [--timestamp-field <timestamp-field>] [--timestamp-format <timestamp-format>] [--flush-every <duration>] [(-c|--compression=)TRUE|FALSE]",
+		Use:   "ingest <dataset-name> [(-f|--file) <filename> [ ...]] [--timestamp-field <timestamp-field>] [--timestamp-format <timestamp-format>] [--flush-every <duration>] [(-c|--compression=)TRUE|FALSE]",
 		Short: "Ingest data",
 		Long: heredoc.Doc(`
 			Ingest data into an Axiom dataset.
 
 			Supported formats are: Newline delimited JSON (NDJSON), and an array of JSON objects.
 			The input format is automatically detected.
+
+			Each object is assigned an event timestamp from the configured timestamp field (default "_time").
+			If the there is no timestamp field Axiom will assign the server side time of reception.
+			The timestamp format can be configured by specifying a pattern with the reference date:
+
+				Mon Jan 2 15:04:05 -0700 MST 2006
+
+			Omitted elements in the pattern are treated as zero or one as applicable.
+			See the Go reference documentation for details: https://pkg.go.dev/time#Parse
 		`),
 
 		DisableFlagsInUseLine: true,
@@ -103,8 +112,8 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd.Flags().StringSliceVarP(&opts.Filenames, "file", "f", nil, "File(s) to ingest (- to read from stdin). Compressed input not supported")
-	cmd.Flags().StringVar(&opts.TimestampField, "timestamp-field", "", "Field to take the ingestion time from")
-	cmd.Flags().StringVar(&opts.TimestampFormat, "timestamp-format", "", "Format the timestamp is formatted in")
+	cmd.Flags().StringVar(&opts.TimestampField, "timestamp-field", "", "Field to take the ingestion time from (defaults to _time)")
+	cmd.Flags().StringVar(&opts.TimestampFormat, "timestamp-format", "", "Format used in the the timestamp field. Default uses a heuristic parser. Must be expressed using the reference time 'Mon Jan 2 15:04:05 -0700 MST 2006'")
 	cmd.Flags().DurationVar(&opts.FlushEvery, "flush-every", time.Second, "Buffer flush interval for newline delimited JSON streams of unknown length")
 	cmd.Flags().BoolVarP(&opts.Compression, "compression", "c", true, "Enable compression when uploading to Axiom")
 
