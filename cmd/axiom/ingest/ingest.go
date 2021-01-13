@@ -64,7 +64,7 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 				Mon Jan 2 15:04:05 -0700 MST 2006
 
 			Omitted elements in the pattern are treated as zero or one as applicable.
-			See the Go reference documentation for details: https://pkg.go.dev/time#Parse
+			See the Go reference documentation for examples: https://pkg.go.dev/time#pkg-constants
 		`),
 
 		DisableFlagsInUseLine: true,
