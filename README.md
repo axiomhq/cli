@@ -74,8 +74,9 @@ In all cases the installation can be validated by running `axiom -v` in the
 terminal:
 
 ```shell
-Axiom CLI version 0.1.0
+Axiom CLI version 0.1.2
 ```
+
 ## Usage
 
 ```shell
@@ -106,35 +107,34 @@ For full command reference, see the list below, or visit
 
 **Management Commands**
 
-| Commands              | Description                    |
-| --------------------- | ------------------------------ |
-| axiom auth            | Manage Authentication State    |
-| axiom config          | Manage Configuration           |
-| axiom dataset         | Manage datasets                |
+| Commands             | Description                       |
+| -------------------- | --------------------------------- |
+| axiom auth login     | Login to an Axiom deployment      |
+| axiom auth status    | View authentication status        |
+| axiom auth select    | Select an Axiom deployment        |
+| axiom auth logout    | Logout of an Axiom deployment     |
+| axiom config get     | Get a configuration value         |
+| axiom config set     | Set a configuration value         |
+| axiom config edit    | Edit the configuration file       |
+| axiom dataset create | Create a dataset                  |
+| axiom dataset list   | List all datasets                 |
+| axiom dataset info   | Get info about a dataset          |
+| axiom dataset update | Update a dataset                  |
+| axiom dataset delete | Delete a dataset                  |
+| axiom dataset stats  | Get statistics about all datasets |
 
 **Additional Commands**
 
 | Commands                    | Description                                     |
 | --------------------------- | ----------------------------------------------- |
-| axiom auth login            | Login to an Axiom deployment                    |
-| axiom auth status           | View authentication status                      |
-| axiom auth select           | Select an Axiom deployment                      |
-| axiom auth logout           | Logout of an Axiom deployment                   |
-| axiom config get            | Get a configuration value                       |
-| axiom config set            | Set a configuration value                       |
-| axiom config edit           | Edit the configuration file                     |
-| axiom dataset create        | Create a dataset                                |
-| axiom dataset list          | List all datasets                               |
-| axiom dataset info          | Get info about a dataset                        |
-| axiom dataset update        | Update a dataset                                |
-| axiom dataset delete        | Delete a dataset                                |
-| axiom dataset stats         | Get statistics about all datasets               |
 | axiom completion bash       | Generate shell completion script for bash       |
 | axiom completion fish       | Generate shell completion script for fish       |
 | axiom completion powershell | Generate shell completion script for powershell |
 | axiom completion zsh        | Generate shell completion script for zsh        |
+| axiom help                  | Help about any command                          |
+| axiom version               | Print version                                   |
 
-### LEARN MORE
+### Learn more
 
 ```shell
 # To get help on any information
@@ -157,17 +157,15 @@ Kindly check our [Contributing](Contributing.md) guide on how to propose
 bugfixes and improvements, and submitting pull requests to the project.
 
 More information about the project layout is documented
-[here](/.github/project-layout.md)
+[here](.github/project-layout.md).
 
 ## License
 
-&copy; Axiom, Inc., 2020
+&copy; Axiom, Inc., 2021
 
 Distributed under MIT License (`The MIT License`).
 
 See [LICENSE](LICENSE) for more information.
-
-[![License Status][license_status_badge]][license_status]
 
 <!-- Badges -->
 
@@ -183,5 +181,3 @@ See [LICENSE](LICENSE) for more information.
 [release_badge]: https://img.shields.io/github/release/axiomhq/cli.svg?style=flat-square&ghcache=unused
 [license]: https://opensource.org/licenses/MIT
 [license_badge]: https://img.shields.io/github/license/axiomhq/cli.svg?color=blue&style=flat-square&ghcache=unused
-[license_status]: https://app.fossa.com/projects/git%2Bgithub.com%2Faxiomhq%2Fcli
-[license_status_badge]: https://app.fossa.com/api/projects/git%2Bgithub.com%2Faxiomhq%2Fcli.svg?type=large&ghcache=unused
