@@ -57,7 +57,7 @@ func newLoginCmd(f *cmdutil.Factory) *cobra.Command {
 			$ axiom auth login
 			
 			# Provide parameters on the command-line:
-			$ echo $AXIOM_ACCESS_TOKEN | axiom auth login --url="https://axiom.eu-west-1.aws.com" --alias="axiom-eu-west-1" --token-stdin
+			$ echo $AXIOM_ACCESS_TOKEN | axiom auth login --url="https://axiom.eu-west-1.aws.com" --alias="axiom-eu-west-1" --token-stdin --token-type personal -f
 		`),
 
 		PreRunE: func(*cobra.Command, []string) error {
