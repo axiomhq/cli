@@ -88,7 +88,7 @@ func newLoginCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.Flags().StringVar(&opts.URL, "url", "", "Url of the deployment")
 	cmd.Flags().StringVarP(&opts.Alias, "alias", "a", "", "Alias of the deployment")
 	cmd.Flags().BoolVar(&opts.TokenStdIn, "token-stdin", false, "Read token from stdin")
-	cmd.Flags().StringVarP(&opts.TokenType, "token-type", "t", "", "Type of the token")
+	cmd.Flags().StringVarP(&opts.TokenType, "token-type", "t", "", "Type of the token (choose \"personal\" or \"ingest\")")
 	cmd.Flags().BoolVarP(&opts.Force, "force", "f", false, "Skip the confirmation prompt")
 
 	_ = cmd.RegisterFlagCompletionFunc("url", cmdutil.NoCompletion)
