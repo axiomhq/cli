@@ -262,6 +262,28 @@ func ingestEvery(ctx context.Context, client *axiom.Client, r io.Reader, opts *o
 		scanner := bufio.NewScanner(r)
 		scanner.Split(splitLinesMulti)
 
+		// We need to scan in a go func to make sure we don't block on
+		// scanner.Scan().
+		lines := make(chan []byte)
+		defer close(lines)
+		go func() {
+			for {
+				select {
+				case <-ctx.Done():
+					_ = pw.CloseWithError(scanner.Err())
+					return
+				default:
+				}
+
+				if !scanner.Scan() {
+					_ = pw.CloseWithError(scanner.Err())
+					return
+				}
+
+				lines <- scanner.Bytes()
+			}
+		}()
+
 		for {
 			select {
 			case <-ctx.Done():
@@ -274,13 +296,8 @@ func ingestEvery(ctx context.Context, client *axiom.Client, r io.Reader, opts *o
 
 				pr, pw = io.Pipe()
 				readers <- pr
-			default:
-				if !scanner.Scan() {
-					_ = pw.CloseWithError(scanner.Err())
-					return
-				}
-
-				if _, err := pw.Write(scanner.Bytes()); err != nil {
+			case line := <-lines:
+				if _, err := pw.Write(line); err != nil {
 					_ = pw.CloseWithError(err)
 					return
 				}
