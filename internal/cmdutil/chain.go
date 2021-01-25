@@ -80,11 +80,6 @@ func NeedsRootPersistentPreRunE() RunFunc {
 // an error is printed and a silent error returned.
 func NeedsActiveDeployment(f *Factory) RunFunc {
 	return func(cmd *cobra.Command, _ []string) error {
-		// If no deployments are configured, print an error message.
-		if len(f.Config.Deployments) == 0 {
-			return execTemplateSilent(f.IO, noDeploymentsMsg, nil)
-		}
-
 		// If the given deployment is configured, that's all we need. If it is
 		// not configured, but given, print an error message.
 		if _, ok := f.Config.GetActiveDeployment(); ok {
