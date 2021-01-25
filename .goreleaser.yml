@@ -123,7 +123,7 @@ brews:
 
 dockers:
   - image_templates:
-    - "axiomhq/cli:{{ .Tag }}"
-    - "axiomhq/cli:v{{ .Major }}"
-    - "axiomhq/cli:v{{ .Major }}.{{ .Minor }}"
+    - "axiomhq/cli:{{ .Major }}"
+    - "axiomhq/cli:{{ .Major }}.{{ .Minor }}"
+    - "axiomhq/cli:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
     - "axiomhq/cli:latest"
