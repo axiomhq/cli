@@ -171,12 +171,13 @@ func (c *Config) Set(key, value string) error {
 
 // Keys which are valid arguments to Get() and Set().
 func (c *Config) Keys() []string {
-	res := make([]string, 0, len(c.Deployments)*2+1) // 2 fields for each deployment plus the "active_deployment" one
+	res := make([]string, 0, len(c.Deployments)*3+1) // 3 fields for each deployment plus the "active_deployment" one
 	res = append(res, "active_deployment")
 	for k := range c.Deployments {
 		base := strings.Join([]string{"deployments", k}, ".")
 		res = append(res, strings.Join([]string{base, "url"}, "."))
 		res = append(res, strings.Join([]string{base, "token"}, "."))
+		res = append(res, strings.Join([]string{base, "token_type"}, "."))
 	}
 	sort.Strings(res)
 	return res
