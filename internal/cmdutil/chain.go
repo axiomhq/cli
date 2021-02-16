@@ -44,9 +44,6 @@ var (
 		  Explicitly create a datatset on the configured deployment:
 		  $ {{ bold "axiom dataset create" }}
 		  $ {{ bold "axiom dataset create nginx-logs" }}
-
-		  Have the dataset created as part of ingestion into a named dataset:
-		  $ {{ bold "cat logs.json | axiom ingest -d create" }}
 	`)
 )
 
