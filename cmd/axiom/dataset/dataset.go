@@ -28,7 +28,10 @@ func NewDatasetCmd(f *cmdutil.Factory) *cobra.Command {
 			"IsManagement": "true",
 		},
 
-		PersistentPreRunE: cmdutil.NeedsActiveDeployment(f),
+		PersistentPreRunE: cmdutil.ChainRunFuncs(
+			cmdutil.NeedsActiveDeployment(f),
+			cmdutil.NeedsPersonalAccessToken(f),
+		),
 	}
 
 	cmd.AddCommand(newCreateCmd(f))

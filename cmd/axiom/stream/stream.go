@@ -67,6 +67,7 @@ func NewStreamCmd(f *cmdutil.Factory) *cobra.Command {
 
 		PreRunE: cmdutil.ChainRunFuncs(
 			cmdutil.NeedsActiveDeployment(f),
+			cmdutil.NeedsPersonalAccessToken(f),
 			cmdutil.NeedsDatasets(f),
 		),
 

@@ -36,11 +36,14 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 
 		Example: heredoc.Doc(`
 			$ axiom auth login
-			$ cat /var/log/nginx/*.log | axiom ingest -d nginx-logs
-			$ axiom query -d nginx-logs
+			$ axiom version
+			$ cat /var/log/nginx/*.log | axiom ingest nginx-logs
 		`),
 
 		Annotations: map[string]string{
+			"help:credentials": heredoc.Doc(`
+				See 'axiom help credentials' for help and guidance on authentication.
+			`),
 			"help:environment": heredoc.Doc(`
 				See 'axiom help environment' for the list of supported environment variables.
 			`),
@@ -103,6 +106,7 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.AddCommand(versionCmd.NewVersionCmd(f, version.Print("Axiom CLI")))
 
 	// Help topics
+	cmd.AddCommand(newHelpTopic(f.IO, "credentials"))
 	cmd.AddCommand(newHelpTopic(f.IO, "environment"))
 
 	return cmd

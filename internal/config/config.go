@@ -52,8 +52,9 @@ func (c *Config) GetActiveDeployment() (Deployment, bool) {
 	if !ok {
 		if c.URLOverride != "" || c.TokenOverride != "" {
 			dep = Deployment{
-				URL:   c.URLOverride,
-				Token: c.TokenOverride,
+				URL:       c.URLOverride,
+				Token:     c.TokenOverride,
+				TokenType: Personal,
 			}
 			return dep, true
 		}
@@ -65,6 +66,7 @@ func (c *Config) GetActiveDeployment() (Deployment, bool) {
 	}
 	if c.TokenOverride != "" {
 		dep.Token = c.TokenOverride
+		dep.TokenType = Personal
 	}
 
 	return dep, true
