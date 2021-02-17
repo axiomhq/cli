@@ -59,6 +59,9 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 			if fl := cmd.Flag("deployment"); fl.Changed {
 				f.Config.ActiveDeployment = fl.Value.String()
 			}
+			if fl := cmd.Flag("org-id"); fl.Changed {
+				f.Config.OrganizationIDOverride = fl.Value.String()
+			}
 			if fl := cmd.Flag("token"); fl.Changed {
 				f.Config.TokenOverride = fl.Value.String()
 			}
@@ -89,6 +92,7 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 	// Overrides
 	cmd.PersistentFlags().StringP("config", "C", "", "Path to configuration file to use")
 	cmd.PersistentFlags().StringP("deployment", "D", "", "Deployment to use")
+	cmd.PersistentFlags().StringP("org-id", "O", os.Getenv("AXM_ORG_ID"), "Organization ID to use (only valid for Axiom Cloud)")
 	cmd.PersistentFlags().StringP("token", "T", os.Getenv("AXM_TOKEN"), "Token to use")
 	cmd.PersistentFlags().StringP("url", "U", os.Getenv("AXM_URL"), "Url to use")
 
