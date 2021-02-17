@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
+	"github.com/axiomhq/cli/internal/config"
 )
 
 // NewVersionCmd creates and returns the version command.
@@ -15,12 +16,15 @@ func NewVersionCmd(f *cmdutil.Factory, version string) *cobra.Command {
 		Long: heredoc.Doc(`
 			Print the version and build details.
 			
-			When an active deployment is configured, its version will be fetched
-			and printed as well.
+			When an active deployment is configured with a Personal Access Token,
+			its version will be fetched and printed as well.
 		`),
 
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			if _, ok := f.Config.GetActiveDeployment(); !ok {
+			if activeDeployment, ok := f.Config.GetActiveDeployment(); !ok {
+				cmd.Println(version)
+				return nil
+			} else if activeDeployment.TokenType != config.Personal {
 				cmd.Println(version)
 				return nil
 			}

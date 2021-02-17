@@ -9,6 +9,17 @@ import (
 )
 
 var topics = map[string]string{
+	"credentials": `
+		The supplied token can either be a Personal Access Token, created from
+		the profile page of the deployment or an Ingest Token, created from the
+		appropriate section in the deployments settings.
+
+		Be aware, that Ingest Tokens are only valid for ingestion! Using them
+		with Axiom CLI is encouraged for ingest-only situations but renders the 
+		CLI unable to do anything else. Use a Personal Access Token to get full
+		access to the deployment.
+	`,
+
 	"environment": `
 		AXM_DEPLOYMENT: The deployment to use. Overwrittes the choice loaded
 		from the configuration file.
