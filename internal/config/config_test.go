@@ -15,15 +15,23 @@ active_deployment = "axiom-eu-west-1"
 
 [deployments]
 
+[deployments.cloud]
+url = "axiom-cloud.aws.com"
+token = "this-is-obviously-stupid"
+token_type = "personal"
+org_id = "axiomers-dh71"
+
 [deployments.axiom-eu-west-1]
 url = "axiom-eu-west-1.aws.com"
 token = "this-is-obviously-stupid"
 token_type = "personal"
+org_id = ""
 
 [deployments.axiom-eu-west-2]
 url = "axiom-eu-west-2.aws.com"
 token = "this-is-obviously-more-stupid"
 token_type = "ingest"
+org_id = ""
 `
 
 type TestConfigSuite struct {
@@ -48,5 +56,5 @@ func (s *TestConfigSuite) TestLoad() {
 	s.Require().NotEmpty(cfg)
 
 	s.Equal("axiom-eu-west-2", cfg.ActiveDeployment)
-	s.Len(cfg.Deployments, 2)
+	s.Len(cfg.Deployments, 3)
 }

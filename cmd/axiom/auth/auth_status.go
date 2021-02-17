@@ -80,13 +80,12 @@ func runStatus(ctx context.Context, opts *statusOptions) error {
 
 		var info string
 		if deployment.TokenType == config.Personal {
-			client, err := axiomClient.New(deployment.URL, deployment.Token)
+			client, err := axiomClient.New(deployment.URL, deployment.Token, deployment.OrganizationID)
 			if err != nil {
 				return err
 			}
 
-			user, err := client.Users.Current(ctx)
-			if errors.Is(err, axiom.ErrUnauthenticated) {
+			if user, err := client.Users.Current(ctx); errors.Is(err, axiom.ErrUnauthenticated) {
 				info = fmt.Sprintf("%s %s", cs.ErrorIcon(), "Invalid credentials")
 				failed = true
 			} else if err != nil {

@@ -37,8 +37,9 @@ type Config struct {
 	ActiveDeployment string                `toml:"active_deployment" envconfig:"deployment"`
 	Deployments      map[string]Deployment `toml:"deployments"`
 
-	URLOverride   string `toml:"-" envconfig:"url"`
-	TokenOverride string `toml:"-" envconfig:"token"`
+	URLOverride            string `toml:"-" envconfig:"url"`
+	TokenOverride          string `toml:"-" envconfig:"token"`
+	OrganizationIDOverride string `toml:"-" envconfig:"org_id"`
 
 	ConfigFilePath string `toml:"-"`
 
@@ -52,9 +53,10 @@ func (c *Config) GetActiveDeployment() (Deployment, bool) {
 	if !ok {
 		if c.URLOverride != "" || c.TokenOverride != "" {
 			dep = Deployment{
-				URL:       c.URLOverride,
-				Token:     c.TokenOverride,
-				TokenType: Personal,
+				URL:            c.URLOverride,
+				Token:          c.TokenOverride,
+				TokenType:      Personal,
+				OrganizationID: c.OrganizationIDOverride,
 			}
 			return dep, true
 		}
@@ -68,15 +70,19 @@ func (c *Config) GetActiveDeployment() (Deployment, bool) {
 		dep.Token = c.TokenOverride
 		dep.TokenType = Personal
 	}
+	if c.OrganizationIDOverride != "" {
+		dep.OrganizationID = c.OrganizationIDOverride
+	}
 
 	return dep, true
 }
 
 // Deployment is the configuration for an Axiom instance.
 type Deployment struct {
-	URL       string `toml:"url"`
-	Token     string `toml:"token"`
-	TokenType string `toml:"token_type"`
+	URL            string `toml:"url"`
+	Token          string `toml:"token"`
+	TokenType      string `toml:"token_type"`
+	OrganizationID string `toml:"org_id"`
 }
 
 // LoadDefault tries to load the default configuration. It behaves like Load()
@@ -173,13 +179,14 @@ func (c *Config) Set(key, value string) error {
 
 // Keys which are valid arguments to Get() and Set().
 func (c *Config) Keys() []string {
-	res := make([]string, 0, len(c.Deployments)*3+1) // 3 fields for each deployment plus the "active_deployment" one
+	res := make([]string, 0, len(c.Deployments)*4+1) // 4 fields for each deployment plus the "active_deployment" one.
 	res = append(res, "active_deployment")
 	for k := range c.Deployments {
 		base := strings.Join([]string{"deployments", k}, ".")
 		res = append(res, strings.Join([]string{base, "url"}, "."))
 		res = append(res, strings.Join([]string{base, "token"}, "."))
 		res = append(res, strings.Join([]string{base, "token_type"}, "."))
+		res = append(res, strings.Join([]string{base, "org_id"}, "."))
 	}
 	sort.Strings(res)
 	return res
