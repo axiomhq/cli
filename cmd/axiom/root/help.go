@@ -156,6 +156,9 @@ func rootHelpFunc(io *terminal.IO) func(*cobra.Command, []string) {
 		if cmd.Example != "" {
 			helpEntries = append(helpEntries, helpEntry{"EXAMPLES", cmd.Example})
 		}
+		if _, ok := cmd.Annotations["help:credentials"]; ok {
+			helpEntries = append(helpEntries, helpEntry{"AUTHENTICATION", cmd.Annotations["help:credentials"]})
+		}
 		if _, ok := cmd.Annotations["help:environment"]; ok {
 			helpEntries = append(helpEntries, helpEntry{"ENVIRONMENT VARIABLES", cmd.Annotations["help:environment"]})
 		}

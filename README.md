@@ -6,6 +6,7 @@
 [![Go Report][report_badge]][report]
 [![Latest Release][release_badge]][release]
 [![License][license_badge]][license]
+[![Docker][docker_badge]][docker]
 
 **The [Axiom](https://axiom.co) command-line application is a fast and
 straightforward tool for interacting with [Axiom](https://axiom.co).**
@@ -68,13 +69,22 @@ $ cd cli
 $ make install # Build and install binary into $GOPATH
 ```
 
+### Run the Docker image
+
+Docker images are available on [DockerHub][docker].
+
+```shell
+$ docker pull axiomhq/cli
+$ docker run axiomhq/cli
+```
+
 ### Validate installation
 
 In all cases the installation can be validated by running `axiom -v` in the
 terminal:
 
 ```shell
-Axiom CLI version 0.1.2
+Axiom CLI version 0.1.5
 ```
 
 ## Usage
@@ -181,3 +191,5 @@ See [LICENSE](LICENSE) for more information.
 [release_badge]: https://img.shields.io/github/release/axiomhq/cli.svg?style=flat-square&ghcache=unused
 [license]: https://opensource.org/licenses/MIT
 [license_badge]: https://img.shields.io/github/license/axiomhq/cli.svg?color=blue&style=flat-square&ghcache=unused
+[docker]: https://hub.docker.com/r/axiomhq/cli
+[docker_badge]: https://img.shields.io/docker/pulls/axiomhq/cli.svg

@@ -52,8 +52,9 @@ func (c *Config) GetActiveDeployment() (Deployment, bool) {
 	if !ok {
 		if c.URLOverride != "" || c.TokenOverride != "" {
 			dep = Deployment{
-				URL:   c.URLOverride,
-				Token: c.TokenOverride,
+				URL:       c.URLOverride,
+				Token:     c.TokenOverride,
+				TokenType: Personal,
 			}
 			return dep, true
 		}
@@ -65,6 +66,7 @@ func (c *Config) GetActiveDeployment() (Deployment, bool) {
 	}
 	if c.TokenOverride != "" {
 		dep.Token = c.TokenOverride
+		dep.TokenType = Personal
 	}
 
 	return dep, true
@@ -171,12 +173,13 @@ func (c *Config) Set(key, value string) error {
 
 // Keys which are valid arguments to Get() and Set().
 func (c *Config) Keys() []string {
-	res := make([]string, 0, len(c.Deployments)*2+1) // 2 fields for each deployment plus the "active_deployment" one
+	res := make([]string, 0, len(c.Deployments)*3+1) // 3 fields for each deployment plus the "active_deployment" one
 	res = append(res, "active_deployment")
 	for k := range c.Deployments {
 		base := strings.Join([]string{"deployments", k}, ".")
 		res = append(res, strings.Join([]string{base, "url"}, "."))
 		res = append(res, strings.Join([]string{base, "token"}, "."))
+		res = append(res, strings.Join([]string{base, "token_type"}, "."))
 	}
 	sort.Strings(res)
 	return res

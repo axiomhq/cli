@@ -7,6 +7,7 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 
+	"github.com/axiomhq/cli/internal/config"
 	"github.com/axiomhq/cli/pkg/terminal"
 )
 
@@ -44,9 +45,14 @@ var (
 		  Explicitly create a datatset on the configured deployment:
 		  $ {{ bold "axiom dataset create" }}
 		  $ {{ bold "axiom dataset create nginx-logs" }}
+	`)
 
-		  Have the dataset created as part of ingestion into a named dataset:
-		  $ {{ bold "cat logs.json | axiom ingest -d create" }}
+	restrictedByIngestTokenMsg = heredoc.Doc(`
+		{{ errorIcon }} Deployment {{ bold .Deployment }} is configured with an Ingest Token!
+
+		  An Ingest Token is only valid for ingestion. To run {{ bold .CommandPath }}
+		  make sure to use a Personal Access Token. Help on tokens:
+		  $ {{ bold "axiom help credentials" }}
 	`)
 )
 
@@ -80,11 +86,6 @@ func NeedsRootPersistentPreRunE() RunFunc {
 // an error is printed and a silent error returned.
 func NeedsActiveDeployment(f *Factory) RunFunc {
 	return func(cmd *cobra.Command, _ []string) error {
-		// If no deployments are configured, print an error message.
-		if len(f.Config.Deployments) == 0 {
-			return execTemplateSilent(f.IO, noDeploymentsMsg, nil)
-		}
-
 		// If the given deployment is configured, that's all we need. If it is
 		// not configured, but given, print an error message.
 		if _, ok := f.Config.GetActiveDeployment(); ok {
@@ -150,6 +151,27 @@ func NeedsDatasets(f *Factory) RunFunc {
 		if len(datasets) == 0 {
 			return execTemplateSilent(f.IO, noDatasetsMsg, map[string]string{
 				"Deployment": f.Config.ActiveDeployment,
+			})
+		}
+
+		return nil
+	}
+}
+
+// NeedsPersonalAccessToken prints an error message and errors silently if the
+// active deployment is not configured with a personal access token.
+func NeedsPersonalAccessToken(f *Factory) RunFunc {
+	return func(cmd *cobra.Command, _ []string) error {
+		// We need an active deployment.
+		activeDeployment, ok := f.Config.GetActiveDeployment()
+		if !ok {
+			return nil
+		}
+
+		if activeDeployment.TokenType != config.Personal {
+			return execTemplateSilent(f.IO, restrictedByIngestTokenMsg, map[string]string{
+				"Deployment":  f.Config.ActiveDeployment,
+				"CommandPath": cmd.CommandPath(),
 			})
 		}
 

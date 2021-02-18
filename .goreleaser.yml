@@ -120,3 +120,10 @@ brews:
       (zsh_completion/"_{{ .ProjectName }}").write `#{bin}/{{ .ProjectName }} completion zsh`
     test: |
       assert_match "Axiom CLI version #{version}", shell_output("#{bin}/{{ .ProjectName }} -v")
+
+dockers:
+  - image_templates:
+    - "axiomhq/cli:{{ .Major }}"
+    - "axiomhq/cli:{{ .Major }}.{{ .Minor }}"
+    - "axiomhq/cli:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
+    - "axiomhq/cli:latest"
