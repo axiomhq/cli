@@ -80,7 +80,7 @@ func runStatus(ctx context.Context, opts *statusOptions) error {
 
 		var info string
 		if deployment.TokenType == config.Personal {
-			client, err := axiomClient.New(deployment.URL, deployment.Token, deployment.OrganizationID)
+			client, err := axiomClient.New(deployment.URL, deployment.Token, deployment.OrganizationID, opts.Config.Insecure)
 			if err != nil {
 				return err
 			}

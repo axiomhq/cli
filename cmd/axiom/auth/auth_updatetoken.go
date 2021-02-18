@@ -125,7 +125,7 @@ func runUpdateToken(ctx context.Context, opts *updateTokenOptions) error {
 	activeDeployment, _ := opts.Config.GetActiveDeployment()
 
 	if opts.TokenType == config.Personal {
-		client, err := axiomClient.New(activeDeployment.URL, opts.Token, activeDeployment.OrganizationID)
+		client, err := axiomClient.New(activeDeployment.URL, opts.Token, activeDeployment.OrganizationID, opts.Config.Insecure)
 		if err != nil {
 			return err
 		}

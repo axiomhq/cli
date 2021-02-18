@@ -4,14 +4,23 @@ import (
 	"fmt"
 	"net/url"
 	"reflect"
+	"strings"
 )
 
 // ValidateURL validates that the given input is a valid url.
 func ValidateURL(val interface{}) error {
-	if rawurl, ok := val.(string); !ok {
+	rawurl, ok := val.(string)
+	if !ok {
 		return fmt.Errorf("url cannot be of type %v", reflect.TypeOf(val).Name())
-	} else if _, err := url.ParseRequestURI(rawurl); err != nil {
+	}
+
+	if !strings.HasPrefix(rawurl, "http://") && !strings.HasPrefix(rawurl, "https://") {
+		rawurl = "https://" + rawurl
+	}
+
+	if _, err := url.ParseRequestURI(rawurl); err != nil {
 		return err
 	}
+
 	return nil
 }

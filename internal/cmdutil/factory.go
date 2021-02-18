@@ -31,5 +31,5 @@ func (f *Factory) Client() (*axiom.Client, error) {
 	if !ok {
 		return nil, errors.New("no active deployment set")
 	}
-	return axiomClient.New(deployment.URL, deployment.Token, deployment.OrganizationID)
+	return axiomClient.New(deployment.URL, deployment.Token, deployment.OrganizationID, f.Config.Insecure)
 }

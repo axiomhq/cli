@@ -69,6 +69,8 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 				f.Config.URLOverride = fl.Value.String()
 			}
 
+			f.Config.Insecure = cmd.Flag("insecure").Changed
+
 			return nil
 		},
 	}
@@ -95,6 +97,7 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.PersistentFlags().StringP("org-id", "O", os.Getenv("AXM_ORG_ID"), "Organization ID to use (only valid for Axiom Cloud)")
 	cmd.PersistentFlags().StringP("token", "T", os.Getenv("AXM_TOKEN"), "Token to use")
 	cmd.PersistentFlags().StringP("url", "U", os.Getenv("AXM_URL"), "Url to use")
+	cmd.PersistentFlags().BoolP("insecure", "I", false, "Bypass certificate validation")
 
 	// Core commands
 	cmd.AddCommand(ingestCmd.NewIngestCmd(f))
