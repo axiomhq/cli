@@ -168,7 +168,7 @@ func completeLogin(opts *loginOptions) error {
 	if opts.OrganizationID == "" && deploymentKind == typeCloud {
 		questions = append(questions, &survey.Question{
 			Name:   "organizationID",
-			Prompt: &survey.Input{Message: "What is your organizations ID?"},
+			Prompt: &survey.Input{Message: "What is your organization ID?"},
 			Validate: survey.ComposeValidators(
 				survey.Required,
 				survey.MinLength(12),
