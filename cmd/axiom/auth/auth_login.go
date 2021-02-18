@@ -133,8 +133,9 @@ func completeLogin(opts *loginOptions) error {
 		); err != nil {
 			return err
 		}
-		if deploymentKind == typeCloud {
-			opts.URL = axiom.CloudURL
+
+		if !strings.HasPrefix(opts.URL, "http://") && !strings.HasPrefix(opts.URL, "https://") {
+			opts.URL = "https://" + opts.URL
 		}
 	}
 
@@ -227,7 +228,7 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 	}
 
 	if opts.TokenType == config.Personal {
-		client, err := axiomClient.New(opts.URL, opts.Token, opts.OrganizationID)
+		client, err := axiomClient.New(opts.URL, opts.Token, opts.OrganizationID, opts.Config.Insecure)
 		if err != nil {
 			return err
 		}

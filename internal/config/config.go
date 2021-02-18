@@ -36,6 +36,7 @@ var defaultConfig = Config{
 type Config struct {
 	ActiveDeployment string                `toml:"active_deployment" envconfig:"deployment"`
 	Deployments      map[string]Deployment `toml:"deployments"`
+	Insecure         bool                  `toml:"-" envconfig:"insecure"`
 
 	URLOverride            string `toml:"-" envconfig:"url"`
 	TokenOverride          string `toml:"-" envconfig:"token"`
