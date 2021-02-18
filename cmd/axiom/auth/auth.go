@@ -10,6 +10,8 @@ import (
 	"github.com/axiomhq/cli/internal/config"
 )
 
+var validTokenTypes = []string{config.Personal, config.Ingest}
+
 // NewAuthCmd creates and returns the auth command.
 func NewAuthCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd := &cobra.Command{
@@ -22,6 +24,7 @@ func NewAuthCmd(f *cmdutil.Factory) *cobra.Command {
 			$ axiom auth status
 			$ axiom auth select
 			$ axiom auth logout
+			$ axiom auth update-token
 		`),
 
 		Annotations: map[string]string{
@@ -33,6 +36,7 @@ func NewAuthCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.AddCommand(newLogoutCmd(f))
 	cmd.AddCommand(newSelectCmd(f))
 	cmd.AddCommand(newStatusCmd(f))
+	cmd.AddCommand(newUpdateTokenCmd(f))
 
 	return cmd
 }
@@ -53,4 +57,8 @@ func deploymentCompletionFunc(config *config.Config) cmdutil.CompletionFunc {
 		}
 		return res, cobra.ShellCompDirectiveNoFileComp
 	}
+}
+
+func tokenTypeCompletion(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {
+	return validTokenTypes, cobra.ShellCompDirectiveNoFileComp
 }

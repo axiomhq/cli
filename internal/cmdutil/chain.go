@@ -53,6 +53,10 @@ var (
 		  An Ingest Token is only valid for ingestion. To run {{ bold .CommandPath }}
 		  make sure to use a Personal Access Token. Help on tokens:
 		  $ {{ bold "axiom help credentials" }}
+
+		  To update the token for the deployment, run:
+		  $ {{ bold "axiom auth update-token" }}
+
 	`)
 )
 
@@ -168,11 +172,15 @@ func NeedsPersonalAccessToken(f *Factory) RunFunc {
 			return nil
 		}
 
-		if activeDeployment.TokenType != config.Personal {
-			return execTemplateSilent(f.IO, restrictedByIngestTokenMsg, map[string]string{
-				"Deployment":  f.Config.ActiveDeployment,
-				"CommandPath": cmd.CommandPath(),
-			})
+		if activeDeployment.TokenType == config.Personal {
+			return nil
+		}
+
+		if err := execTemplateSilent(f.IO, restrictedByIngestTokenMsg, map[string]string{
+			"Deployment":  f.Config.ActiveDeployment,
+			"CommandPath": cmd.CommandPath(),
+		}); err != nil {
+			return err
 		}
 
 		return nil

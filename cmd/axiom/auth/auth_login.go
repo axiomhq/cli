@@ -23,10 +23,7 @@ const (
 	typeSelfhost = "Selfhost"
 )
 
-var (
-	validDeploymentTypes = []string{typeCloud, typeSelfhost}
-	validTokenTypes      = []string{config.Personal, config.Ingest}
-)
+var validDeploymentTypes = []string{typeCloud, typeSelfhost}
 
 type loginOptions struct {
 	*cmdutil.Factory
@@ -43,7 +40,8 @@ type loginOptions struct {
 	// TokenType of the supplied token. If not supplied as a flag, which is
 	// optional, the user will be asked for it.
 	TokenType string `survey:"tokenType"`
-	// Read token from stdin instead of prompting the user for it.
+	// TokenStdIn reads the token from stdin instead of prompting the user for
+	// it.
 	TokenStdIn bool
 	// OrganizationID of the organization the supplied token is valid for. If
 	// not supplied as a flag, which is optional, the user will be asked for it.
@@ -73,9 +71,7 @@ func newLoginCmd(f *cmdutil.Factory) *cobra.Command {
 		`),
 
 		PreRunE: func(*cobra.Command, []string) error {
-			if !opts.IO.IsStdinTTY() && !opts.TokenStdIn {
-				return cmdutil.NewFlagErrorf("--token-stdin required when not running interactively")
-			} else if opts.TokenStdIn {
+			if !opts.IO.IsStdinTTY() && opts.TokenStdIn {
 				return nil
 			}
 			return completeLogin(opts)
@@ -277,8 +273,4 @@ func firstSubDomain(s string) string {
 	}
 
 	return strings.TrimLeft(hostRef, u.Scheme)
-}
-
-func tokenTypeCompletion(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {
-	return validTokenTypes, cobra.ShellCompDirectiveNoFileComp
 }
