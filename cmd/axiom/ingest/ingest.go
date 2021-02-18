@@ -256,6 +256,7 @@ func ingestEvery(ctx context.Context, client *axiom.Client, r io.Reader, opts *o
 	go func() {
 		defer close(readers)
 
+		// Add first reader
 		pr, pw := io.Pipe()
 		readers <- pr
 
@@ -263,20 +264,21 @@ func ingestEvery(ctx context.Context, client *axiom.Client, r io.Reader, opts *o
 		scanner.Split(splitLinesMulti)
 
 		// We need to scan in a go func to make sure we don't block on
-		// scanner.Scan().
+		// scanner.Scan()
+		done := make(chan struct{})
 		lines := make(chan []byte)
 		defer close(lines)
 		go func() {
 			for {
 				select {
 				case <-ctx.Done():
-					_ = pw.CloseWithError(scanner.Err())
+					_ = pw.CloseWithError(ctx.Err())
 					return
 				default:
 				}
 
 				if !scanner.Scan() {
-					_ = pw.CloseWithError(scanner.Err())
+					close(done)
 					return
 				}
 
@@ -287,7 +289,7 @@ func ingestEvery(ctx context.Context, client *axiom.Client, r io.Reader, opts *o
 		for {
 			select {
 			case <-ctx.Done():
-				_ = pw.CloseWithError(scanner.Err())
+				_ = pw.CloseWithError(ctx.Err())
 				return
 			case <-t.C:
 				if err := pw.Close(); err != nil {
@@ -301,6 +303,9 @@ func ingestEvery(ctx context.Context, client *axiom.Client, r io.Reader, opts *o
 					_ = pw.CloseWithError(err)
 					return
 				}
+			case <-done:
+				_ = pw.CloseWithError(nil)
+				return
 			}
 		}
 	}()
