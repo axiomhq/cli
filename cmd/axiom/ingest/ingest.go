@@ -10,12 +10,12 @@ import (
 	"io"
 	"os"
 	"time"
-	"unicode"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
 	"github.com/axiomhq/axiom-go/axiom"
 	"github.com/dustin/go-humanize"
+	"github.com/gabriel-vasile/mimetype"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
@@ -52,8 +52,11 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 		Long: heredoc.Doc(`
 			Ingest data into an Axiom dataset.
 
-			Supported formats are: Newline delimited JSON (NDJSON), and an array
-			of JSON objects. The input format is automatically detected.
+			Supported formats are: Newline delimited JSON (NDJSON), an array of
+			JSON objects (JSON) and a newline delimited list of comma separated
+			values (CSV). The first line of CSV content is assumed to be the
+			field names for the values in the following lines. The input format
+			is automatically detected.
 
 			Each object is assigned an event timestamp from the configured
 			timestamp field (default "_time"). If the there is no timestamp
@@ -84,9 +87,9 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 
 			# Pipe the contents of a log generator into a dataset named
 			# "gen-logs". If the length of the data stream is unknown, the
-			# "--flush-every" flag must be passed to ship the data to the server
-			# after the specified duration instead of waiting for EOF. This is
-			# only valid for newline delimited JSON.
+			# "--flush-every" flag can be tweaked to optimize shipping the data
+			# to the server after the specified duration. This is only valid for
+			# newline delimited JSON.
 			$ ./loggen -ndjson | axiom ingest gen-logs
 
 			# Send a set of gzip compressed JSON logs to a dataset called
@@ -344,46 +347,22 @@ func ingest(ctx context.Context, client *axiom.Client, r io.Reader, typ axiom.Co
 // detectContentType detects the content type of an io.Reader's data. It returns
 // a new reader which must be used in place of the old one.
 func detectContentType(r io.Reader) (io.Reader, axiom.ContentType, error) {
-	var (
-		br  = bufio.NewReader(r)
-		typ axiom.ContentType
-	)
-	for {
-		var (
-			c   rune
-			err error
-		)
-		if c, _, err = br.ReadRune(); err == io.EOF {
-			return nil, 0, errors.New("couldn't find beginning of valid JSON")
-		} else if err != nil {
-			return nil, 0, err
-		} else if c == '[' {
-			typ = axiom.JSON
-		} else if c == '{' {
-			typ = axiom.NDJSON
-		} else if unicode.IsSpace(c) {
-			continue
-		} else {
-			return nil, 0, errors.New("cannot determine content type")
-		}
+	var buf bytes.Buffer
 
-		if err = br.UnreadRune(); err != nil {
-			return nil, 0, err
-		}
-		break
-	}
-
-	// Create a new reader and prepend what we have already consumed in order to
-	// figure out the content type.
-	bufSize := br.Buffered()
-	buf, err := br.Peek(bufSize)
+	mimeType, err := mimetype.DetectReader(io.TeeReader(r, &buf))
 	if err != nil {
 		return nil, 0, err
 	}
-	alreadyRead := bytes.NewReader(buf)
-	r = io.MultiReader(alreadyRead, r)
 
-	return r, typ, nil
+	for contentType := axiom.JSON; contentType <= axiom.CSV; contentType++ {
+		if mimeType.Is(contentType.String()) {
+			// Prepend what we have already consumed while figuring out the
+			// content type.
+			return io.MultiReader(&buf, r), contentType, nil
+		}
+	}
+
+	return nil, 0, errors.New("cannot determine content type")
 }
 
 func mergeIngestStatuses(base, add *axiom.IngestStatus) {
