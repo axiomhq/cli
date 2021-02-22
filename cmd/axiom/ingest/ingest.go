@@ -282,7 +282,9 @@ func ingestEvery(ctx context.Context, client *axiom.Client, r io.Reader, opts *o
 					return
 				}
 
-				lines <- scanner.Bytes()
+				line := make([]byte, len(scanner.Bytes()))
+				copy(line, scanner.Bytes())
+				lines <- line
 			}
 		}()
 
@@ -304,7 +306,7 @@ func ingestEvery(ctx context.Context, client *axiom.Client, r io.Reader, opts *o
 					return
 				}
 			case <-done:
-				_ = pw.CloseWithError(nil)
+				_ = pw.Close()
 				return
 			}
 		}
