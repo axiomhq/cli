@@ -7,7 +7,7 @@ run:
     - bin
     - dist
     - man
-    - tools
+    - testdata
 
 linters:
   disable-all: true

@@ -2,6 +2,7 @@ package client
 
 import (
 	"crypto/tls"
+	"errors"
 	"net/http"
 
 	"github.com/axiomhq/axiom-go/axiom"
@@ -14,10 +15,11 @@ func New(baseURL, accessToken, orgID string, insecure bool, options ...axiom.Opt
 	httpClient := axiom.DefaultHTTPClient()
 
 	if insecure {
-		if transport, ok := httpClient.Transport.(*http.Transport); ok {
-			// nolint:gosec
-			transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+		transport, ok := httpClient.Transport.(*http.Transport)
+		if !ok {
+			return nil, errors.New("could not set insecure mode")
 		}
+		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true} //nolint:gosec
 	}
 
 	options = append(options, axiom.SetUserAgent("axiom-cli/"+version.Release()))
