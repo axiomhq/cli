@@ -45,8 +45,14 @@ func NewVersionCmd(f *cmdutil.Factory, version string) *cobra.Command {
 			cs := f.IO.ColorScheme()
 
 			cmd.Println(version)
-			cmd.Printf("\nAxiom, release %s (%s)\n",
-				deploymentVersion, cs.Bold(f.Config.ActiveDeployment))
+
+			if f.Config.ActiveDeployment == "" {
+				cmd.Printf("\nAxiom, release %s\n",
+					deploymentVersion)
+			} else {
+				cmd.Printf("\nAxiom, release %s (%s)\n",
+					deploymentVersion, cs.Bold(f.Config.ActiveDeployment))
+			}
 
 			return nil
 		},
