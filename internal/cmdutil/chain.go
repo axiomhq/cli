@@ -37,6 +37,9 @@ var (
 		  Select a deployment by setting the {{ bold "-D" }} or {{ bold "--deployment" }} flag. This
 		  overwrittes the choice made in the configuration file or the environment: 
 		  $ {{ bold .CommandPath }} {{ bold "-D=axiom-eu-west-1" }}
+
+		  For non-interactive use, set AXM_TOKEN and AXM_URL to target a deployment directly,
+		  without first configuring it.
 	`)
 
 	noDatasetsMsg = heredoc.Doc(`
@@ -99,6 +102,11 @@ func NeedsActiveDeployment(f *Factory) RunFunc {
 				"Deployment":  f.Config.ActiveDeployment,
 				"CommandPath": cmd.CommandPath(),
 			})
+		}
+
+		// At this point, we need at least one configured deployment.
+		if len(f.Config.Deployments) == 0 {
+			return execTemplateSilent(f.IO, noDeploymentsMsg, nil)
 		}
 
 		// When not running interactively and no active deployment is given, the
