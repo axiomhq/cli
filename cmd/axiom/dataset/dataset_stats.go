@@ -2,20 +2,33 @@ package dataset
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
 
 	"github.com/MakeNowJust/heredoc"
+	"github.com/nwidger/jsoncolor"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
 	"github.com/axiomhq/cli/pkg/terminal"
 )
 
+type statsOptions struct {
+	*cmdutil.Factory
+
+	// Format to output data in. Defaults to tabular output.
+	Format string
+}
+
 func newStatsCmd(f *cmdutil.Factory) *cobra.Command {
+	opts := &statsOptions{
+		Factory: f,
+	}
+
 	cmd := &cobra.Command{
-		Use:   "stats",
+		Use:   "stats [(-f|--format=)json]",
 		Short: "Get statistics about all datasets",
 		Long: heredoc.Doc(`
 			Get statistics about all datasets.
@@ -35,20 +48,24 @@ func newStatsCmd(f *cmdutil.Factory) *cobra.Command {
 		PreRunE: cmdutil.NeedsDatasets(f),
 
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			return runStats(cmd.Context(), f)
+			return runStats(cmd.Context(), opts)
 		},
 	}
+
+	cmd.Flags().StringVarP(&opts.Format, "format", "f", "", "Format to output data in")
+
+	_ = cmd.RegisterFlagCompletionFunc("format", formatCompletion)
 
 	return cmd
 }
 
-func runStats(ctx context.Context, f *cmdutil.Factory) error {
-	client, err := f.Client()
+func runStats(ctx context.Context, opts *statsOptions) error {
+	client, err := opts.Client()
 	if err != nil {
 		return err
 	}
 
-	progStop := f.IO.StartActivityIndicator()
+	progStop := opts.IO.StartActivityIndicator()
 	stats, err := client.Datasets.Stats(ctx)
 	if err != nil {
 		progStop()
@@ -56,17 +73,30 @@ func runStats(ctx context.Context, f *cmdutil.Factory) error {
 	}
 	progStop()
 
-	pagerStop, err := f.IO.StartPager(ctx)
+	pagerStop, err := opts.IO.StartPager(ctx)
 	if err != nil {
 		return err
 	}
 	defer pagerStop()
 
-	cs := f.IO.ColorScheme()
-	tp := terminal.NewTablePrinter(f.IO)
+	if opts.Format == formatJSON {
+		var enc interface {
+			Encode(interface{}) error
+		}
+		if opts.IO.ColorEnabled() {
+			enc = jsoncolor.NewEncoder(opts.IO.Out())
+		} else {
+			enc = json.NewEncoder(opts.IO.Out())
+		}
 
-	if f.IO.IsStdoutTTY() {
-		fmt.Fprintf(f.IO.Out(), "Showing statistics of all dataset:\n\n")
+		return enc.Encode(stats)
+	}
+
+	cs := opts.IO.ColorScheme()
+	tp := terminal.NewTablePrinter(opts.IO)
+
+	if opts.IO.IsStdoutTTY() {
+		fmt.Fprintf(opts.IO.Out(), "Showing statistics of all dataset:\n\n")
 		tp.AddField("Name", cs.Bold)
 		tp.AddField("Events", cs.Bold)
 		tp.AddField("Blocks", cs.Bold)

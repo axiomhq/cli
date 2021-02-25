@@ -2,10 +2,12 @@ package dataset
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/MakeNowJust/heredoc"
+	"github.com/nwidger/jsoncolor"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
@@ -13,9 +15,20 @@ import (
 	"github.com/axiomhq/cli/pkg/utils"
 )
 
+type listOptions struct {
+	*cmdutil.Factory
+
+	// Format to output data in. Defaults to tabular output.
+	Format string
+}
+
 func newListCmd(f *cmdutil.Factory) *cobra.Command {
+	opts := &listOptions{
+		Factory: f,
+	}
+
 	cmd := &cobra.Command{
-		Use:   "list",
+		Use:   "list [(-f|--format=)json]",
 		Short: "List all datasets",
 
 		Aliases: []string{"ls"},
@@ -28,20 +41,24 @@ func newListCmd(f *cmdutil.Factory) *cobra.Command {
 		PreRunE: cmdutil.NeedsDatasets(f),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runList(cmd.Context(), f)
+			return runList(cmd.Context(), opts)
 		},
 	}
+
+	cmd.Flags().StringVarP(&opts.Format, "format", "f", "", "Format to output data in")
+
+	_ = cmd.RegisterFlagCompletionFunc("format", formatCompletion)
 
 	return cmd
 }
 
-func runList(ctx context.Context, f *cmdutil.Factory) error {
-	client, err := f.Client()
+func runList(ctx context.Context, opts *listOptions) error {
+	client, err := opts.Client()
 	if err != nil {
 		return err
 	}
 
-	progStop := f.IO.StartActivityIndicator()
+	progStop := opts.IO.StartActivityIndicator()
 	datasets, err := client.Datasets.List(ctx)
 	if err != nil {
 		progStop()
@@ -49,17 +66,30 @@ func runList(ctx context.Context, f *cmdutil.Factory) error {
 	}
 	progStop()
 
-	pagerStop, err := f.IO.StartPager(ctx)
+	pagerStop, err := opts.IO.StartPager(ctx)
 	if err != nil {
 		return err
 	}
 	defer pagerStop()
 
-	cs := f.IO.ColorScheme()
-	tp := terminal.NewTablePrinter(f.IO)
+	if opts.Format == formatJSON {
+		var enc interface {
+			Encode(interface{}) error
+		}
+		if opts.IO.ColorEnabled() {
+			enc = jsoncolor.NewEncoder(opts.IO.Out())
+		} else {
+			enc = json.NewEncoder(opts.IO.Out())
+		}
 
-	if f.IO.IsStdoutTTY() {
-		fmt.Fprintf(f.IO.Out(), "Showing %s:\n\n", utils.Pluralize(cs, "dataset", len(datasets)))
+		return enc.Encode(datasets)
+	}
+
+	cs := opts.IO.ColorScheme()
+	tp := terminal.NewTablePrinter(opts.IO)
+
+	if opts.IO.IsStdoutTTY() {
+		fmt.Fprintf(opts.IO.Out(), "Showing %s:\n\n", utils.Pluralize(cs, "dataset", len(datasets)))
 		tp.AddField("Name", cs.Bold)
 		tp.AddField("Description", cs.Bold)
 		tp.AddField("Created", cs.Bold)
