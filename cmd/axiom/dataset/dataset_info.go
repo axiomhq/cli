@@ -2,12 +2,14 @@ package dataset
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
+	"github.com/nwidger/jsoncolor"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
@@ -20,6 +22,8 @@ type infoOptions struct {
 	// Name of the dataset to fetch info of. If not supplied as an argument,
 	// which is optional, the user will be asked for it.
 	Name string
+	// Format to output data in. Defaults to tabular output.
+	Format string
 }
 
 func newInfoCmd(f *cmdutil.Factory) *cobra.Command {
@@ -28,7 +32,7 @@ func newInfoCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "info [<dataset-name>]",
+		Use:   "info [<dataset-name>] [(-f|--format=)json]",
 		Short: "Get info about a dataset",
 
 		Args:              cmdutil.PopulateFromArgs(f, &opts.Name),
@@ -51,6 +55,10 @@ func newInfoCmd(f *cmdutil.Factory) *cobra.Command {
 			return runInfo(cmd.Context(), opts)
 		},
 	}
+
+	cmd.Flags().StringVarP(&opts.Format, "format", "f", "", "Format to output data in")
+
+	_ = cmd.RegisterFlagCompletionFunc("format", formatCompletion)
 
 	return cmd
 }
@@ -90,6 +98,19 @@ func runInfo(ctx context.Context, opts *infoOptions) error {
 		return err
 	}
 	defer pagerStop()
+
+	if opts.Format == formatJSON {
+		var enc interface {
+			Encode(interface{}) error
+		}
+		if opts.IO.ColorEnabled() {
+			enc = jsoncolor.NewEncoder(opts.IO.Out())
+		} else {
+			enc = json.NewEncoder(opts.IO.Out())
+		}
+
+		return enc.Encode(dataset)
+	}
 
 	cs := opts.IO.ColorScheme()
 	tp := terminal.NewTablePrinter(opts.IO)
