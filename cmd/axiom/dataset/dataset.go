@@ -8,13 +8,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
+	"github.com/axiomhq/cli/pkg/iofmt"
 )
-
-const (
-	formatJSON = "json"
-)
-
-var validFormats = []string{formatJSON}
 
 // NewDatasetCmd creates and returns the dataset command.
 func NewDatasetCmd(f *cmdutil.Factory) *cobra.Command {
@@ -74,10 +69,10 @@ func getDatasetNames(ctx context.Context, f *cmdutil.Factory) ([]string, error) 
 }
 
 func formatCompletion(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	res := make([]string, 0, len(validFormats))
-	for _, validFormat := range validFormats {
-		if strings.HasPrefix(validFormat, toComplete) {
-			res = append(res, validFormat)
+	res := make([]string, 0, len(iofmt.Formats()))
+	for _, validFormat := range iofmt.Formats() {
+		if strings.HasPrefix(validFormat.String(), toComplete) {
+			res = append(res, validFormat.String())
 		}
 	}
 	return res, cobra.ShellCompDirectiveNoFileComp

@@ -19,6 +19,7 @@ GEN_CLI_DOCS	:= bin/gen-cli-docs
 GOLANGCI_LINT	:= bin/golangci-lint
 GORELEASER		:= bin/goreleaser
 GOTESTSUM		:= bin/gotestsum
+STRINGER		:= bin/stringer
 
 # MISC
 COVERPROFILE	:= coverage.out
@@ -55,7 +56,7 @@ go-list-pkg-sources = $(GO) list -f '{{range .GoFiles}}{{$$.Dir}}/{{.}} {{end}}'
 go-pkg-sourcefiles = $(shell $(call go-list-pkg-sources,$(strip $1)))
 
 .PHONY: all
-all: dep fmt lint test build man ## Run dep, fmt, lint, test, build and man
+all: dep generate fmt lint test build man ## Run dep, fmt, lint, test, build and man
 
 .PHONY: build
 build: $(GORELEASER) dep.stamp $(call go-pkg-sourcefiles, ./...) ## Build the binaries
@@ -97,6 +98,9 @@ fmt: ## Format and simplify the source code using `gofmt`
 	@echo ">> formatting code"
 	@! $(GOFMT) -s -w $(shell find . -path -prune -o -name '*.go' -print) | grep '^'
 
+.PHONY: generate
+generate: $(STRINGER) pkg/iofmt/format_string.go ## Generate code using `go generate`
+
 .PHONY: install
 install: $(GOPATH)/bin/axiom ## Install the binary into the $GOPATH/bin directory
 
@@ -122,6 +126,12 @@ tools: $(GEN_CLI_DOCS) $(GOLANGCI_LINT) $(GORELEASER) $(GOTESTSUM) ## Install al
 .PHONY: help
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+# GO GENERATE TARGETS
+
+pkg/iofmt/%_string.go: pkg/iofmt/%.go
+	@echo ">> generating $@ from $<"
+	@$(GO) generate $<
 
 # MISC TARGETS
 
@@ -151,3 +161,7 @@ $(GORELEASER): dep.stamp $(call go-pkg-sourcefiles, github.com/goreleaser/gorele
 $(GOTESTSUM): dep.stamp $(call go-pkg-sourcefiles, gotest.tools/gotestsum)
 	@echo ">> installing gotestsum"
 	@$(GO) install gotest.tools/gotestsum
+
+$(STRINGER): dep.stamp $(call go-pkg-sourcefiles, golang.org/x/tools/cmd/stringer)
+	@echo ">> installing stringer"
+	@$(GO) install golang.org/x/tools/cmd/stringer

@@ -2,18 +2,17 @@ package dataset
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"io"
 	"strconv"
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
-	"github.com/nwidger/jsoncolor"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
-	"github.com/axiomhq/cli/pkg/terminal"
+	"github.com/axiomhq/cli/pkg/iofmt"
 )
 
 type infoOptions struct {
@@ -32,7 +31,7 @@ func newInfoCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "info [<dataset-name>] [(-f|--format=)json]",
+		Use:   "info [<dataset-name>] [(-f|--format=)json|table]",
 		Short: "Get info about a dataset",
 
 		Args:              cmdutil.PopulateFromArgs(f, &opts.Name),
@@ -56,7 +55,7 @@ func newInfoCmd(f *cmdutil.Factory) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.Format, "format", "f", "", "Format to output data in")
+	cmd.Flags().StringVarP(&opts.Format, "format", "f", iofmt.Table.String(), "Format to output data in")
 
 	_ = cmd.RegisterFlagCompletionFunc("format", formatCompletion)
 
@@ -99,44 +98,35 @@ func runInfo(ctx context.Context, opts *infoOptions) error {
 	}
 	defer pagerStop()
 
-	if opts.Format == formatJSON {
-		var enc interface {
-			Encode(interface{}) error
-		}
-		if opts.IO.ColorEnabled() {
-			enc = jsoncolor.NewEncoder(opts.IO.Out())
-		} else {
-			enc = json.NewEncoder(opts.IO.Out())
-		}
-
-		return enc.Encode(dataset)
+	if opts.Format == iofmt.JSON.String() {
+		return iofmt.FormatToJSON(opts.IO.Out(), dataset, opts.IO.ColorEnabled())
 	}
 
 	cs := opts.IO.ColorScheme()
-	tp := terminal.NewTablePrinter(opts.IO)
 
+	var header iofmt.HeaderBuilderFunc
 	if opts.IO.IsStdoutTTY() {
-		fmt.Fprintf(opts.IO.Out(), "Showing info of dataset %s:\n\n", cs.Bold(dataset.Name))
-		tp.AddField("Events", cs.Bold)
-		tp.AddField("Blocks", cs.Bold)
-		tp.AddField("Fields", cs.Bold)
-		tp.AddField("Ingested Bytes", cs.Bold)
-		tp.AddField("Compressed Bytes", cs.Bold)
-		tp.AddField("Min Time", cs.Bold)
-		tp.AddField("Max Time", cs.Bold)
-		tp.EndRow()
-		tp.AddField("", nil)
-		tp.EndRow()
+		header = func(w io.Writer, trb iofmt.TableRowBuilder) {
+			fmt.Fprintf(opts.IO.Out(), "Showing info of dataset %s:\n\n", cs.Bold(dataset.Name))
+			trb.AddField("Events", cs.Bold)
+			trb.AddField("Blocks", cs.Bold)
+			trb.AddField("Fields", cs.Bold)
+			trb.AddField("Ingested Bytes", cs.Bold)
+			trb.AddField("Compressed Bytes", cs.Bold)
+			trb.AddField("Min Time", cs.Bold)
+			trb.AddField("Max Time", cs.Bold)
+		}
 	}
 
-	tp.AddField(strconv.Itoa(int(dataset.NumEvents)), nil)
-	tp.AddField(strconv.Itoa(int(dataset.NumBlocks)), nil)
-	tp.AddField(strconv.Itoa(int(dataset.NumFields)), nil)
-	tp.AddField(dataset.InputBytesHuman, nil)
-	tp.AddField(dataset.CompressedBytesHuman, nil)
-	tp.AddField(dataset.MinTime.Format(time.RFC1123), cs.Gray)
-	tp.AddField(dataset.MaxTime.Format(time.RFC1123), cs.Gray)
-	tp.EndRow()
+	contentRow := func(trb iofmt.TableRowBuilder, _ int) {
+		trb.AddField(strconv.Itoa(int(dataset.NumEvents)), nil)
+		trb.AddField(strconv.Itoa(int(dataset.NumBlocks)), nil)
+		trb.AddField(strconv.Itoa(int(dataset.NumFields)), nil)
+		trb.AddField(dataset.InputBytesHuman, nil)
+		trb.AddField(dataset.CompressedBytesHuman, nil)
+		trb.AddField(dataset.MinTime.Format(time.RFC1123), cs.Gray)
+		trb.AddField(dataset.MaxTime.Format(time.RFC1123), cs.Gray)
+	}
 
-	return tp.Render()
+	return iofmt.FormatToTable(opts.IO, 1, header, nil, contentRow)
 }
