@@ -15,17 +15,10 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
+	"github.com/axiomhq/cli/pkg/iofmt"
 )
 
-const (
-	formatJSON = "json"
-)
-
-var validFormats = []string{formatJSON}
-
-const (
-	streamingDuration = time.Second * 2
-)
+const streamingDuration = time.Second * 2
 
 type options struct {
 	*cmdutil.Factory
@@ -44,7 +37,7 @@ func NewStreamCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "stream [<dataset-name>] [(-f|--format=)json]",
+		Use:   "stream [<dataset-name>] [(-f|--format=)json|table]",
 		Short: "Livestream data",
 		Long:  `Livestream data from an Axiom dataset.`,
 
@@ -79,7 +72,7 @@ func NewStreamCmd(f *cmdutil.Factory) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.Format, "format", "f", "", "Format to output data in")
+	cmd.Flags().StringVarP(&opts.Format, "format", "f", iofmt.Table.String(), "Format to output data in")
 
 	_ = cmd.RegisterFlagCompletionFunc("format", formatCompletion)
 
@@ -161,7 +154,7 @@ func run(ctx context.Context, opts *options) error {
 
 			for _, entry := range res.Matches {
 				switch opts.Format {
-				case formatJSON:
+				case iofmt.JSON.String():
 					_ = enc.Encode(entry)
 				default:
 					fmt.Fprintf(opts.IO.Out(), "%s\t",
@@ -181,10 +174,10 @@ func run(ctx context.Context, opts *options) error {
 }
 
 func formatCompletion(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	res := make([]string, 0, len(validFormats))
-	for _, validFormat := range validFormats {
-		if strings.HasPrefix(validFormat, toComplete) {
-			res = append(res, validFormat)
+	res := make([]string, 0, len(iofmt.Formats()))
+	for _, validFormat := range iofmt.Formats() {
+		if strings.HasPrefix(validFormat.String(), toComplete) {
+			res = append(res, validFormat.String())
 		}
 	}
 	return res, cobra.ShellCompDirectiveNoFileComp

@@ -2,16 +2,15 @@ package dataset
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"io"
 	"time"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/nwidger/jsoncolor"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
-	"github.com/axiomhq/cli/pkg/terminal"
+	"github.com/axiomhq/cli/pkg/iofmt"
 	"github.com/axiomhq/cli/pkg/utils"
 )
 
@@ -28,7 +27,7 @@ func newListCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "list [(-f|--format=)json]",
+		Use:   "list [(-f|--format=)json|table]",
 		Short: "List all datasets",
 
 		Aliases: []string{"ls"},
@@ -45,7 +44,7 @@ func newListCmd(f *cmdutil.Factory) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.Format, "format", "f", "", "Format to output data in")
+	cmd.Flags().StringVarP(&opts.Format, "format", "f", iofmt.Table.String(), "Format to output data in")
 
 	_ = cmd.RegisterFlagCompletionFunc("format", formatCompletion)
 
@@ -72,37 +71,29 @@ func runList(ctx context.Context, opts *listOptions) error {
 	}
 	defer pagerStop()
 
-	if opts.Format == formatJSON {
-		var enc interface {
-			Encode(interface{}) error
-		}
-		if opts.IO.ColorEnabled() {
-			enc = jsoncolor.NewEncoder(opts.IO.Out())
-		} else {
-			enc = json.NewEncoder(opts.IO.Out())
-		}
-
-		return enc.Encode(datasets)
+	if opts.Format == iofmt.JSON.String() {
+		return iofmt.FormatToJSON(opts.IO.Out(), datasets, opts.IO.ColorEnabled())
 	}
 
 	cs := opts.IO.ColorScheme()
-	tp := terminal.NewTablePrinter(opts.IO)
 
+	var header iofmt.HeaderBuilderFunc
 	if opts.IO.IsStdoutTTY() {
-		fmt.Fprintf(opts.IO.Out(), "Showing %s:\n\n", utils.Pluralize(cs, "dataset", len(datasets)))
-		tp.AddField("Name", cs.Bold)
-		tp.AddField("Description", cs.Bold)
-		tp.AddField("Created", cs.Bold)
-		tp.EndRow()
-		tp.AddField("", nil)
-		tp.EndRow()
+		header = func(w io.Writer, trb iofmt.TableRowBuilder) {
+			fmt.Fprintf(opts.IO.Out(), "Showing %s:\n\n", utils.Pluralize(cs, "dataset", len(datasets)))
+			trb.AddField("Name", cs.Bold)
+			trb.AddField("Description", cs.Bold)
+			trb.AddField("Created", cs.Bold)
+		}
 	}
 
-	for _, dataset := range datasets {
-		tp.AddField(dataset.Name, nil)
-		tp.AddField(dataset.Description, nil)
-		tp.AddField(dataset.Created.Format(time.RFC1123), cs.Gray)
-		tp.EndRow()
+	contentRow := func(trb iofmt.TableRowBuilder, k int) {
+		dataset := datasets[k]
+
+		trb.AddField(dataset.Name, nil)
+		trb.AddField(dataset.Description, nil)
+		trb.AddField(dataset.Created.Format(time.RFC1123), cs.Gray)
 	}
-	return tp.Render()
+
+	return iofmt.FormatToTable(opts.IO, len(datasets), header, nil, contentRow)
 }
