@@ -21,7 +21,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: "1.15"
+          go-version: "1.16"
 
       - name: Cache dependencies
         uses: actions/cache@v2
@@ -46,7 +46,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: "1.15"
+          go-version: "1.16"
 
       # The golangci-lint action takes care of caching by itself.
       - name: Lint
@@ -62,7 +62,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: "1.15"
+          go-version: "1.16"
 
       - name: Cache dependencies
         uses: actions/cache@v2
@@ -92,7 +92,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: "1.15"
+          go-version: "1.16"
 
       - name: Cache dependencies
         uses: actions/cache@v2
@@ -131,7 +131,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: "1.15"
+          go-version: "1.16"
 
       - name: Cache dependencies
         uses: actions/cache@v2
@@ -161,7 +161,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: "1.15"
+          go-version: "1.16"
 
       - name: Cache dependencies
         uses: actions/cache@v2
