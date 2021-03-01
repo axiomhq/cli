@@ -3,11 +3,11 @@ module github.com/axiomhq/cli
 go 1.16
 
 require (
-	github.com/AlecAivazis/survey/v2 v2.2.7
+	github.com/AlecAivazis/survey/v2 v2.2.8
 	github.com/MakeNowJust/heredoc v1.0.0
-	github.com/axiomhq/axiom-go v0.0.0-20210224120541-47ba5c96ab05
+	github.com/axiomhq/axiom-go v0.0.0-20210301171248-94a2777fd086
 	github.com/briandowns/spinner v1.12.0
-	github.com/cli/cli v1.6.1
+	github.com/cli/cli v1.6.2
 	github.com/dustin/go-humanize v1.0.0
 	github.com/gabriel-vasile/mimetype v1.1.2
 	github.com/golangci/golangci-lint v1.37.1
