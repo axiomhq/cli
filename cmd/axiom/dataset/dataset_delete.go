@@ -28,7 +28,7 @@ func newDeleteCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "delete [<dataset-name>]",
+		Use:   "delete [<dataset-name>] [-f|--force]",
 		Short: "Delete a dataset",
 
 		Aliases: []string{"remove"},
