@@ -16,7 +16,7 @@ func NewDatasetCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "dataset <command>",
 		Short: "Manage datasets",
-		Long:  "Create, edit and delete datasets.",
+		Long:  "Manage datasets.",
 
 		Example: heredoc.Doc(`
 			$ axiom dataset create --name=nginx-logs --description="All Nginx logs"
@@ -41,6 +41,7 @@ func NewDatasetCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.AddCommand(newInfoCmd(f))
 	cmd.AddCommand(newListCmd(f))
 	cmd.AddCommand(newStatsCmd(f))
+	cmd.AddCommand(newTrimCmd(f))
 	cmd.AddCommand(newUpdateCmd(f))
 
 	return cmd
