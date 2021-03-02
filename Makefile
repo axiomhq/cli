@@ -30,8 +30,8 @@ MANPAGES_DIR	:= man
 GOTAGS := osusergo netgo static_build
 
 # FLAGS
-GOFLAGS := -buildmode=exe -tags='$(GOTAGS)' -installsuffix=cgo -trimpath
-GOFLAGS += -ldflags='-s -w -extldflags "-fno-PIC -static"
+GOFLAGS := -buildmode=pie -tags='$(GOTAGS)' -installsuffix=cgo -trimpath
+GOFLAGS += -ldflags='-s -w -extldflags "-fno-PIC -static -Wl -z now -z relro"
 GOFLAGS += -X $(MOD_NAME)/pkg/version.release=$(RELEASE)
 GOFLAGS += -X $(MOD_NAME)/pkg/version.revision=$(REVISION)
 GOFLAGS += -X $(MOD_NAME)/pkg/version.buildDate=$(BUILD_DATE)

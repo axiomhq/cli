@@ -11,12 +11,12 @@ builds:
       env:
         - CGO_ENABLED=0
       flags:
-        - -buildmode=exe
+        - -buildmode=pie
         - -installsuffix=cgo
         - -trimpath
         - -tags="osusergo netgo static_build"
       ldflags:
-        - -s -w -extldflags "-fno-PIC -static"
+        - -s -w -extldflags "-fno-PIC -static -Wl -z now -z relro"
         - -X github.com/axiomhq/cli/pkg/version.release={{ .Version }}
         - -X github.com/axiomhq/cli/pkg/version.revision={{ .ShortCommit }}
         - -X github.com/axiomhq/cli/pkg/version.buildDate={{ .CommitDate }}
@@ -27,18 +27,27 @@ builds:
       - darwin
     goarch: 
       - amd64
+      - arm64
 
   - <<: *build_defaults
     id: linux
     goos: 
       - linux
     goarch: 
-      - 386
       - amd64
       - arm64
     goarm: 
       - 6
       - 7
+    
+  - <<: *build_defaults
+    flags:
+      - -buildmode=exe
+    id: linux-no-pie
+    goos: 
+      - linux
+    goarch: 
+      - 386
 
   - <<: *build_defaults
     id: windows
@@ -55,6 +64,7 @@ archives:
     builds:
       - darwin
       - linux
+      - linux-no-pie
     wrap_in_directory: true
     format: tar.gz
     files:
