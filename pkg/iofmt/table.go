@@ -28,11 +28,11 @@ type RowBuilderFunc func(TableRowBuilder, int)
 // and footer builder functions are optional. The length of the slice must be
 // given.
 func FormatToTable(io *terminal.IO, l int, header, footer HeaderBuilderFunc, contentRow RowBuilderFunc) error {
-	tp := terminal.NewTablePrinter(io)
-
 	if contentRow == nil {
 		return errors.New("missing table row content")
 	}
+
+	tp := terminal.NewTablePrinter(io)
 
 	if header != nil {
 		header(io.Out(), tp)
@@ -49,7 +49,7 @@ func FormatToTable(io *terminal.IO, l int, header, footer HeaderBuilderFunc, con
 			tp.EndRow()
 		}
 	} else {
-		contentRow(tp, -1)
+		contentRow(tp, 0)
 		tp.EndRow()
 	}
 

@@ -150,6 +150,11 @@ func NeedsValidDeployment(f *Factory, alias *string) RunFunc {
 // available on the configured deployment.
 func NeedsDatasets(f *Factory) RunFunc {
 	return func(cmd *cobra.Command, _ []string) error {
+		// Skip if token is not a Personal Access Token.
+		if dep, ok := f.Config.GetActiveDeployment(); ok && dep.TokenType != config.Personal {
+			return nil
+		}
+
 		client, err := f.Client()
 		if err != nil {
 			return err

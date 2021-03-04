@@ -19,6 +19,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
+	"github.com/axiomhq/cli/internal/config"
 	"github.com/axiomhq/cli/pkg/utils"
 )
 
@@ -139,22 +140,26 @@ func complete(ctx context.Context, opts *options) error {
 		return nil
 	}
 
-	client, err := opts.Client()
-	if err != nil {
-		return err
-	}
+	// Just fetch a list of available datasets if a Personal Access Token is
+	// used.
+	datasetNames := make([]string, 0)
+	if dep, ok := opts.Config.GetActiveDeployment(); ok && dep.TokenType == config.Personal {
+		client, err := opts.Client()
+		if err != nil {
+			return err
+		}
 
-	stop := opts.IO.StartActivityIndicator()
-	datasets, err := client.Datasets.List(ctx)
-	if err != nil {
+		stop := opts.IO.StartActivityIndicator()
+		datasets, err := client.Datasets.List(ctx)
+		if err != nil {
+			stop()
+			return err
+		}
 		stop()
-		return err
-	}
-	stop()
 
-	datasetNames := make([]string, len(datasets))
-	for i, dataset := range datasets {
-		datasetNames[i] = dataset.Name
+		for i, dataset := range datasets {
+			datasetNames[i] = dataset.Name
+		}
 	}
 
 	return survey.AskOne(&survey.Select{
