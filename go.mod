@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/AlecAivazis/survey/v2 v2.2.8
 	github.com/MakeNowJust/heredoc v1.0.0
-	github.com/axiomhq/axiom-go v0.0.0-20210310123053-243c057ac0b0
+	github.com/axiomhq/axiom-go v0.0.0-20210310133454-8f339df830a1
 	github.com/briandowns/spinner v1.12.0
 	github.com/cli/cli v1.6.2
 	github.com/dustin/go-humanize v1.0.0
