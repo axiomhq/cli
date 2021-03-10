@@ -15,7 +15,6 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	"github.com/axiomhq/axiom-go/axiom"
 	"github.com/dustin/go-humanize"
-	"github.com/gabriel-vasile/mimetype"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
@@ -196,7 +195,7 @@ func run(ctx context.Context, opts *options, flushEverySet bool) error {
 			r   io.Reader
 			typ axiom.ContentType
 		)
-		if r, typ, err = detectContentType(rc); err != nil {
+		if r, typ, err = axiom.DetectContentType(rc); err != nil {
 			_ = rc.Close()
 			lastErr = fmt.Errorf("could not detect %q content type: %w", filename, err)
 			break
@@ -347,27 +346,6 @@ func ingest(ctx context.Context, client *axiom.Client, r io.Reader, typ axiom.Co
 	}
 
 	return res, nil
-}
-
-// detectContentType detects the content type of an io.Reader's data. It returns
-// a new reader which must be used in place of the old one.
-func detectContentType(r io.Reader) (io.Reader, axiom.ContentType, error) {
-	var buf bytes.Buffer
-
-	mimeType, err := mimetype.DetectReader(io.TeeReader(r, &buf))
-	if err != nil {
-		return nil, 0, err
-	}
-
-	for contentType := axiom.JSON; contentType <= axiom.CSV; contentType++ {
-		if mimeType.Is(contentType.String()) {
-			// Prepend what we have already consumed while figuring out the
-			// content type.
-			return io.MultiReader(&buf, r), contentType, nil
-		}
-	}
-
-	return nil, 0, errors.New("cannot determine content type")
 }
 
 func mergeIngestStatuses(base, add *axiom.IngestStatus) {
