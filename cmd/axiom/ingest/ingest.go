@@ -268,6 +268,8 @@ func ingestEvery(ctx context.Context, client *axiom.Client, r io.Reader, opts *o
 		readers <- pr
 
 		scanner := bufio.NewScanner(r)
+		// Start with a 64 byte buffer, check up until 1 MB per line
+		scanner.Buffer(make([]byte, 64), 1024*1024)
 		scanner.Split(splitLinesMulti)
 
 		// We need to scan in a go func to make sure we don't block on
