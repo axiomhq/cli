@@ -75,9 +75,13 @@ jobs:
       - name: Test
         run: make test
 
-      - uses: codecov/codecov-action@v1
+      - name: Code coverage
+        uses: codecov/codecov-action@v1
         with:
           fail_ci_if_error: true
+
+      - name: Update GoReport Card
+        uses: creekorful/goreportcard-action@v1.0
 
   test-integration:
     name: Integration Test
