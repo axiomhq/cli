@@ -6,7 +6,6 @@ GOFMT			:= $(GO)fmt
 # ENVIRONMENT
 VERBOSE		=
 GOPATH		:= $(GOPATH)
-MOD_NAME	:= github.com/axiomhq/cli
 
 # APPLICATION INFORMATION
 BUILD_DATE      := $(shell date -u '+%Y-%m-%dT%H:%M:%SZ')
@@ -32,10 +31,10 @@ GOTAGS := osusergo netgo static_build
 # FLAGS
 GOFLAGS := -buildmode=pie -tags='$(GOTAGS)' -installsuffix=cgo -trimpath
 GOFLAGS += -ldflags='-s -w -extldflags "-fno-PIC -static -Wl -z now -z relro"
-GOFLAGS += -X $(MOD_NAME)/pkg/version.release=$(RELEASE)
-GOFLAGS += -X $(MOD_NAME)/pkg/version.revision=$(REVISION)
-GOFLAGS += -X $(MOD_NAME)/pkg/version.buildDate=$(BUILD_DATE)
-GOFLAGS += -X $(MOD_NAME)/pkg/version.buildUser=$(USER)'
+GOFLAGS += -X github.com/axiomhq/pkg/version.release=$(RELEASE)
+GOFLAGS += -X github.com/axiomhq/pkg/version.revision=$(REVISION)
+GOFLAGS += -X github.com/axiomhq/pkg/version.buildDate=$(BUILD_DATE)
+GOFLAGS += -X github.com/axiomhq/pkg/version.buildUser=$(USER)'
 
 GO_TEST_FLAGS		:= -race -coverprofile=$(COVERPROFILE)
 GORELEASER_FLAGS	:= --snapshot --rm-dist
@@ -56,7 +55,7 @@ go-list-pkg-sources = $(GO) list -f '{{range .GoFiles}}{{$$.Dir}}/{{.}} {{end}}'
 go-pkg-sourcefiles = $(shell $(call go-list-pkg-sources,$(strip $1)))
 
 .PHONY: all
-all: dep generate fmt lint test build man ## Run dep, fmt, lint, test, build and man
+all: dep generate fmt lint test build man ## Run dep, generate, fmt, lint, test, build and man
 
 .PHONY: build
 build: $(GORELEASER) dep.stamp $(call go-pkg-sourcefiles, ./...) ## Build the binaries

@@ -4,11 +4,11 @@ import (
 	"os"
 
 	"github.com/MakeNowJust/heredoc"
+	"github.com/axiomhq/pkg/version"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
 	"github.com/axiomhq/cli/internal/config"
-	"github.com/axiomhq/cli/pkg/version"
 
 	// Core commands
 	ingestCmd "github.com/axiomhq/cli/cmd/axiom/ingest"

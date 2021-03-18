@@ -6,8 +6,7 @@ import (
 	"net/http"
 
 	"github.com/axiomhq/axiom-go/axiom"
-
-	"github.com/axiomhq/cli/pkg/version"
+	"github.com/axiomhq/pkg/version"
 )
 
 // New returns a new Axiom client.
