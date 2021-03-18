@@ -13,12 +13,6 @@ import (
 	"github.com/pelletier/go-toml"
 )
 
-// All available token types.
-const (
-	Ingest   = "ingest"
-	Personal = "personal"
-)
-
 func defaultConfigFile() string {
 	dir, _ := homedir.Dir()
 	return path.Join(dir, ".axiom.toml")
@@ -56,7 +50,6 @@ func (c *Config) GetActiveDeployment() (Deployment, bool) {
 			dep = Deployment{
 				URL:            c.URLOverride,
 				Token:          c.TokenOverride,
-				TokenType:      Personal,
 				OrganizationID: c.OrganizationIDOverride,
 			}
 			return dep, true
@@ -69,7 +62,6 @@ func (c *Config) GetActiveDeployment() (Deployment, bool) {
 	}
 	if c.TokenOverride != "" {
 		dep.Token = c.TokenOverride
-		dep.TokenType = Personal
 	}
 	if c.OrganizationIDOverride != "" {
 		dep.OrganizationID = c.OrganizationIDOverride
@@ -82,7 +74,6 @@ func (c *Config) GetActiveDeployment() (Deployment, bool) {
 type Deployment struct {
 	URL            string `toml:"url"`
 	Token          string `toml:"token"`
-	TokenType      string `toml:"token_type"`
 	OrganizationID string `toml:"org_id"`
 }
 
@@ -186,7 +177,6 @@ func (c *Config) Keys() []string {
 		base := strings.Join([]string{"deployments", k}, ".")
 		res = append(res, strings.Join([]string{base, "url"}, "."))
 		res = append(res, strings.Join([]string{base, "token"}, "."))
-		res = append(res, strings.Join([]string{base, "token_type"}, "."))
 		res = append(res, strings.Join([]string{base, "org_id"}, "."))
 	}
 	sort.Strings(res)

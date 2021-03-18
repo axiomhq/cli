@@ -17,8 +17,8 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/spf13/cobra"
 
+	"github.com/axiomhq/cli/internal/client"
 	"github.com/axiomhq/cli/internal/cmdutil"
-	"github.com/axiomhq/cli/internal/config"
 	"github.com/axiomhq/cli/pkg/utils"
 )
 
@@ -142,7 +142,7 @@ func complete(ctx context.Context, opts *options) error {
 	// Just fetch a list of available datasets if a Personal Access Token is
 	// used.
 	datasetNames := make([]string, 0)
-	if dep, ok := opts.Config.GetActiveDeployment(); ok && dep.TokenType == config.Personal {
+	if dep, ok := opts.Config.GetActiveDeployment(); ok && client.IsPersonalToken(dep.Token) {
 		client, err := opts.Client()
 		if err != nil {
 			return err
@@ -151,7 +151,6 @@ func complete(ctx context.Context, opts *options) error {
 		stop := opts.IO.StartActivityIndicator()
 		datasets, err := client.Datasets.List(ctx)
 		if err != nil {
-			stop()
 			return err
 		}
 		stop()

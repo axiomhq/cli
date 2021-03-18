@@ -17,6 +17,7 @@ import (
 	// Management commands
 	configCmd "github.com/axiomhq/cli/cmd/axiom/config"
 	datasetCmd "github.com/axiomhq/cli/cmd/axiom/dataset"
+	organizationCmd "github.com/axiomhq/cli/cmd/axiom/organization"
 
 	// Additional commands
 	authCmd "github.com/axiomhq/cli/cmd/axiom/auth"
@@ -106,6 +107,7 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 	// Management commands
 	cmd.AddCommand(configCmd.NewConfigCmd(f))
 	cmd.AddCommand(datasetCmd.NewDatasetCmd(f))
+	cmd.AddCommand(organizationCmd.NewOrganizationCmd(f))
 
 	// Additional commands
 	cmd.AddCommand(authCmd.NewAuthCmd(f))

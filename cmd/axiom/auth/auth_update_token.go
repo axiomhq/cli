@@ -8,22 +8,20 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
+	"github.com/axiomhq/axiom-go/axiom"
 	"github.com/spf13/cobra"
 
 	axiomClient "github.com/axiomhq/cli/internal/client"
 	"github.com/axiomhq/cli/internal/cmdutil"
 	"github.com/axiomhq/cli/internal/config"
+	"github.com/axiomhq/cli/pkg/surveyext"
 )
 
 type updateTokenOptions struct {
 	*cmdutil.Factory
-
 	// Token of the user who wants to authenticate against the deployment. The
 	// user will be asked for it unless "token-stdin" is set.
-	Token string `survey:"token"`
-	// TokenType of the supplied token. If not supplied as a flag, which is
-	// optional, the user will be asked for it.
-	TokenType string `survey:"tokenType"`
+	Token string
 	// TokenStdIn reads the token from stdin instead of prompting the user for
 	// it.
 	TokenStdIn bool
@@ -35,7 +33,7 @@ func newUpdateTokenCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "update-token [--token-stdin] [(-t|--token-type=)personal|ingest]",
+		Use:   "update-token [--token-stdin]",
 		Short: "Update the token used to authenticate against an Axiom deployment",
 
 		DisableFlagsInUseLine: true,
@@ -45,7 +43,7 @@ func newUpdateTokenCmd(f *cmdutil.Factory) *cobra.Command {
 			$ axiom auth update-token
 			
 			# Provide parameters on the command-line:
-			$ echo $AXIOM_PERSONAL_ACCESS_TOKEN | axiom auth update-token --token-stdin --token-type="personal"
+			$ echo $AXIOM_PERSONAL_ACCESS_TOKEN | axiom auth update-token --token-stdin
 		`),
 
 		PersistentPreRunE: cmdutil.NeedsActiveDeployment(f),
@@ -58,54 +56,32 @@ func newUpdateTokenCmd(f *cmdutil.Factory) *cobra.Command {
 		},
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if opts.TokenType != config.Personal && opts.TokenType != config.Ingest {
-				return fmt.Errorf("unknown token type %q (choose %q or %q)",
-					opts.TokenType, config.Personal, config.Ingest)
-			}
 			return runUpdateToken(cmd.Context(), opts)
 		},
 	}
 
 	cmd.Flags().BoolVar(&opts.TokenStdIn, "token-stdin", false, "Read token from stdin")
-	cmd.Flags().StringVarP(&opts.TokenType, "token-type", "t", "", "Type of the token (choose \"personal\" or \"ingest\")")
 
 	_ = cmd.RegisterFlagCompletionFunc("token-stdin", cmdutil.NoCompletion)
-	_ = cmd.RegisterFlagCompletionFunc("token-type", tokenTypeCompletion)
 
 	if !opts.IO.IsStdinTTY() {
 		_ = cmd.MarkFlagRequired("token-stdin")
-		_ = cmd.MarkFlagRequired("token-type")
 	}
 
 	return cmd
 }
 
 func completeUpdateToken(opts *updateTokenOptions) error {
-	questions := make([]*survey.Question, 0, 2)
-
-	if opts.TokenType == "" {
-		questions = append(questions, &survey.Question{
-			Name: "tokenType",
-			Prompt: &survey.Select{
-				Message: "What kind of token will you provide?",
-				Options: validTokenTypes,
-			},
-		})
+	if opts.Token != "" {
+		return nil
 	}
 
-	if opts.Token == "" {
-		questions = append(questions, &survey.Question{
-			Name:   "token",
-			Prompt: &survey.Password{Message: "What is your personal access or ingest token?"},
-			Validate: survey.ComposeValidators(
-				survey.Required,
-				survey.MinLength(36),
-				survey.MaxLength(36),
-			),
-		})
-	}
-
-	return survey.Ask(questions, opts, opts.IO.SurveyIO())
+	return survey.AskOne(&survey.Password{
+		Message: "What is your personal access or ingest token?",
+	}, &opts.Token, survey.WithValidator(survey.ComposeValidators(
+		survey.Required,
+		surveyext.ValidateToken,
+	)), opts.IO.SurveyIO())
 }
 
 func runUpdateToken(ctx context.Context, opts *updateTokenOptions) error {
@@ -124,33 +100,57 @@ func runUpdateToken(ctx context.Context, opts *updateTokenOptions) error {
 	// deployment, so no need to check for existence.
 	activeDeployment, _ := opts.Config.GetActiveDeployment()
 
-	if opts.TokenType == config.Personal {
-		client, err := axiomClient.New(activeDeployment.URL, opts.Token, activeDeployment.OrganizationID, opts.Config.Insecure)
-		if err != nil {
+	client, err := axiomClient.New(activeDeployment.URL, opts.Token, activeDeployment.OrganizationID, opts.Config.Insecure)
+	if err != nil {
+		return err
+	}
+
+	stop := opts.IO.StartActivityIndicator()
+	defer stop()
+
+	var user *axiom.AuthenticatedUser
+	if axiomClient.IsPersonalToken(opts.Token) {
+		if user, err = client.Users.Current(ctx); err != nil {
 			return err
 		}
-
-		stop := opts.IO.StartActivityIndicator()
-		defer stop()
-
-		user, err := client.Users.Current(ctx)
-		if err != nil {
+	} else if axiomClient.IsIngestToken(opts.Token) {
+		if err = client.Tokens.Ingest.Validate(ctx); err != nil {
 			return err
 		}
+	}
 
-		stop()
+	stop()
 
-		if opts.IO.IsStderrTTY() {
-			cs := opts.IO.ColorScheme()
-			fmt.Fprintf(opts.IO.ErrOut(), "%s Logged in to deployment %s (%s) as %s\n",
-				cs.SuccessIcon(), cs.Bold(opts.Config.ActiveDeployment), activeDeployment.URL, cs.Bold(user.Name))
+	if opts.IO.IsStderrTTY() {
+		cs := opts.IO.ColorScheme()
+
+		if user != nil {
+			if activeDeployment.URL == axiom.CloudURL {
+				organization, err := client.Organizations.Get(ctx, activeDeployment.OrganizationID)
+				if err != nil {
+					return err
+				}
+
+				fmt.Fprintf(opts.IO.ErrOut(), "%s Logged in to organization %s as %s\n",
+					cs.SuccessIcon(), cs.Bold(organization.Name), cs.Bold(user.Name))
+			} else {
+				fmt.Fprintf(opts.IO.ErrOut(), "%s Logged in to deployment %s as %s\n",
+					cs.SuccessIcon(), cs.Bold(opts.Config.ActiveDeployment), cs.Bold(user.Name))
+			}
+		} else {
+			if activeDeployment.URL == axiom.CloudURL {
+				fmt.Fprintf(opts.IO.ErrOut(), "%s Logged in to organization %s %s\n",
+					cs.SuccessIcon(), cs.Bold(activeDeployment.OrganizationID), cs.Red(cs.Bold("(ingestion only!)")))
+			} else {
+				fmt.Fprintf(opts.IO.ErrOut(), "%s Logged in to deployment %s %s\n",
+					cs.SuccessIcon(), cs.Bold(opts.Config.ActiveDeployment), cs.Red(cs.Bold("(ingestion only!)")))
+			}
 		}
 	}
 
 	opts.Config.Deployments[opts.Config.ActiveDeployment] = config.Deployment{
 		URL:            activeDeployment.URL,
 		Token:          opts.Token,
-		TokenType:      opts.TokenType,
 		OrganizationID: activeDeployment.OrganizationID,
 	}
 

@@ -13,7 +13,6 @@ import (
 
 	axiomClient "github.com/axiomhq/cli/internal/client"
 	"github.com/axiomhq/cli/internal/cmdutil"
-	"github.com/axiomhq/cli/internal/config"
 )
 
 type statusOptions struct {
@@ -78,26 +77,50 @@ func runStatus(ctx context.Context, opts *statusOptions) error {
 			continue
 		}
 
-		var info string
-		if deployment.TokenType == config.Personal {
-			client, err := axiomClient.New(deployment.URL, deployment.Token, deployment.OrganizationID, opts.Config.Insecure)
-			if err != nil {
-				return err
-			}
+		client, err := axiomClient.New(deployment.URL, deployment.Token, deployment.OrganizationID, opts.Config.Insecure)
+		if err != nil {
+			return err
+		}
 
-			if user, err := client.Users.Current(ctx); errors.Is(err, axiom.ErrUnauthenticated) {
+		var info string
+		if axiomClient.IsPersonalToken(deployment.Token) {
+			var user *axiom.AuthenticatedUser
+			if user, err = client.Users.Current(ctx); errors.Is(err, axiom.ErrUnauthenticated) {
 				info = fmt.Sprintf("%s %s", cs.ErrorIcon(), "Invalid credentials")
 				failed = true
 			} else if err != nil {
 				info = fmt.Sprintf("%s %s", cs.ErrorIcon(), err)
 				failed = true
 			} else {
-				info = fmt.Sprintf("%s Logged in as %s (%s)", cs.SuccessIcon(),
-					cs.Bold(user.Name), user.Emails[0])
+				if deployment.OrganizationID == "" {
+					info = fmt.Sprintf("%s Logged in as %s", cs.SuccessIcon(),
+						cs.Bold(user.Name))
+				} else {
+					var organization *axiom.Organization
+					if organization, err = client.Organizations.Get(ctx, deployment.OrganizationID); err != nil {
+						info = fmt.Sprintf("%s %s", cs.ErrorIcon(), err)
+						failed = true
+					} else {
+						info = fmt.Sprintf("%s Logged in to %s as %s", cs.SuccessIcon(),
+							cs.Bold(organization.Name), cs.Bold(user.Name))
+					}
+				}
 			}
 		} else {
-			// We cannot validate ingest tokens without actually ingesting.
-			info = fmt.Sprintf("%s Using ingest token", cs.WarningIcon())
+			if err = client.Tokens.Ingest.Validate(ctx); errors.Is(err, axiom.ErrUnauthenticated) {
+				info = fmt.Sprintf("%s %s", cs.ErrorIcon(), "Invalid credentials")
+				failed = true
+			} else if err != nil {
+				info = fmt.Sprintf("%s %s", cs.ErrorIcon(), err)
+				failed = true
+			} else {
+				if deployment.OrganizationID == "" {
+					info = fmt.Sprintf("%s Using ingest token", cs.WarningIcon())
+				} else {
+					info = fmt.Sprintf("%s Logged in to %s using ingest token", cs.WarningIcon(),
+						cs.Bold(deployment.OrganizationID))
+				}
+			}
 		}
 
 		statusInfo[v] = append(statusInfo[v], info)
