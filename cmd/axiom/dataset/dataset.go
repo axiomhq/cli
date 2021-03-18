@@ -54,11 +54,13 @@ func getDatasetNames(ctx context.Context, f *cmdutil.Factory) ([]string, error) 
 	}
 
 	stop := f.IO.StartActivityIndicator()
+	defer stop()
+
 	datasets, err := client.Datasets.List(ctx)
 	if err != nil {
-		stop()
 		return nil, err
 	}
+
 	stop()
 
 	datasetNames := make([]string, len(datasets))

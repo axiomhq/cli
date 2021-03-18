@@ -10,9 +10,9 @@ import (
 	"github.com/axiomhq/cli/internal/cmdutil"
 )
 
-var activeDeployment string
-
 func newSelectCmd(f *cmdutil.Factory) *cobra.Command {
+	var activeDeployment string
+
 	cmd := &cobra.Command{
 		Use:   "select [<deployment-alias>]",
 		Short: "Select an Axiom deployment",

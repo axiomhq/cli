@@ -7,7 +7,7 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 
-	"github.com/axiomhq/cli/internal/config"
+	"github.com/axiomhq/cli/internal/client"
 	"github.com/axiomhq/cli/pkg/terminal"
 )
 
@@ -43,7 +43,7 @@ var (
 	`)
 
 	noDatasetsMsg = heredoc.Doc(`
-		{{ errorIcon }} No datasets present on configured deployment {{ bold .Deployment }}!
+		{{ errorIcon }} No datasets present on configured deployment!
 
 		  Explicitly create a datatset on the configured deployment:
 		  $ {{ bold "axiom dataset create" }}
@@ -51,7 +51,7 @@ var (
 	`)
 
 	restrictedByIngestTokenMsg = heredoc.Doc(`
-		{{ errorIcon }} Deployment {{ bold .Deployment }} is configured with an Ingest Token!
+		{{ errorIcon }} Deployment is configured with an Ingest Token!
 
 		  An Ingest Token is only valid for ingestion. To run {{ bold .CommandPath }}
 		  make sure to use a Personal Access Token. Help on tokens:
@@ -151,7 +151,7 @@ func NeedsValidDeployment(f *Factory, alias *string) RunFunc {
 func NeedsDatasets(f *Factory) RunFunc {
 	return func(cmd *cobra.Command, _ []string) error {
 		// Skip if token is not a Personal Access Token.
-		if dep, ok := f.Config.GetActiveDeployment(); ok && dep.TokenType != config.Personal {
+		if dep, ok := f.Config.GetActiveDeployment(); ok && !client.IsPersonalToken(dep.Token) {
 			return nil
 		}
 
@@ -180,12 +180,12 @@ func NeedsDatasets(f *Factory) RunFunc {
 func NeedsPersonalAccessToken(f *Factory) RunFunc {
 	return func(cmd *cobra.Command, _ []string) error {
 		// We need an active deployment.
-		activeDeployment, ok := f.Config.GetActiveDeployment()
+		dep, ok := f.Config.GetActiveDeployment()
 		if !ok {
 			return nil
 		}
 
-		if activeDeployment.TokenType == config.Personal {
+		if client.IsPersonalToken(dep.Token) {
 			return nil
 		}
 

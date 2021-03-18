@@ -4,8 +4,9 @@ go 1.16
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.2.9
+	github.com/Djarvur/go-err113 v0.1.0 // indirect
 	github.com/MakeNowJust/heredoc v1.0.0
-	github.com/axiomhq/axiom-go v0.0.0-20210312122006-3294c6b958f9
+	github.com/axiomhq/axiom-go v0.1.0
 	github.com/axiomhq/pkg v0.0.0-20210318171555-dc26762456be
 	github.com/briandowns/spinner v1.12.0
 	github.com/cli/cli v1.7.0
@@ -13,6 +14,7 @@ require (
 	github.com/golangci/golangci-lint v1.38.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/goreleaser/goreleaser v0.159.0
+	github.com/gostaticanalysis/analysisutil v0.6.1 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/mattn/go-colorable v0.1.8
 	github.com/mattn/go-isatty v0.0.12
@@ -22,8 +24,11 @@ require (
 	github.com/muesli/termenv v0.8.0
 	github.com/nwidger/jsoncolor v0.3.0
 	github.com/pelletier/go-toml v1.8.1
+	github.com/quasilyte/regex/syntax v0.0.0-20200805063351-8f842688393c // indirect
+	github.com/spf13/afero v1.5.1 // indirect
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/pflag v1.0.5
+	github.com/stretchr/objx v0.3.0 // indirect
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/term v0.0.0-20210317153231-de623e64d2a6
 	gotest.tools/gotestsum v1.6.2

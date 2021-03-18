@@ -4,8 +4,8 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 
+	"github.com/axiomhq/cli/internal/client"
 	"github.com/axiomhq/cli/internal/cmdutil"
-	"github.com/axiomhq/cli/internal/config"
 )
 
 // NewVersionCmd creates and returns the version command.
@@ -21,10 +21,7 @@ func NewVersionCmd(f *cmdutil.Factory, version string) *cobra.Command {
 		`),
 
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			if activeDeployment, ok := f.Config.GetActiveDeployment(); !ok {
-				cmd.Println(version)
-				return nil
-			} else if activeDeployment.TokenType != config.Personal {
+			if dep, ok := f.Config.GetActiveDeployment(); !ok || !client.IsPersonalToken(dep.Token) {
 				cmd.Println(version)
 				return nil
 			}
@@ -35,11 +32,13 @@ func NewVersionCmd(f *cmdutil.Factory, version string) *cobra.Command {
 			}
 
 			stop := f.IO.StartActivityIndicator()
+			defer stop()
+
 			deploymentVersion, err := client.Version.Get(cmd.Context())
 			if err != nil {
-				stop()
 				return err
 			}
+
 			stop()
 
 			cs := f.IO.ColorScheme()
