@@ -17,10 +17,10 @@ builds:
         - -tags="osusergo netgo static_build"
       ldflags:
         - -s -w -extldflags "-fno-PIC -static -Wl -z now -z relro"
-        - -X github.com/axiomhq/cli/pkg/version.release={{ .Version }}
-        - -X github.com/axiomhq/cli/pkg/version.revision={{ .ShortCommit }}
-        - -X github.com/axiomhq/cli/pkg/version.buildDate={{ .CommitDate }}
-        - -X github.com/axiomhq/cli/pkg/version.buildUser=goreleaser
+        - -X github.com/axiomhq/pkg/version.release={{ .Version }}
+        - -X github.com/axiomhq/pkg/version.revision={{ .ShortCommit }}
+        - -X github.com/axiomhq/pkg/version.buildDate={{ .CommitDate }}
+        - -X github.com/axiomhq/pkg/version.buildUser=goreleaser
       mod_timestamp: "{{ .CommitTimestamp }}"
     id: darwin
     goos: 
