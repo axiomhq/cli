@@ -104,7 +104,7 @@ and start storing and querying unlimited machine data, visit the
 [documentation on Axiom](https://docs.axiom.co/).
 
 For full command reference, see the list below, or visit
-[cli.axiom.com](https://docs.axiom.co/getting-started/index.html).
+[cli.axiom.com](https://docs.axiom.co/reference/CLI/).
 
 ## Commands
 
