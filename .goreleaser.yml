@@ -23,37 +23,38 @@ builds:
         - -X github.com/axiomhq/pkg/version.buildUser=goreleaser
       mod_timestamp: "{{ .CommitTimestamp }}"
     id: darwin
-    goos: 
+    goos:
       - darwin
-    goarch: 
+    goarch:
       - amd64
       - arm64
 
   - <<: *build_defaults
     id: linux
-    goos: 
+    goos:
       - linux
-    goarch: 
+    goarch:
       - amd64
       - arm64
-    goarm: 
-      - 6
-      - 7
     
   - <<: *build_defaults
     flags:
       - -buildmode=exe
     id: linux-no-pie
-    goos: 
+    goos:
       - linux
-    goarch: 
+    goarch:
       - 386
+      - arm
+    goarm:
+      - 6
+      - 7
 
   - <<: *build_defaults
     id: windows
-    goos: 
+    goos:
       - windows
-    goarch: 
+    goarch:
       - 386
       - amd64
 
