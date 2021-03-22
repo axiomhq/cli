@@ -60,9 +60,6 @@ $ go get -u github.com/axiomhq/cli/cmd/axiom
 
 ### Install from source
 
-This project uses native
-[go mod](https://golang.org/cmd/go/#hdr-Module_maintenance) support.
-
 ```shell
 $ git clone https://github.com/axiomhq/cli.git
 $ cd cli
@@ -84,7 +81,7 @@ In all cases the installation can be validated by running `axiom -v` in the
 terminal:
 
 ```shell
-Axiom CLI version 0.1.5
+Axiom CLI version 1.0.0
 ```
 
 ## Usage
@@ -194,4 +191,4 @@ See [LICENSE](LICENSE) for more information.
 [license]: https://opensource.org/licenses/MIT
 [license_badge]: https://img.shields.io/github/license/axiomhq/cli.svg?color=blue&style=flat-square&ghcache=unused
 [docker]: https://hub.docker.com/r/axiomhq/cli
-[docker_badge]: https://img.shields.io/docker/pulls/axiomhq/cli.svg
+[docker_badge]: https://img.shields.io/docker/pulls/axiomhq/cli.svg?style=flat-square&ghcache=unused
