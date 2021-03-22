@@ -87,11 +87,13 @@ func completeUpdate(ctx context.Context, opts *updateOptions) error {
 	}
 
 	progStop := opts.IO.StartActivityIndicator()
+	defer progStop()
+
 	dataset, err := client.Datasets.Get(ctx, opts.Name)
 	if err != nil {
-		progStop()
 		return err
 	}
+
 	progStop()
 
 	if opts.Description == "" {
@@ -114,12 +116,14 @@ func runUpdate(ctx context.Context, opts *updateOptions) error {
 	}
 
 	stop := opts.IO.StartActivityIndicator()
+	defer stop()
+
 	if _, err := client.Datasets.Update(ctx, opts.Name, axiom.DatasetUpdateRequest{
 		Description: opts.Description,
 	}); err != nil {
-		stop()
 		return err
 	}
+
 	stop()
 
 	if opts.IO.IsStderrTTY() {

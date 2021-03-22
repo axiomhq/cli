@@ -102,10 +102,12 @@ func runDelete(ctx context.Context, opts *deleteOptions) error {
 	}
 
 	stop := opts.IO.StartActivityIndicator()
+	defer stop()
+
 	if err = client.Datasets.Delete(ctx, opts.Name); err != nil {
-		stop()
 		return err
 	}
+
 	stop()
 
 	if opts.IO.IsStderrTTY() {

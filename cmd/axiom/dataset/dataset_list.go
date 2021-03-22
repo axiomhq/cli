@@ -58,11 +58,13 @@ func runList(ctx context.Context, opts *listOptions) error {
 	}
 
 	progStop := opts.IO.StartActivityIndicator()
+	defer progStop()
+
 	datasets, err := client.Datasets.List(ctx)
 	if err != nil {
-		progStop()
 		return err
 	}
+
 	progStop()
 
 	pagerStop, err := opts.IO.StartPager(ctx)

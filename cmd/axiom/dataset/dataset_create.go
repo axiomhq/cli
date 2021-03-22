@@ -97,13 +97,15 @@ func runCreate(ctx context.Context, opts *createOptions) error {
 	}
 
 	stop := opts.IO.StartActivityIndicator()
+	defer stop()
+
 	if _, err := client.Datasets.Create(ctx, axiom.DatasetCreateRequest{
 		Name:        opts.Name,
 		Description: opts.Description,
 	}); err != nil {
-		stop()
 		return err
 	}
+
 	stop()
 
 	if opts.IO.IsStderrTTY() {
