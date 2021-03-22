@@ -126,10 +126,10 @@ func runTrim(ctx context.Context, opts *trimOptions) error {
 	}
 
 	stop := opts.IO.StartActivityIndicator()
+	defer stop()
 
 	res, err := client.Datasets.Trim(ctx, opts.Name, opts.Duration)
 	if err != nil {
-		stop()
 		return err
 	}
 

@@ -34,6 +34,8 @@ type options struct {
 	TimestampField string
 	// TimestampFormat the timestamp is formatted in.
 	TimestampFormat string
+	// Delimiter that separates CSV fields.
+	Delimiter string
 	// FlushEvery flushes the ingestion buffer after the specified duration. It
 	// is only valid when ingesting a stream of newline delimited JSON objects
 	// of unknown length.
@@ -122,10 +124,13 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.Flags().StringSliceVarP(&opts.Filenames, "file", "f", nil, "File(s) to ingest (- to read from stdin). If stdin is a pipe the default value is -, otherwise this is a required parameter")
 	cmd.Flags().StringVar(&opts.TimestampField, "timestamp-field", "", "Field to take the ingestion time from (defaults to _time)")
 	cmd.Flags().StringVar(&opts.TimestampFormat, "timestamp-format", "", "Format used in the the timestamp field. Default uses a heuristic parser. Must be expressed using the reference time 'Mon Jan 2 15:04:05 -0700 MST 2006'")
+	cmd.Flags().StringVarP(&opts.Delimiter, "delimiter", "d", "", "Delimiter that separates CSV fields (only valid when input is CSV")
 	cmd.Flags().DurationVar(&opts.FlushEvery, "flush-every", time.Second, "Buffer flush interval for newline delimited JSON streams of unknown length")
 
 	_ = cmd.RegisterFlagCompletionFunc("timestamp-field", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("timestamp-format", cmdutil.NoCompletion)
+	_ = cmd.RegisterFlagCompletionFunc("delimiter", cmdutil.NoCompletion)
+	_ = cmd.RegisterFlagCompletionFunc("flush-every", cmdutil.NoCompletion)
 
 	if opts.IO.IsStdinTTY() {
 		_ = cmd.MarkFlagRequired("file")
@@ -149,10 +154,13 @@ func complete(ctx context.Context, opts *options) error {
 		}
 
 		stop := opts.IO.StartActivityIndicator()
+		defer stop()
+
 		datasets, err := client.Datasets.List(ctx)
 		if err != nil {
 			return err
 		}
+
 		stop()
 
 		for i, dataset := range datasets {
@@ -173,6 +181,7 @@ func run(ctx context.Context, opts *options, flushEverySet bool) error {
 	}
 
 	stop := opts.IO.StartActivityIndicator()
+	defer stop()
 
 	var (
 		res     = new(axiom.IngestStatus)
@@ -201,7 +210,10 @@ func run(ctx context.Context, opts *options, flushEverySet bool) error {
 		}
 
 		if flushEverySet && typ != axiom.NDJSON {
-			return errors.New("--flush-every not valid when content type is not newline delimited JSON")
+			return cmdutil.NewFlagErrorf("--flush-every not valid when content type is not newline delimited JSON")
+		}
+		if opts.Delimiter != "" && typ != axiom.CSV {
+			return cmdutil.NewFlagErrorf("--delimier/-d not valid when content type is not CSV")
 		}
 
 		var ingestRes *axiom.IngestStatus
@@ -341,6 +353,7 @@ func ingest(ctx context.Context, client *axiom.Client, r io.Reader, typ axiom.Co
 	res, err := client.Datasets.Ingest(ctx, opts.Dataset, gzr, typ, axiom.GZIP, axiom.IngestOptions{
 		TimestampField:  opts.TimestampField,
 		TimestampFormat: opts.TimestampFormat,
+		CSVDelimiter:    opts.Delimiter,
 	})
 	if err != nil {
 		return nil, err

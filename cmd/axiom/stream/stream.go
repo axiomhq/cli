@@ -90,11 +90,13 @@ func complete(ctx context.Context, opts *options) error {
 	}
 
 	stop := opts.IO.StartActivityIndicator()
+	defer stop()
+
 	datasets, err := client.Datasets.List(ctx)
 	if err != nil {
-		stop()
 		return err
 	}
+
 	stop()
 
 	datasetNames := make([]string, len(datasets))

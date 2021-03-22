@@ -65,11 +65,13 @@ func runStats(ctx context.Context, opts *statsOptions) error {
 	}
 
 	progStop := opts.IO.StartActivityIndicator()
+	defer progStop()
+
 	stats, err := client.Datasets.Stats(ctx)
 	if err != nil {
-		progStop()
 		return err
 	}
+
 	progStop()
 
 	pagerStop, err := opts.IO.StartPager(ctx)

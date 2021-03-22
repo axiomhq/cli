@@ -85,11 +85,13 @@ func runInfo(ctx context.Context, opts *infoOptions) error {
 	}
 
 	progStop := opts.IO.StartActivityIndicator()
+	defer progStop()
+
 	dataset, err := client.Datasets.Info(ctx, opts.Name)
 	if err != nil {
-		progStop()
 		return err
 	}
+
 	progStop()
 
 	pagerStop, err := opts.IO.StartPager(ctx)
