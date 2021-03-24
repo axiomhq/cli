@@ -44,12 +44,20 @@ builds:
     goos:
       - linux
     goarch:
-      - amd64 # We need a non-pie build for Docker Images
       - arm
       - 386
     goarm:
       - 6
       - 7
+
+  - <<: *build_defaults
+    flags:
+      - -buildmode=exe
+    id: docker
+    goos:
+      - linux
+    goarch:
+      - amd64
 
   - <<: *build_defaults
     id: windows
@@ -135,7 +143,7 @@ brews:
 
 dockers:
   - ids:
-      - linux-no-pie
+      - docker
     image_templates:
     - "axiomhq/cli:{{ .Major }}"
     - "axiomhq/cli:{{ .Major }}.{{ .Minor }}"
