@@ -44,8 +44,9 @@ builds:
     goos:
       - linux
     goarch:
-      - 386
+      - amd64 # We need a non-pie build for Docker Images
       - arm
+      - 386
     goarm:
       - 6
       - 7
@@ -55,8 +56,8 @@ builds:
     goos:
       - windows
     goarch:
-      - 386
       - amd64
+      - 386
 
 archives:
   - <<: &archive_defaults
@@ -133,7 +134,9 @@ brews:
       assert_match "Axiom CLI version #{version}", shell_output("#{bin}/{{ .ProjectName }} -v")
 
 dockers:
-  - image_templates:
+  - ids:
+      - linux-no-pie
+    image_templates:
     - "axiomhq/cli:{{ .Major }}"
     - "axiomhq/cli:{{ .Major }}.{{ .Minor }}"
     - "axiomhq/cli:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
