@@ -3,8 +3,6 @@ package auth
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
-	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
@@ -20,11 +18,9 @@ import (
 type updateTokenOptions struct {
 	*cmdutil.Factory
 	// Token of the user who wants to authenticate against the deployment. The
-	// user will be asked for it unless "token-stdin" is set.
+	// user will be asked for it unless the session has no TTY attached, in
+	// which case the token is read from stdin.
 	Token string
-	// TokenStdIn reads the token from stdin instead of prompting the user for
-	// it.
-	TokenStdIn bool
 }
 
 func newUpdateTokenCmd(f *cmdutil.Factory) *cobra.Command {
@@ -33,7 +29,7 @@ func newUpdateTokenCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "update-token [--token-stdin]",
+		Use:   "update-token",
 		Short: "Update the token used to authenticate against an Axiom deployment",
 
 		DisableFlagsInUseLine: true,
@@ -43,13 +39,13 @@ func newUpdateTokenCmd(f *cmdutil.Factory) *cobra.Command {
 			$ axiom auth update-token
 			
 			# Provide parameters on the command-line:
-			$ echo $AXIOM_PERSONAL_ACCESS_TOKEN | axiom auth update-token --token-stdin
+			$ echo $AXIOM_PERSONAL_ACCESS_TOKEN | axiom auth update-token
 		`),
 
 		PersistentPreRunE: cmdutil.NeedsActiveDeployment(f),
 
 		PreRunE: func(*cobra.Command, []string) error {
-			if !opts.IO.IsStdinTTY() && opts.TokenStdIn {
+			if !opts.IO.IsStdinTTY() {
 				return nil
 			}
 			return completeUpdateToken(opts)
@@ -58,14 +54,6 @@ func newUpdateTokenCmd(f *cmdutil.Factory) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runUpdateToken(cmd.Context(), opts)
 		},
-	}
-
-	cmd.Flags().BoolVar(&opts.TokenStdIn, "token-stdin", false, "Read token from stdin")
-
-	_ = cmd.RegisterFlagCompletionFunc("token-stdin", cmdutil.NoCompletion)
-
-	if !opts.IO.IsStdinTTY() {
-		_ = cmd.MarkFlagRequired("token-stdin")
 	}
 
 	return cmd
@@ -85,15 +73,12 @@ func completeUpdateToken(opts *updateTokenOptions) error {
 }
 
 func runUpdateToken(ctx context.Context, opts *updateTokenOptions) error {
-	// Read token from stdin, if the appropriate option is set.
-	if opts.TokenStdIn {
-		contents, err := ioutil.ReadAll(opts.IO.In())
-		if err != nil {
+	// Read token from stdin, if no TTY is attached.
+	if !opts.IO.IsStdinTTY() {
+		var err error
+		if opts.Token, err = readTokenFromStdIn(opts.IO.In()); err != nil {
 			return err
 		}
-
-		opts.Token = strings.TrimSuffix(string(contents), "\n")
-		opts.Token = strings.TrimSuffix(opts.Token, "\r")
 	}
 
 	// A requirement for this command to execute is the presence of an active

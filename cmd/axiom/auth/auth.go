@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"io"
+	"io/ioutil"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
@@ -57,4 +59,19 @@ func deploymentCompletionFunc(config *config.Config) cmdutil.CompletionFunc {
 		}
 		return res, cobra.ShellCompDirectiveNoFileComp
 	}
+}
+
+func readTokenFromStdIn(r io.Reader) (string, error) {
+	// The token won't be longer.
+	r = io.LimitReader(r, 256)
+
+	contents, err := ioutil.ReadAll(r)
+	if err != nil {
+		return "", err
+	}
+
+	token := strings.TrimSuffix(string(contents), "\n")
+	token = strings.TrimSuffix(token, "\r")
+
+	return token, nil
 }
