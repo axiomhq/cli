@@ -55,7 +55,6 @@ $ brew install axiom
 To update:
 
 ```shell
-$ brew update
 $ brew upgrade axiom
 ```
 
