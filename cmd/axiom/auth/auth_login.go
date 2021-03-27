@@ -191,7 +191,7 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 	// Read token from stdin, if no TTY is attached.
 	if !opts.IO.IsStdinTTY() {
 		// The token won't be longer.
-		r := io.LimitReader(opts.IO.In(), 64)
+		r := io.LimitReader(opts.IO.In(), 256)
 
 		contents, err := ioutil.ReadAll(r)
 		if err != nil {
