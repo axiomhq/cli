@@ -3,8 +3,6 @@ package auth
 import (
 	"context"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"net/url"
 	"strings"
 
@@ -36,7 +34,8 @@ type loginOptions struct {
 	// which is optional, the user will be asked for it.
 	Alias string
 	// Token of the user who wants to authenticate against the deployment. The
-	// user will be asked for it unless "token-stdin" is set.
+	// user will be asked for it unless the session has no TTY attached, in
+	// which case the token is read from stdin.
 	Token string
 	// OrganizationID of the organization the supplied token is valid for. If
 	// not supplied as a flag, which is optional, the user will be asked for it.
@@ -84,14 +83,12 @@ func newLoginCmd(f *cmdutil.Factory) *cobra.Command {
 
 	_ = cmd.RegisterFlagCompletionFunc("url", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("alias", cmdutil.NoCompletion)
-	_ = cmd.RegisterFlagCompletionFunc("token-stdin", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("org-id", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("force", cmdutil.NoCompletion)
 
 	if !opts.IO.IsStdinTTY() {
 		_ = cmd.MarkFlagRequired("url")
 		_ = cmd.MarkFlagRequired("alias")
-		_ = cmd.MarkFlagRequired("token-stdin")
 		_ = cmd.MarkFlagRequired("force")
 	}
 
@@ -190,16 +187,10 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 func runLogin(ctx context.Context, opts *loginOptions) error {
 	// Read token from stdin, if no TTY is attached.
 	if !opts.IO.IsStdinTTY() {
-		// The token won't be longer.
-		r := io.LimitReader(opts.IO.In(), 256)
-
-		contents, err := ioutil.ReadAll(r)
-		if err != nil {
+		var err error
+		if opts.Token, err = readTokenFromStdIn(opts.IO.In()); err != nil {
 			return err
 		}
-
-		opts.Token = strings.TrimSuffix(string(contents), "\n")
-		opts.Token = strings.TrimSuffix(opts.Token, "\r")
 	}
 
 	// If a deployment with the alias exists in the config, we ask the user if he
