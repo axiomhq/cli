@@ -49,7 +49,7 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "ingest <dataset-name> [(-f|--file) <filename> [ ...]] [--timestamp-field <timestamp-field>] [--timestamp-format <timestamp-format>] [--flush-every <duration>] [(-c|--compression=)TRUE|FALSE]",
+		Use:   "ingest <dataset-name> [(-f|--file) <filename> [ ...]] [--timestamp-field <timestamp-field>] [--timestamp-format <timestamp-format>] [--flush-every <duration>]",
 		Short: "Ingest data",
 		Long: heredoc.Doc(`
 			Ingest data into an Axiom dataset.
@@ -82,10 +82,6 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 			# Ingest the contents of a JSON logfile into a dataset named
 			# "nginx-logs":
 			$ axiom ingest nginx-logs -f nginx-logs.json
-
-			# Ingest the contents of all files inside /var/logs/nginx with
-			# extension ".log" into a dataset named "nginx-logs":
-			$ axiom ingest nginx-logs -f /var/logs/nginx/*.log
 
 			# Pipe the contents of a log generator into a dataset named
 			# "gen-logs". If the length of the data stream is unknown, the
@@ -146,7 +142,7 @@ func complete(ctx context.Context, opts *options) error {
 
 	// Just fetch a list of available datasets if a Personal Access Token is
 	// used.
-	datasetNames := make([]string, 0)
+	var datasetNames []string
 	if dep, ok := opts.Config.GetActiveDeployment(); ok && client.IsPersonalToken(dep.Token) {
 		client, err := opts.Client()
 		if err != nil {
@@ -163,6 +159,7 @@ func complete(ctx context.Context, opts *options) error {
 
 		stop()
 
+		datasetNames = make([]string, len(datasets))
 		for i, dataset := range datasets {
 			datasetNames[i] = dataset.Name
 		}
