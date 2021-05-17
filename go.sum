@@ -206,8 +206,8 @@ github.com/aws/aws-sdk-go v1.25.37/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpi
 github.com/aws/aws-sdk-go v1.36.1/go.mod h1:hcU610XS61/+aQV88ixoOzUoG7v3b31pl2zKMmprdro=
 github.com/aws/aws-sdk-go v1.36.30 h1:hAwyfe7eZa7sM+S5mIJZFiNFwJMia9Whz6CYblioLoU=
 github.com/aws/aws-sdk-go v1.36.30/go.mod h1:hcU610XS61/+aQV88ixoOzUoG7v3b31pl2zKMmprdro=
-github.com/axiomhq/axiom-go v0.1.1 h1:Efr5gYDPwkvACzdlsuGAWi5xcJCo2pG0Hphra1Kusbo=
-github.com/axiomhq/axiom-go v0.1.1/go.mod h1:2ppbPBFEfYiC6z7Bm2UsQHxTVSRvnos21rbJgpy5z+M=
+github.com/axiomhq/axiom-go v0.1.2 h1:kCvGrj6y44ym/SsOUys+wSJY24yXOB0KEO6Bhhd8VA4=
+github.com/axiomhq/axiom-go v0.1.2/go.mod h1:2ppbPBFEfYiC6z7Bm2UsQHxTVSRvnos21rbJgpy5z+M=
 github.com/axiomhq/pkg v0.0.0-20210318171555-dc26762456be h1:X+wD5B+pQcZIJ91707eNtaw1YY1rjobAYcPbMhGbnYE=
 github.com/axiomhq/pkg v0.0.0-20210318171555-dc26762456be/go.mod h1:XdtO/VPgSPCEI7EhCFH0g0R7x+TGBJPQsG7a5YrBhlE=
 github.com/aybabtme/rgbterm v0.0.0-20170906152045-cc83f3b3ce59 h1:WWB576BN5zNSZc/M9d/10pqEx5VHNhaQ/yOVAkmj5Yo=

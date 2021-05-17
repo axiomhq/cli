@@ -5,7 +5,7 @@ import (
 
 	"github.com/axiomhq/axiom-go/axiom"
 
-	axiomClient "github.com/axiomhq/cli/internal/client"
+	"github.com/axiomhq/cli/internal/client"
 	"github.com/axiomhq/cli/internal/config"
 	"github.com/axiomhq/cli/pkg/terminal"
 )
@@ -31,5 +31,5 @@ func (f *Factory) Client() (*axiom.Client, error) {
 	if !ok {
 		return nil, errors.New("no active deployment set")
 	}
-	return axiomClient.New(deployment.URL, deployment.Token, deployment.OrganizationID, f.Config.Insecure)
+	return client.New(deployment.URL, deployment.Token, deployment.OrganizationID, f.Config.Insecure)
 }

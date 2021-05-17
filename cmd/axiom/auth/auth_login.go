@@ -133,7 +133,7 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 	// in case a Personal Access Token was provided and the deployment is a
 	// cloud deployment. If only one organization is available, that one is
 	// selected by default, without asking the user for it.
-	if axiomClient.IsPersonalToken(opts.Token) && deploymentKind == typeCloud && opts.OrganizationID == "" {
+	if axiom.IsPersonalToken(opts.Token) && deploymentKind == typeCloud && opts.OrganizationID == "" {
 		client, err := axiomClient.New(opts.URL, opts.Token, "", opts.Config.Insecure)
 		if err != nil {
 			return err
@@ -218,11 +218,11 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 	defer stop()
 
 	var user *axiom.AuthenticatedUser
-	if axiomClient.IsPersonalToken(opts.Token) {
+	if axiom.IsPersonalToken(opts.Token) {
 		if user, err = client.Users.Current(ctx); err != nil {
 			return err
 		}
-	} else if axiomClient.IsIngestToken(opts.Token) {
+	} else if axiom.IsIngestToken(opts.Token) {
 		if err = client.Tokens.Ingest.Validate(ctx); err != nil {
 			return err
 		}
