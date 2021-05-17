@@ -2,9 +2,9 @@ package version
 
 import (
 	"github.com/MakeNowJust/heredoc"
+	"github.com/axiomhq/axiom-go/axiom"
 	"github.com/spf13/cobra"
 
-	"github.com/axiomhq/cli/internal/client"
 	"github.com/axiomhq/cli/internal/cmdutil"
 )
 
@@ -21,7 +21,7 @@ func NewVersionCmd(f *cmdutil.Factory, version string) *cobra.Command {
 		`),
 
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			if dep, ok := f.Config.GetActiveDeployment(); !ok || !client.IsPersonalToken(dep.Token) {
+			if dep, ok := f.Config.GetActiveDeployment(); !ok || !axiom.IsPersonalToken(dep.Token) {
 				cmd.Println(version)
 				return nil
 			}

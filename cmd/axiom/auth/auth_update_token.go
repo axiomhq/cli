@@ -94,11 +94,11 @@ func runUpdateToken(ctx context.Context, opts *updateTokenOptions) error {
 	defer stop()
 
 	var user *axiom.AuthenticatedUser
-	if axiomClient.IsPersonalToken(opts.Token) {
+	if axiom.IsPersonalToken(opts.Token) {
 		if user, err = client.Users.Current(ctx); err != nil {
 			return err
 		}
-	} else if axiomClient.IsIngestToken(opts.Token) {
+	} else if axiom.IsIngestToken(opts.Token) {
 		if err = client.Tokens.Ingest.Validate(ctx); err != nil {
 			return err
 		}

@@ -6,7 +6,7 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.2.9
 	github.com/Djarvur/go-err113 v0.1.0 // indirect
 	github.com/MakeNowJust/heredoc v1.0.0
-	github.com/axiomhq/axiom-go v0.1.1
+	github.com/axiomhq/axiom-go v0.1.2
 	github.com/axiomhq/pkg v0.0.0-20210318171555-dc26762456be
 	github.com/briandowns/spinner v1.12.0
 	github.com/cli/cli v1.7.0

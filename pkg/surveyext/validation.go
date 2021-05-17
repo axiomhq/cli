@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/axiomhq/cli/internal/client"
+	"github.com/axiomhq/axiom-go/axiom"
 )
 
 // ValidateURL validates that the given input is a valid url.
@@ -36,7 +36,7 @@ func ValidateToken(val interface{}) error {
 		return fmt.Errorf("token cannot be of type %v", reflect.TypeOf(val).Name())
 	}
 
-	if !client.IsPersonalToken(token) && !client.IsIngestToken(token) {
+	if !axiom.IsPersonalToken(token) && !axiom.IsIngestToken(token) {
 		return errors.New("token is not an axiom access token (missing prefix)")
 	}
 
