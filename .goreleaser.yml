@@ -10,11 +10,14 @@ builds:
       main: ./cmd/axiom
       env:
         - CGO_ENABLED=0
+      tags:
+        - osusergo
+        - netgo
+        - static_build
       flags:
         - -buildmode=pie
         - -installsuffix=cgo
         - -trimpath
-        - -tags="osusergo netgo static_build"
       ldflags:
         - -s -w -extldflags "-fno-PIC -static -Wl -z now -z relro"
         - -X github.com/axiomhq/pkg/version.release={{ .Version }}
@@ -42,7 +45,6 @@ builds:
       - -buildmode=exe
       - -installsuffix=cgo
       - -trimpath
-      - -tags="osusergo netgo static_build"
     id: linux-no-pie
     goos:
       - linux
@@ -58,7 +60,6 @@ builds:
       - -buildmode=exe
       - -installsuffix=cgo
       - -trimpath
-      - -tags="osusergo netgo static_build"
     id: docker
     goos:
       - linux

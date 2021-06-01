@@ -13,7 +13,7 @@ REVISION        := $(shell git rev-parse --short HEAD)
 RELEASE         := $(shell git describe --tags 2>/dev/null || git rev-parse --short HEAD)-dev
 USER            := $(shell whoami)
 
-# GO TOOLS
+# TOOLS
 GEN_CLI_DOCS	:= bin/gen-cli-docs
 GOLANGCI_LINT	:= bin/golangci-lint
 GORELEASER		:= bin/goreleaser
@@ -25,17 +25,18 @@ COVERPROFILE	:= coverage.out
 DIST_DIR		:= dist
 MANPAGES_DIR	:= man
 
-# TAGS
-GOTAGS := osusergo netgo static_build
+# GO TAGS
+GO_TAGS := osusergo netgo static_build
+
+# GO LD FLAGS
+GO_LD_FLAGS := -s -w -extldflags "-fno-PIC -static -Wl -z now -z relro"
+GO_LD_FLAGS += -X github.com/axiomhq/pkg/version.release=$(RELEASE)
+GO_LD_FLAGS += -X github.com/axiomhq/pkg/version.revision=$(REVISION)
+GO_LD_FLAGS += -X github.com/axiomhq/pkg/version.buildDate=$(BUILD_DATE)
+GO_LD_FLAGS += -X github.com/axiomhq/pkg/version.buildUser=$(USER)
 
 # FLAGS
-GOFLAGS := -buildmode=pie -tags='$(GOTAGS)' -installsuffix=cgo -trimpath
-GOFLAGS += -ldflags='-s -w -extldflags "-fno-PIC -static -Wl -z now -z relro"
-GOFLAGS += -X github.com/axiomhq/pkg/version.release=$(RELEASE)
-GOFLAGS += -X github.com/axiomhq/pkg/version.revision=$(REVISION)
-GOFLAGS += -X github.com/axiomhq/pkg/version.buildDate=$(BUILD_DATE)
-GOFLAGS += -X github.com/axiomhq/pkg/version.buildUser=$(USER)'
-
+GO_FLAGS 			:= -buildmode=pie -installsuffix=cgo -trimpath -tags='$(GO_TAGS)' -ldflags='$(GO_LD_FLAGS)'
 GO_TEST_FLAGS		:= -race -coverprofile=$(COVERPROFILE)
 GORELEASER_FLAGS	:= --snapshot --rm-dist
 
@@ -120,7 +121,7 @@ test: $(GOTESTSUM) ## Run all tests. Run with VERBOSE=1 to get verbose test outp
 	@$(GOTESTSUM) $(GOTESTSUM_FLAGS) -- $(GO_TEST_FLAGS) ./...
 
 .PHONY: tools
-tools: $(GEN_CLI_DOCS) $(GOLANGCI_LINT) $(GORELEASER) $(GOTESTSUM) ## Install all tools into the projects local $GOBIN directory
+tools: $(GEN_CLI_DOCS) $(GOLANGCI_LINT) $(GORELEASER) $(GOTESTSUM) $(STRINGER) ## Install all tools into the projects local $GOBIN directory
 
 .PHONY: help
 help:
@@ -139,13 +140,13 @@ $(COVERPROFILE):
 
 # INSTALL TARGETS
 
-$(GOPATH)/bin/axiom: dep.stamp $(call go-pkg-sourcefiles, ./...)
+$(GOPATH)/bin/axiom: dep.stamp $(call go-pkg-sourcefiles, ./cmd/axiom)
 	@echo ">> installing axiom binary"
-	@$(GO_BIN_IN_PATH) install $(GOFLAGS) ./cmd/axiom
+	@$(GO_BIN_IN_PATH) install $(GO_FLAGS) ./cmd/axiom
 
-# GO TOOLS
+# TOOLS
 
-$(GEN_CLI_DOCS): dep.stamp $(call go-pkg-sourcefiles, github.com/axiomhq/cli/tools/gen-cli-docs) $(call go-pkg-sourcefiles, github.com/axiomhq/cli/cmd/axiom/...)
+$(GEN_CLI_DOCS): dep.stamp $(call go-pkg-sourcefiles, github.com/axiomhq/cli/tools/gen-cli-docs) $(call go-pkg-sourcefiles, ./cmd/axiom)
 	@echo ">> installing gen-cli-docs"
 	@$(GO) install github.com/axiomhq/cli/tools/gen-cli-docs
 

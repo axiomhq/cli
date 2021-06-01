@@ -1,0 +1,110 @@
+name: PR
+
+on:
+  pull_request:
+    branches:
+      - main
+
+env:
+  GOVERSION: "1.16"
+
+jobs:
+  gen-diff:
+    name: Codegen Diff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GOVERSION }}
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: ${{ runner.os }}-go-
+      - run: make generate man
+      - run: git diff --exit-code
+
+  lint:
+    name: Lint
+    needs: gen-diff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GOVERSION }}
+      - uses: golangci/golangci-lint-action@v2
+
+  test:
+    name: Test
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GOVERSION }}
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: ${{ runner.os }}-go-
+      - run: make test
+
+  build:
+    name: Build
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GOVERSION }}
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: ${{ runner.os }}-go-
+      - uses: goreleaser/goreleaser-action@v2
+        with:
+          args: build --snapshot
+      - uses: actions/upload-artifact@v2
+        with:
+          name: binary
+          path: dist/linux_linux_amd64/axiom
+
+  binary-integration:
+    name: Binary integration
+    needs: build
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    env:
+      AXM_TOKEN: ${{ secrets.TESTING_AZURE_1_STAGING_ACCESS_TOKEN }}
+      AXM_URL: ${{ secrets.TESTING_AZURE_1_STAGING_DEPLOYMENT_URL }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: binary
+      - run: chmod +x ./axiom
+      - run: ./axiom version -I
+      - run: ./axiom dataset create -n=cli-test-$GITHUB_RUN_ID -d="CLI Integration test $GITHUB_RUN_ID"
+      - run: cat testdata/logs.csv | ./axiom ingest cli-test-$GITHUB_RUN_ID
+      - run: cat testdata/logs.json | ./axiom ingest cli-test-$GITHUB_RUN_ID
+      - run: cat testdata/logs.ndjson | ./axiom ingest cli-test-$GITHUB_RUN_ID
+      - run: ./axiom ingest cli-test-$GITHUB_RUN_ID -f=testdata/logs.ndjson
+      - run: ./axiom ingest cli-test-$GITHUB_RUN_ID -f=testdata/logs.json -f=testdata/logs.csv
+      - run: ./axiom dataset info cli-test-$GITHUB_RUN_ID
+      - run: ./axiom dataset list
+      - name: Cleanup
+        if: ${{ always() }}
+        run: ./axiom dataset delete -f cli-test-$GITHUB_RUN_ID
