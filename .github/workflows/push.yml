@@ -1,7 +1,7 @@
-name: PR
+name: Push
 
 on:
-  pull_request:
+  push:
     branches:
       - main
 
@@ -58,6 +58,7 @@ jobs:
       - uses: codecov/codecov-action@v1
         with:
           fail_ci_if_error: true
+      - uses: creekorful/goreportcard-action@v1.0
 
   build:
     name: Build
@@ -88,7 +89,6 @@ jobs:
   binary-integration:
     name: Binary integration
     needs: build
-    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     env:
       AXM_TOKEN: ${{ secrets.TESTING_AZURE_1_STAGING_ACCESS_TOKEN }}
