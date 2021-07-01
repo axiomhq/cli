@@ -93,8 +93,8 @@ func main() {
 	cmdutil.InheritRootPersistenPreRun(rootCmd)
 
 	// Finally execute the root command.
-	if err := rootCmd.ExecuteContext(ctx); err != nil {
-		printError(f.IO.ErrOut(), err, rootCmd)
+	if cmd, err := rootCmd.ExecuteContextC(ctx); err != nil {
+		printError(f.IO.ErrOut(), err, cmd)
 		os.Exit(1)
 	} else if root.HasFailed() {
 		os.Exit(1)
