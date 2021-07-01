@@ -48,8 +48,8 @@ Binary releases are available on
 ### Install using [Homebrew](https://brew.sh)
 
 ```shell
-$ brew tap axiomhq/tap
-$ brew install axiom
+ brew tap axiomhq/tap
+ brew install axiom
 ```
 
 To update:
