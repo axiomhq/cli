@@ -163,7 +163,7 @@ For full command reference, see the list below, or visit
  axiom <command> --help
  axiom <command> <subcommand> --help
 
-Read the manual at https://docs.axiom.co/cli
+Read the manual at https://docs.axiom.co/reference/CLI/
 ```
 
 ## Contributing
