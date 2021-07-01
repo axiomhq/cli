@@ -12,7 +12,7 @@ import (
 )
 
 // New returns a new Axiom client.
-func New(baseURL, accessToken, orgID string, insecure bool, options ...axiom.Option) (*axiom.Client, error) {
+func New(baseURL, accessToken, orgID string, insecure bool) (*axiom.Client, error) {
 	if !strings.HasPrefix(baseURL, "http://") && !strings.HasPrefix(baseURL, "https://") {
 		baseURL = "https://" + baseURL
 	}
@@ -27,8 +27,11 @@ func New(baseURL, accessToken, orgID string, insecure bool, options ...axiom.Opt
 		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true} //nolint:gosec
 	}
 
-	options = append(options, axiom.SetUserAgent("axiom-cli/"+version.Release()))
-	options = append(options, axiom.SetBaseURL(baseURL))
-	options = append(options, axiom.SetClient(httpClient))
-	return axiom.NewCloudClient(accessToken, orgID, options...)
+	return axiom.NewClient(
+		axiom.SetURL(baseURL),
+		axiom.SetAccessToken(accessToken),
+		axiom.SetOrgID(orgID),
+		axiom.SetClient(httpClient),
+		axiom.SetUserAgent("axiom-cli/"+version.Release()),
+	)
 }
