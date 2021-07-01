@@ -97,6 +97,7 @@ Axiom CLI version 1.0.0
  axiom <command> <subcommand> [flags]
 
 # Run `help` for detailed information about commands
+
  axiom help <command>
 ```
 
