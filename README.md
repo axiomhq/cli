@@ -110,10 +110,11 @@ For full command reference, see the list below, or visit
 
 **Core Commands**
 
-| Commands     | Description      |
-| ------------ | ---------------- |
-| axiom ingest | Ingest data      |
-| axiom stream | Live stream data |
+| Commands     | Description          |
+| ------------ | -------------------- |
+| axiom ingest | Ingest data          |
+| axiom query  | Query data using APL |
+| axiom stream | Live stream data     |
 
 **Management Commands**
 
@@ -123,6 +124,7 @@ For full command reference, see the list below, or visit
 | axiom auth logout          | Logout of an Axiom deployment     |
 | axiom auth select          | Select an Axiom deployment        |
 | axiom auth status          | View authentication status        |
+| axiom auth switch-org      | Switch the organization           |
 | axiom auth update-token    | Update the token of a deloyment   |
 | axiom config edit          | Edit the configuration file       |
 | axiom config get           | Get a configuration value         |

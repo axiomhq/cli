@@ -106,6 +106,8 @@ jobs:
     needs: build
     if: github.event.pull_request.head.repo.full_name == github.repository
     strategy:
+      max-parallel: 2
+      fail-fast: false
       matrix:
         os:
           - macos-latest
@@ -118,11 +120,13 @@ jobs:
             goos: linux
           - os: windows-latest
             goos: windows
+            experimental: true
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
     env:
       AXIOM_TOKEN: ${{ secrets.TESTING_AZURE_1_STAGING_ACCESS_TOKEN }}
       AXIOM_URL: ${{ secrets.TESTING_AZURE_1_STAGING_DEPLOYMENT_URL }}
-      DATASET_SUFFIX: ${{ github.run_id }}-${{ matrix.goos }}
+      AXIOM_DATASET: cli-test-${{ github.run_id }}-${{ matrix.goos }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
@@ -135,22 +139,24 @@ jobs:
           chmod +x dist/${{ matrix.goos }}_${{ matrix.goos }}_amd64/axiom
           mv dist/${{ matrix.goos }}_${{ matrix.goos }}_amd64/axiom /usr/local/bin/axiom
           axiom version -I
-          axiom dataset create -n=cli-test-${{ env.DATASET_SUFFIX }} -d="CLI Integration test ${{ env.DATASET_SUFFIX }}"
-          axiom ingest cli-test-${{ env.DATASET_SUFFIX }} -f=testdata/logs.json -f=testdata/logs.ndjson -f=testdata/logs.csv
-          axiom dataset info cli-test-${{ env.DATASET_SUFFIX }}
+          axiom dataset create -n=${{ env.AXIOM_DATASET }} -d="CLI Integration test"
+          axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.json -f=testdata/logs.ndjson -f=testdata/logs.csv
+          axiom dataset info ${{ env.AXIOM_DATASET }}
           axiom dataset list
+          axiom query "['${{ env.AXIOM_DATASET }}']"
       - name: Test (Windows)
         if: matrix.goos == 'windows'
         run: |
           chmod +x dist/${{ matrix.goos }}_${{ matrix.goos }}_amd64/axiom.exe
           mv dist/${{ matrix.goos }}_${{ matrix.goos }}_amd64/axiom.exe C:/Windows/System32/axiom.exe
           axiom version -I
-          axiom dataset create -n=cli-test-${{ env.DATASET_SUFFIX }} -d="CLI Integration test ${{ env.DATASET_SUFFIX }}"
-          axiom ingest cli-test-${{ env.DATASET_SUFFIX }} -f=testdata/logs.json
-          axiom ingest cli-test-${{ env.DATASET_SUFFIX }} -f=testdata/logs.ndjson
-          axiom ingest cli-test-${{ env.DATASET_SUFFIX }} -f=testdata/logs.csv
-          axiom dataset info cli-test-${{ env.DATASET_SUFFIX }}
+          axiom dataset create -n=${{ env.AXIOM_DATASET }} -d="CLI Integration test"
+          axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.json
+          axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.ndjson
+          axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.csv
+          axiom dataset info ${{ env.AXIOM_DATASET }}
           axiom dataset list
+          axiom query "['${{ env.AXIOM_DATASET }}']"
       - name: Cleanup
         if: always()
-        run: axiom dataset delete -f cli-test-${{ env.DATASET_SUFFIX }}
+        run: axiom dataset delete -f ${{ env.AXIOM_DATASET }}
