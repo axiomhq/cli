@@ -189,14 +189,12 @@ func NeedsPersonalAccessToken(f *Factory) RunFunc {
 			return nil
 		}
 
-		if err := execTemplateSilent(f.IO, restrictedByIngestTokenMsg, map[string]string{
+		err := execTemplateSilent(f.IO, restrictedByIngestTokenMsg, map[string]string{
 			"Deployment":  f.Config.ActiveDeployment,
 			"CommandPath": cmd.CommandPath(),
-		}); err != nil {
-			return err
-		}
+		})
 
-		return nil
+		return err
 	}
 }
 
