@@ -94,7 +94,7 @@ func runList(ctx context.Context, opts *listOptions) error {
 
 		trb.AddField(dataset.Name, nil)
 		trb.AddField(dataset.Description, nil)
-		trb.AddField(dataset.Created.Format(time.RFC1123), cs.Gray)
+		trb.AddField(dataset.CreatedAt.Format(time.RFC1123), cs.Gray)
 	}
 
 	return iofmt.FormatToTable(opts.IO, len(datasets), header, nil, contentRow)
