@@ -191,7 +191,7 @@ See [LICENSE](LICENSE) for more information.
 [docs]: https://docs.axiom.co
 [docs_badge]: https://img.shields.io/badge/docs-reference-blue.svg?style=flat-square
 [go_workflow]: https://github.com/axiomhq/cli/actions/workflows/push.yml
-[go_workflow_badge]: https://img.shields.io/github/workflow/status/axiomhq/cli/push?style=flat-square&ghcache=unused
+[go_workflow_badge]: https://img.shields.io/github/workflow/status/axiomhq/cli/Push?style=flat-square&ghcache=unused
 [coverage]: https://codecov.io/gh/axiomhq/cli
 [coverage_badge]: https://img.shields.io/codecov/c/github/axiomhq/cli.svg?style=flat-square&ghcache=unused
 [report]: https://goreportcard.com/report/github.com/axiomhq/cli
