@@ -40,8 +40,9 @@ type IO struct {
 	colorScheme  *ColorScheme
 	colorEnabled bool
 
-	pagerCommand      string
-	activityIndicator *spinner.Spinner
+	pagerCommand             string
+	activityIndicator        *spinner.Spinner
+	activityIndicatorEnabled bool
 }
 
 // NewIO returns a new IO. It detects if a TTY is attached and detects if
@@ -78,6 +79,12 @@ func NewIO() *IO {
 	}
 
 	return io
+}
+
+// EnableActivityIndicator enables or disables the activity indicator. It does
+// not force-enable it, if no TTY is attached.
+func (io *IO) EnableActivityIndicator(enable bool) {
+	io.activityIndicatorEnabled = enable
 }
 
 // In returns the input reader.
@@ -183,7 +190,7 @@ func (io *IO) StartPager(ctx context.Context) (func(), error) {
 // function, when called, stops the spinner. When no TTY is attached, this is a
 // nop.
 func (io *IO) StartActivityIndicator() func() {
-	if !io.isStdoutTTY || !io.isStderrTTY {
+	if !io.isStdoutTTY || !io.isStderrTTY || !io.activityIndicatorEnabled {
 		return func() {}
 	}
 	io.activityIndicator.Start()

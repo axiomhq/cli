@@ -71,6 +71,7 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 			}
 
 			f.Config.Insecure = cmd.Flag("insecure").Changed
+			f.IO.EnableActivityIndicator(!cmd.Flag("no-spinner").Changed)
 
 			return nil
 		},
@@ -99,6 +100,7 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.PersistentFlags().StringP("token", "T", os.Getenv("AXM_TOKEN"), "Token to use")
 	cmd.PersistentFlags().StringP("url", "U", os.Getenv("AXM_URL"), "Url to use")
 	cmd.PersistentFlags().BoolP("insecure", "I", false, "Bypass certificate validation")
+	cmd.PersistentFlags().Bool("no-spinner", false, "Disable the activity indicator")
 
 	// Core commands
 	cmd.AddCommand(ingestCmd.NewIngestCmd(f))
