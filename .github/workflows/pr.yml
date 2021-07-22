@@ -108,6 +108,7 @@ jobs:
       - run: ./axiom ingest cli-test-$GITHUB_RUN_ID -f=testdata/logs.json -f=testdata/logs.csv
       - run: ./axiom dataset info cli-test-$GITHUB_RUN_ID
       - run: ./axiom dataset list
+      - run: ./axiom query "cli-test-$GITHUB_RUN_ID | where response == 304"
       - name: Cleanup
         if: ${{ always() }}
         run: ./axiom dataset delete -f cli-test-$GITHUB_RUN_ID

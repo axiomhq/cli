@@ -12,6 +12,7 @@ import (
 
 	// Core commands
 	ingestCmd "github.com/axiomhq/cli/cmd/axiom/ingest"
+	queryCmd "github.com/axiomhq/cli/cmd/axiom/query"
 	streamCmd "github.com/axiomhq/cli/cmd/axiom/stream"
 
 	// Management commands
@@ -104,6 +105,7 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 
 	// Core commands
 	cmd.AddCommand(ingestCmd.NewIngestCmd(f))
+	cmd.AddCommand(queryCmd.NewQueryCmd(f))
 	cmd.AddCommand(streamCmd.NewStreamCmd(f))
 
 	// Management commands
