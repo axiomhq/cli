@@ -152,7 +152,24 @@ dockers:
   - ids:
       - docker
     image_templates:
-    - "axiomhq/cli:{{ .Major }}"
-    - "axiomhq/cli:{{ .Major }}.{{ .Minor }}"
-    - "axiomhq/cli:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
-    - "axiomhq/cli:latest"
+      - "docker.io/axiomhq/cli:{{ .Major }}"
+      - "docker.io/axiomhq/cli:{{ .Major }}.{{ .Minor }}"
+      - "docker.io/axiomhq/cli:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
+      - "docker.io/axiomhq/cli:latest"
+      - "ghcr.io/axiomhq/cli:{{ .Major }}"
+      - "ghcr.io/axiomhq/cli:{{ .Major }}.{{ .Minor }}"
+      - "ghcr.io/axiomhq/cli:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
+      - "ghcr.io/axiomhq/cli:latest"
+    build_flag_templates:
+      - --platform=linux/amd64
+      - --label=org.opencontainers.image.title={{ .ProjectName }}
+      - --label=org.opencontainers.image.description={{ .ProjectName }}
+      - --label=org.opencontainers.image.url=https://axiom.co
+      - --label=org.opencontainers.image.source=https://github.com/axiomhq/cli
+      - --label=org.opencontainers.image.documentation=https://docs.axiom.co/reference/CLI
+      - --label=org.opencontainers.image.licenses=MIT
+      - --label=org.opencontainers.image.author=Axiom, Inc. <info@axiom.co>
+      - --label=org.opencontainers.image.created={{ .Date }}
+      - --label=org.opencontainers.image.revision={{ .FullCommit }}
+      - --label=org.opencontainers.image.version={{ .Version }}
+      - --label=org.opencontainers.image.vendor=Axiom, Inc.

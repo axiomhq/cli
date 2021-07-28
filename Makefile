@@ -66,7 +66,7 @@ build: $(GORELEASER) dep.stamp $(call go-pkg-sourcefiles, ./...) ## Build the bi
 .PHONY: clean
 clean: ## Remove build and test artifacts
 	@echo ">> cleaning up artifacts"
-	@rm -rf $(DIST_DIR) $(COVERPROFILE)
+	@rm -rf bin $(DIST_DIR) $(MANPAGES_DIR) $(COVERPROFILE)
 
 .PHONY: cover
 cover: $(COVERPROFILE) ## Calculate the code coverage score
