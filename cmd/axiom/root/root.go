@@ -96,9 +96,9 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 	// Overrides
 	cmd.PersistentFlags().StringP("config", "C", "", "Path to configuration file to use")
 	cmd.PersistentFlags().StringP("deployment", "D", "", "Deployment to use")
-	cmd.PersistentFlags().StringP("org-id", "O", os.Getenv("AXM_ORG_ID"), "Organization ID to use (only valid for Axiom Cloud)")
-	cmd.PersistentFlags().StringP("token", "T", os.Getenv("AXM_TOKEN"), "Token to use")
-	cmd.PersistentFlags().StringP("url", "U", os.Getenv("AXM_URL"), "Url to use")
+	cmd.PersistentFlags().StringP("org-id", "O", os.Getenv("AXIOM_ORG_ID"), "Organization ID to use (only valid for Axiom Cloud)")
+	cmd.PersistentFlags().StringP("token", "T", os.Getenv("AXIOM_TOKEN"), "Token to use")
+	cmd.PersistentFlags().StringP("url", "U", os.Getenv("AXIOM_URL"), "Url to use")
 	cmd.PersistentFlags().BoolP("insecure", "I", false, "Bypass certificate validation")
 	cmd.PersistentFlags().Bool("no-spinner", false, "Disable the activity indicator")
 

@@ -40,13 +40,13 @@ func TestFileSystem(t *testing.T) {
 }
 
 func (s *TestConfigSuite) SetupTest() {
-	s.Require().NoError(os.Unsetenv("AXM_DEPLOYMENT"))
+	s.Require().NoError(os.Unsetenv("AXIOM_DEPLOYMENT"))
 }
 
 // Make sure TOML configuration is properly loaded and the active deployment is
 // overwritten from the environment.
 func (s *TestConfigSuite) TestLoad() {
-	s.Require().NoError(os.Setenv("AXM_DEPLOYMENT", "axiom-eu-west-2"))
+	s.Require().NoError(os.Setenv("AXIOM_DEPLOYMENT", "axiom-eu-west-2"))
 
 	cfg, err := config.LoadFromReader(strings.NewReader(configFile))
 	s.Require().NoError(err)

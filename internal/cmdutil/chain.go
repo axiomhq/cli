@@ -30,15 +30,15 @@ var (
 		  key in the configuration file currently in use:
 		  $ {{ bold "axiom auth select" }}
 		  
-		  Select a deployment by setting the {{ bold "AXM_DEPLOYMENT" }} environment variable. This
+		  Select a deployment by setting the {{ bold "AXIOM_DEPLOYMENT" }} environment variable. This
 		  overwrittes the choice made in the configuration file: 
-		  $ {{ bold "export AXM_DEPLOYMENT=axiom-eu-west-1" }}
+		  $ {{ bold "export AXIOM_DEPLOYMENT=axiom-eu-west-1" }}
 
 		  Select a deployment by setting the {{ bold "-D" }} or {{ bold "--deployment" }} flag. This
 		  overwrittes the choice made in the configuration file or the environment: 
 		  $ {{ bold .CommandPath }} {{ bold "-D=axiom-eu-west-1" }}
 
-		  For non-interactive use, set AXM_TOKEN and AXM_URL to target a deployment directly,
+		  For non-interactive use, set AXIOM_TOKEN and AXIOM_URL to target a deployment directly,
 		  without first configuring it.
 	`)
 
