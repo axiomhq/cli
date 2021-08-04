@@ -117,7 +117,7 @@ func LoadFromReader(r io.Reader) (config *Config, err error) {
 		return config, err
 	} else if err = config.tree.Unmarshal(config); err != nil {
 		return config, err
-	} else if err = envconfig.Process("axm", config); err != nil {
+	} else if err = envconfig.Process("axiom", config); err != nil {
 		return config, err
 	}
 

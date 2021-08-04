@@ -63,7 +63,7 @@ func main() {
 	cobra.AddTemplateFuncs(f.IO.ColorScheme().TemplateFuncs())
 
 	// Set pager command, if explicitly set.
-	if pager, ok := os.LookupEnv("AXM_PAGER"); ok {
+	if pager, ok := os.LookupEnv("AXIOM_PAGER"); ok {
 		f.IO.SetPagerCommand(pager)
 	}
 
