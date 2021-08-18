@@ -6,7 +6,7 @@ on:
       - "v*"
 
 env:
-  GOVERSION: "1.16"
+  GOVERSION: "1.17"
 
 jobs:
   release:
@@ -35,10 +35,10 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ github.token }}
       - uses: goreleaser/goreleaser-action@v2
         with:
           args: release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
           HOMEBREW_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
