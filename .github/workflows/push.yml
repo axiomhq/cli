@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  GOVERSION: "1.16"
+  GOVERSION: "1.17"
 
 jobs:
   gen-diff:
@@ -37,11 +37,23 @@ jobs:
         with:
           go-version: ${{ env.GOVERSION }}
       - uses: golangci/golangci-lint-action@v2
+        with:
+          skip-go-installation: true
 
   test:
     name: Test
     needs: lint
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+        include:
+          - os: ubuntu-latest
+            update-coverage: true
+            update-goreportcard: true
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
@@ -55,10 +67,14 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: ${{ runner.os }}-go-
       - run: make test
-      - uses: codecov/codecov-action@v1
+      - name: Update Coverage
+        if: matrix.update-coverage
+        uses: codecov/codecov-action@v1
         with:
           fail_ci_if_error: true
-      - uses: creekorful/goreportcard-action@v1.0
+      - name: Update Go Report Card
+        if: matrix.update-goreportcard
+        uses: creekorful/goreportcard-action@v1.0
 
   build:
     name: Build
@@ -83,31 +99,61 @@ jobs:
           args: build --snapshot
       - uses: actions/upload-artifact@v2
         with:
-          name: binary
-          path: dist/linux_linux_amd64/axiom
+          name: binaries
+          path: |
+            dist/darwin_darwin_amd64/axiom
+            dist/linux_linux_amd64/axiom
+            dist/windows_windows_amd64/axiom.exe
 
   binary-integration:
     name: Binary integration
     needs: build
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+        include:
+          - os: macos-latest
+            goos: darwin
+          - os: ubuntu-latest
+            goos: linux
+          - os: windows-latest
+            goos: windows
+    runs-on: ${{ matrix.os }}
     env:
       AXIOM_TOKEN: ${{ secrets.TESTING_AZURE_1_STAGING_ACCESS_TOKEN }}
       AXIOM_URL: ${{ secrets.TESTING_AZURE_1_STAGING_DEPLOYMENT_URL }}
+      DATASET_SUFFIX: ${{ github.run_id }}-${{ matrix.goos }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: binary
-      - run: chmod +x ./axiom
-      - run: ./axiom version -I
-      - run: ./axiom dataset create -n=cli-test-$GITHUB_RUN_ID -d="CLI Integration test $GITHUB_RUN_ID"
-      - run: cat testdata/logs.csv | ./axiom ingest cli-test-$GITHUB_RUN_ID
-      - run: cat testdata/logs.json | ./axiom ingest cli-test-$GITHUB_RUN_ID
-      - run: cat testdata/logs.ndjson | ./axiom ingest cli-test-$GITHUB_RUN_ID
-      - run: ./axiom ingest cli-test-$GITHUB_RUN_ID -f=testdata/logs.ndjson
-      - run: ./axiom ingest cli-test-$GITHUB_RUN_ID -f=testdata/logs.json -f=testdata/logs.csv
-      - run: ./axiom dataset info cli-test-$GITHUB_RUN_ID
-      - run: ./axiom dataset list
+          name: binaries
+          path: dist
+      - name: Test (Unix)
+        if: matrix.goos == 'darwin' || matrix.goos == 'linux'
+        run: |
+          chmod +x dist/${{ matrix.goos }}_${{ matrix.goos }}_amd64/axiom
+          echo "dist/${{ matrix.goos }}_${{ matrix.goos }}_amd64/axiom" >> $GITHUB_PATH
+          axiom version -I
+          axiom dataset create -n=cli-test-${{ env.DATASET_SUFFIX }} -d="CLI Integration test ${{ env.DATASET_SUFFIX }}"
+          axiom ingest cli-test-${{ env.DATASET_SUFFIX }} -f=testdata/logs.json -f=testdata/logs.ndjson -f=testdata/logs.csv
+          axiom dataset info cli-test-${{ env.DATASET_SUFFIX }}
+          axiom dataset list
+      - name: Test (Windows)
+        if: matrix.goos == 'windows'
+        run: |
+          chmod +x dist/${{ matrix.goos }}_${{ matrix.goos }}_amd64/axiom
+          echo "dist/${{ matrix.goos }}_${{ matrix.goos }}_amd64/axiom.exe" >> $GITHUB_PATH
+          axiom version -I
+          axiom dataset create -n=cli-test-${{ env.DATASET_SUFFIX }} -d="CLI Integration test ${{ env.DATASET_SUFFIX }}"
+          axiom ingest cli-test-${{ env.DATASET_SUFFIX }} -f=testdata/logs.json
+          axiom ingest cli-test-${{ env.DATASET_SUFFIX }} -f=testdata/logs.ndjson
+          axiom ingest cli-test-${{ env.DATASET_SUFFIX }} -f=testdata/logs.csv
+          axiom dataset info cli-test-${{ env.DATASET_SUFFIX }}
+          axiom dataset list
       - name: Cleanup
-        if: ${{ always() }}
-        run: ./axiom dataset delete -f cli-test-$GITHUB_RUN_ID
+        if: always()
+        run: axiom dataset delete -f cli-test-${{ env.DATASET_SUFFIX }}

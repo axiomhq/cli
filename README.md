@@ -48,28 +48,28 @@ Binary releases are available on
 ### Install using [Homebrew](https://brew.sh)
 
 ```shell
- brew tap axiomhq/tap
- brew install axiom
+brew tap axiomhq/tap
+brew install axiom
 ```
 
 To update:
 
 ```shell
- brew upgrade axiom
+brew upgrade axiom
 ```
 
-### Install using `go get`
+### Install using `go install`
 
 ```shell
- go install github.com/axiomhq/cli/cmd/axiom@latest
+go install github.com/axiomhq/cli/cmd/axiom@latest
 ```
 
 ### Install from source
 
 ```shell
- git clone https://github.com/axiomhq/cli.git
- cd cli
- make install # Build and install binary into $GOPATH
+git clone https://github.com/axiomhq/cli.git
+cd cli
+make install # Build and install binary into $GOPATH
 ```
 
 ### Run the Docker image
@@ -77,8 +77,8 @@ To update:
 Docker images are available on [DockerHub][docker].
 
 ```shell
- docker pull axiomhq/cli
- docker run axiomhq/cli
+docker pull axiomhq/cli
+docker run axiomhq/cli
 ```
 
 ### Validate installation
@@ -93,12 +93,8 @@ Axiom CLI version 1.0.0
 ## Usage
 
 ```shell
- axiom <command> 
- axiom <command> <subcommand> [flags]
-
-# Run `help` for detailed information about commands
-
- axiom help <command>
+axiom <command>
+axiom <command> <subcommand> [flags]
 ```
 
 ## Documentation
@@ -157,14 +153,14 @@ For full command reference, see the list below, or visit
 
 ```shell
 # To get help on any information
- axiom help
+axiom help
 
 # For more information about a command.
- axiom <command> --help
- axiom <command> <subcommand> --help
+axiom <command> --help
+axiom <command> <subcommand> --help
+```
 
 Read the manual at https://docs.axiom.co/reference/CLI/
-```
 
 ## Contributing
 
