@@ -61,7 +61,7 @@ To update:
 ### Install using `go get`
 
 ```shell
- go get -u github.com/axiomhq/cli/cmd/axiom
+ go install github.com/axiomhq/cli/cmd/axiom@latest
 ```
 
 ### Install from source
