@@ -9,12 +9,11 @@ import (
 	"strings"
 
 	"github.com/kelseyhightower/envconfig"
-	"github.com/mitchellh/go-homedir"
 	"github.com/pelletier/go-toml"
 )
 
 func defaultConfigFile() string {
-	dir, _ := homedir.Dir()
+	dir, _ := os.UserHomeDir()
 	return path.Join(dir, ".axiom.toml")
 }
 
