@@ -43,16 +43,7 @@ jobs:
   test:
     name: Test
     needs: lint
-    strategy:
-      matrix:
-        os:
-          - macos-latest
-          - ubuntu-latest
-          - windows-latest
-        include:
-          - os: ubuntu-latest
-            update-coverage: true
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
@@ -66,9 +57,7 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: ${{ runner.os }}-go-
       - run: make test
-      - name: Update Coverage
-        if: matrix.update-coverage
-        uses: codecov/codecov-action@v1
+      - uses: codecov/codecov-action@v1
         with:
           fail_ci_if_error: true
 
@@ -112,20 +101,18 @@ jobs:
         os:
           - macos-latest
           - ubuntu-latest
-          - windows-latest
+          # - windows-latest
         include:
           - os: macos-latest
             goos: darwin
           - os: ubuntu-latest
             goos: linux
-          - os: windows-latest
-            goos: windows
-            experimental: true
+          # - os: windows-latest
+          # goos: windows
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.experimental }}
     env:
-      AXIOM_TOKEN: ${{ secrets.TESTING_AZURE_1_STAGING_ACCESS_TOKEN }}
       AXIOM_URL: ${{ secrets.TESTING_AZURE_1_STAGING_DEPLOYMENT_URL }}
+      AXIOM_TOKEN: ${{ secrets.TESTING_AZURE_1_STAGING_ACCESS_TOKEN }}
       AXIOM_DATASET: cli-test-${{ github.run_id }}-${{ matrix.goos }}
     steps:
       - uses: actions/checkout@v2
