@@ -79,7 +79,7 @@ func completeLicense(ctx context.Context, opts *licenseOptions) error {
 }
 
 func runLicense(ctx context.Context, opts *licenseOptions) error {
-	client, err := opts.Client()
+	client, err := opts.Client(ctx)
 	if err != nil {
 		return err
 	}

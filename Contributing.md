@@ -12,9 +12,9 @@ Bugs, feature requests, and development-related questions should be directed to 
 
 ### Prerequisites:
 
-- Go 1.16+ Installed.
+- Go 1.17+ Installed.
 
-- Go 1.11+ and higher should be sufficient enough for installing the Axiom CLI using `go get`, run:
+- Go 1.13+ and higher **should** be sufficient enough for installing the Axiom CLI using `go get`, run:
 
 ```shell
  $ go get -u github.com/axiomhq/cli/cmd/axiom

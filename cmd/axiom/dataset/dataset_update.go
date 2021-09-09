@@ -81,7 +81,7 @@ func completeUpdate(ctx context.Context, opts *updateOptions) error {
 		})
 	}
 
-	client, err := opts.Client()
+	client, err := opts.Client(ctx)
 	if err != nil {
 		return err
 	}
@@ -110,7 +110,7 @@ func completeUpdate(ctx context.Context, opts *updateOptions) error {
 }
 
 func runUpdate(ctx context.Context, opts *updateOptions) error {
-	client, err := opts.Client()
+	client, err := opts.Client(ctx)
 	if err != nil {
 		return err
 	}

@@ -36,7 +36,7 @@ func DatasetCompletionFunc(f *Factory) CompletionFunc { // nolint:dupl
 			defer cancel()
 		}
 
-		client, err := f.Client()
+		client, err := f.Client(ctx)
 		if err != nil {
 			return nil, cobra.ShellCompDirectiveNoFileComp
 		}
@@ -74,7 +74,7 @@ func OrganizationCompletionFunc(f *Factory) CompletionFunc { // nolint:dupl
 			defer cancel()
 		}
 
-		client, err := f.Client()
+		client, err := f.Client(ctx)
 		if err != nil {
 			return nil, cobra.ShellCompDirectiveNoFileComp
 		}

@@ -26,7 +26,7 @@ func NewVersionCmd(f *cmdutil.Factory, version string) *cobra.Command {
 				return nil
 			}
 
-			client, err := f.Client()
+			client, err := f.Client(cmd.Context())
 			if err != nil {
 				return err
 			}

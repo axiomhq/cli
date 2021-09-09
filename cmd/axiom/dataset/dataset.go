@@ -48,7 +48,7 @@ func NewDatasetCmd(f *cmdutil.Factory) *cobra.Command {
 }
 
 func getDatasetNames(ctx context.Context, f *cmdutil.Factory) ([]string, error) {
-	client, err := f.Client()
+	client, err := f.Client(ctx)
 	if err != nil {
 		return nil, err
 	}

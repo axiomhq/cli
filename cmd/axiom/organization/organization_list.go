@@ -51,7 +51,7 @@ func newListCmd(f *cmdutil.Factory) *cobra.Command {
 }
 
 func runList(ctx context.Context, opts *listOptions) error {
-	client, err := opts.Client()
+	client, err := opts.Client(ctx)
 	if err != nil {
 		return err
 	}

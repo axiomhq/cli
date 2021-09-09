@@ -1,6 +1,7 @@
 package cmdutil
 
 import (
+	"context"
 	"errors"
 
 	"github.com/axiomhq/axiom-go/axiom"
@@ -26,10 +27,10 @@ func NewFactory() *Factory {
 }
 
 // Client returns an Axiom client configured to talk to the active deployment.
-func (f *Factory) Client() (*axiom.Client, error) {
+func (f *Factory) Client(ctx context.Context) (*axiom.Client, error) {
 	deployment, ok := f.Config.GetActiveDeployment()
 	if !ok {
 		return nil, errors.New("no active deployment set")
 	}
-	return client.New(deployment.URL, deployment.Token, deployment.OrganizationID, f.Config.Insecure)
+	return client.New(ctx, deployment.URL, deployment.Token, deployment.OrganizationID, f.Config.Insecure)
 }

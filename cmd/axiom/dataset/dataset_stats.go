@@ -59,7 +59,7 @@ func newStatsCmd(f *cmdutil.Factory) *cobra.Command {
 }
 
 func runStats(ctx context.Context, opts *statsOptions) error {
-	client, err := opts.Client()
+	client, err := opts.Client(ctx)
 	if err != nil {
 		return err
 	}

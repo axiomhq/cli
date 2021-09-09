@@ -96,7 +96,7 @@ func runDelete(ctx context.Context, opts *deleteOptions) error {
 		}
 	}
 
-	client, err := opts.Client()
+	client, err := opts.Client(ctx)
 	if err != nil {
 		return err
 	}

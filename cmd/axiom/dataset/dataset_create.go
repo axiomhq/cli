@@ -91,7 +91,7 @@ func completeCreate(opts *createOptions) error {
 }
 
 func runCreate(ctx context.Context, opts *createOptions) error {
-	client, err := opts.Client()
+	client, err := opts.Client(ctx)
 	if err != nil {
 		return err
 	}
