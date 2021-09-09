@@ -84,7 +84,7 @@ func complete(ctx context.Context, opts *options) error {
 		return nil
 	}
 
-	client, err := opts.Client()
+	client, err := opts.Client(ctx)
 	if err != nil {
 		return err
 	}
@@ -111,7 +111,7 @@ func complete(ctx context.Context, opts *options) error {
 }
 
 func run(ctx context.Context, opts *options) error {
-	client, err := opts.Client()
+	client, err := opts.Client(ctx)
 	if err != nil {
 		return err
 	}

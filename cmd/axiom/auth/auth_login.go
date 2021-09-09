@@ -134,7 +134,7 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 	// cloud deployment. If only one organization is available, that one is
 	// selected by default, without asking the user for it.
 	if axiom.IsPersonalToken(opts.Token) && deploymentKind == typeCloud && opts.OrganizationID == "" {
-		client, err := axiomClient.New(opts.URL, opts.Token, "", opts.Config.Insecure)
+		client, err := axiomClient.New(ctx, opts.URL, opts.Token, "", opts.Config.Insecure)
 		if err != nil {
 			return err
 		}
@@ -209,7 +209,7 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 		}
 	}
 
-	client, err := axiomClient.New(opts.URL, opts.Token, opts.OrganizationID, opts.Config.Insecure)
+	client, err := axiomClient.New(ctx, opts.URL, opts.Token, opts.OrganizationID, opts.Config.Insecure)
 	if err != nil {
 		return err
 	}

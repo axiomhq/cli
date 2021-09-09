@@ -77,7 +77,7 @@ func completeInfo(ctx context.Context, opts *infoOptions) error {
 }
 
 func runInfo(ctx context.Context, opts *infoOptions) error {
-	client, err := opts.Client()
+	client, err := opts.Client(ctx)
 	if err != nil {
 		return err
 	}

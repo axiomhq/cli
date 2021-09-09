@@ -77,7 +77,7 @@ func runStatus(ctx context.Context, opts *statusOptions) error {
 			continue
 		}
 
-		client, err := axiomClient.New(deployment.URL, deployment.Token, deployment.OrganizationID, opts.Config.Insecure)
+		client, err := axiomClient.New(ctx, deployment.URL, deployment.Token, deployment.OrganizationID, opts.Config.Insecure)
 		if err != nil {
 			return err
 		}

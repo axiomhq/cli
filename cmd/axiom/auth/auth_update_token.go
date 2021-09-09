@@ -85,7 +85,7 @@ func runUpdateToken(ctx context.Context, opts *updateTokenOptions) error {
 	// deployment, so no need to check for existence.
 	activeDeployment, _ := opts.Config.GetActiveDeployment()
 
-	client, err := axiomClient.New(activeDeployment.URL, opts.Token, activeDeployment.OrganizationID, opts.Config.Insecure)
+	client, err := axiomClient.New(ctx, activeDeployment.URL, opts.Token, activeDeployment.OrganizationID, opts.Config.Insecure)
 	if err != nil {
 		return err
 	}

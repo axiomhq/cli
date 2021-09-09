@@ -24,13 +24,13 @@ import (
 
 func main() {
 	// Setup signal handling.
-	term := make(chan os.Signal, 1)
-	defer close(term)
-	signal.Notify(term, os.Interrupt, syscall.SIGTERM)
-	defer signal.Stop(term)
-
-	// Setup an application lifecycle context.
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := signal.NotifyContext(context.Background(),
+		os.Interrupt,
+		os.Kill,
+		syscall.SIGHUP,
+		syscall.SIGINT,
+		syscall.SIGQUIT,
+	)
 	defer cancel()
 
 	// Setup the factory which flows through the command call stack.
@@ -76,16 +76,6 @@ func main() {
 		printError(f.IO.ErrOut(), err, nil)
 		os.Exit(2)
 	}
-
-	// Cancel the application lifecycle context when receiving a signal.
-	go func() {
-		select {
-		case <-ctx.Done():
-		case <-term:
-			fmt.Fprintln(f.IO.ErrOut(), "Received interrupt")
-			cancel()
-		}
-	}()
 
 	rootCmd := root.NewRootCmd(f)
 

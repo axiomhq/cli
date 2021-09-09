@@ -120,7 +120,7 @@ func runTrim(ctx context.Context, opts *trimOptions) error {
 		}
 	}
 
-	client, err := opts.Client()
+	client, err := opts.Client(ctx)
 	if err != nil {
 		return err
 	}

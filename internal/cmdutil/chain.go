@@ -155,7 +155,7 @@ func NeedsDatasets(f *Factory) RunFunc {
 			return nil
 		}
 
-		client, err := f.Client()
+		client, err := f.Client(cmd.Context())
 		if err != nil {
 			return err
 		}

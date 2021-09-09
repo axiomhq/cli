@@ -147,7 +147,7 @@ func complete(opts *options) (err error) {
 }
 
 func run(ctx context.Context, opts *options) error {
-	client, err := opts.Client()
+	client, err := opts.Client(ctx)
 	if err != nil {
 		return err
 	}

@@ -53,7 +53,7 @@ func formatCompletion(_ *cobra.Command, _ []string, toComplete string) ([]string
 }
 
 func getOrganizationIDs(ctx context.Context, f *cmdutil.Factory) ([]string, error) {
-	client, err := f.Client()
+	client, err := f.Client(ctx)
 	if err != nil {
 		return nil, err
 	}

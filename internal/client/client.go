@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"crypto/tls"
 	"errors"
 	"net/http"
@@ -12,7 +13,7 @@ import (
 )
 
 // New returns a new Axiom client.
-func New(baseURL, accessToken, orgID string, insecure bool) (*axiom.Client, error) {
+func New(ctx context.Context, baseURL, accessToken, orgID string, insecure bool) (*axiom.Client, error) {
 	if !strings.HasPrefix(baseURL, "http://") && !strings.HasPrefix(baseURL, "https://") {
 		baseURL = "https://" + baseURL
 	}
@@ -27,11 +28,16 @@ func New(baseURL, accessToken, orgID string, insecure bool) (*axiom.Client, erro
 		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true} //nolint:gosec
 	}
 
-	return axiom.NewClient(
+	client, err := axiom.NewClient(
 		axiom.SetURL(baseURL),
 		axiom.SetAccessToken(accessToken),
 		axiom.SetOrgID(orgID),
 		axiom.SetClient(httpClient),
 		axiom.SetUserAgent("axiom-cli/"+version.Release()),
 	)
+	if err != nil {
+		return nil, err
+	}
+
+	return client, client.ValidateCredentials(ctx)
 }

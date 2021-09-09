@@ -143,7 +143,7 @@ func complete(ctx context.Context, opts *options) error {
 	// used.
 	var datasetNames []string
 	if dep, ok := opts.Config.GetActiveDeployment(); ok && axiom.IsPersonalToken(dep.Token) {
-		client, err := opts.Client()
+		client, err := opts.Client(ctx)
 		if err != nil {
 			return err
 		}
@@ -171,7 +171,7 @@ func complete(ctx context.Context, opts *options) error {
 }
 
 func run(ctx context.Context, opts *options, flushEverySet bool) error {
-	client, err := opts.Client()
+	client, err := opts.Client(ctx)
 	if err != nil {
 		return err
 	}

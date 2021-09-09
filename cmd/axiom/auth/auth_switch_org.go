@@ -62,7 +62,7 @@ func newSwitchOrgCmd(f *cmdutil.Factory) *cobra.Command {
 			// active deployment, so no need to check for existence.
 			activeDeployment, _ := f.Config.GetActiveDeployment()
 
-			client, err := axiomClient.New(activeDeployment.URL, activeDeployment.Token, orgID, f.Config.Insecure)
+			client, err := axiomClient.New(cmd.Context(), activeDeployment.URL, activeDeployment.Token, orgID, f.Config.Insecure)
 			if err != nil {
 				return err
 			}
@@ -94,7 +94,7 @@ func newSwitchOrgCmd(f *cmdutil.Factory) *cobra.Command {
 }
 
 func getOrganizationIDs(ctx context.Context, f *cmdutil.Factory) ([]string, error) {
-	client, err := f.Client()
+	client, err := f.Client(ctx)
 	if err != nil {
 		return nil, err
 	}
