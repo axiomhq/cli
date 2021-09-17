@@ -1,0 +1,17 @@
+#!/bin/sh -e
+
+ENVFILE="${SNAP_DATA}/journald-env"
+
+if [ ! -f "${ENVFILE}" ] ; then
+    echo "Journald configuration not available"
+    exit 0
+fi
+
+. ${ENVFILE}
+
+if [ -z ${AXIOM_URL} -o -z ${AXIOM_TOKEN} -o -z ${AXIOM_DATASET} ]; then
+    echo "Configuration not complete: ${ENVFILE}"
+    exit 0
+fi
+
+exec journalctl --output=json --no-page --follow | ${SNAP}/bin/axiom ingest ${AXIOM_DATASET}

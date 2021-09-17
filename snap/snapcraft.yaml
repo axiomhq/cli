@@ -17,8 +17,15 @@ parts:
     source: .
     prime:
       - -bin/gen-cli-docs
+  snap-helpers:
+    plugin: dump
+    source: snap/local
 
 apps:
   axiom:
     plugs: [ "network" ]
     command: bin/axiom
+  journald-ingester:
+    plugs: [ "network", "log-observe" ]
+    command: bin/journald-ingester
+    daemon: simple

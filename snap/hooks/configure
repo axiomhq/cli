@@ -1,0 +1,13 @@
+#!/bin/sh -e
+
+journald_token="$(snapctl get journald-token)"
+journald_url="$(snapctl get journald-url)"
+journald_dataset="$(snapctl get journald-dataset)"
+
+cat <<EOL > ${SNAP_DATA}/journald-env
+AXIOM_URL="${journald_url}"
+AXIOM_TOKEN="${journald_token}"
+AXIOM_DATASET="${journald_dataset}"
+EOL
+
+snapctl restart axiom.journald-ingester
