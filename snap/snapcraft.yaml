@@ -17,6 +17,10 @@ parts:
     source: .
     prime:
       - -bin/gen-cli-docs
+    override-prime: |
+      snapcraftctl prime
+      mkdir -p $SNAPCRAFT_PRIME/share/
+      $SNAPCRAFT_PRIME/bin/axiom completion bash > $SNAPCRAFT_PRIME/share/bash_completion
   snap-helpers:
     plugin: dump
     source: snap/local
@@ -25,6 +29,7 @@ apps:
   axiom:
     plugs: [ "network" ]
     command: bin/axiom
+    completer: share/bash_completion
   journald-ingester:
     plugs: [ "network", "log-observe" ]
     command: bin/journald-ingester
