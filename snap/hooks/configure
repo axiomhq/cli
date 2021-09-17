@@ -4,10 +4,18 @@ journald_token="$(snapctl get journald-token)"
 journald_url="$(snapctl get journald-url)"
 journald_dataset="$(snapctl get journald-dataset)"
 
+cat <<EOL > ${SNAP_DATA}/journald-config
+active_deployment = "journald-backend"
+
+[deployments]
+  [deployments.journald-backend]
+    url = "${journald_url}"
+    token = "${journald_token}"
+EOL
+
 cat <<EOL > ${SNAP_DATA}/journald-env
-AXIOM_URL="${journald_url}"
-AXIOM_TOKEN="${journald_token}"
 AXIOM_DATASET="${journald_dataset}"
+AXIOM_DEPLOYMENT=journald-backend
 EOL
 
 snapctl restart axiom.journald-ingester
