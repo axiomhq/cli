@@ -1,0 +1,22 @@
+name: axiom
+base: core20
+version: '0.1'
+summary: The power of Axiom on the command line.
+description: |
+  Axiom is a Next-Generation Data Platform
+  .
+  Axiom's coordination-free ingest, object-store based storage, and serverless querying mean that your organization's log management can be supercharged in the most efficient and affordable way.
+
+grade: stable
+confinement: strict
+
+parts:
+  axiom-cli:
+    plugin: go
+    go-channel: 1.17/stable
+    source: .
+
+apps:
+  axiom:
+    plugs: [ "network" ]
+    command: bin/axiom
