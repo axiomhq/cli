@@ -14,7 +14,7 @@ import (
 
 // New returns a new Axiom client.
 func New(ctx context.Context, baseURL, accessToken, orgID string, insecure bool) (*axiom.Client, error) {
-	if !strings.HasPrefix(baseURL, "http://") && !strings.HasPrefix(baseURL, "https://") {
+	if baseURL != "" && !strings.HasPrefix(baseURL, "http://") && !strings.HasPrefix(baseURL, "https://") {
 		baseURL = "https://" + baseURL
 	}
 
@@ -28,13 +28,23 @@ func New(ctx context.Context, baseURL, accessToken, orgID string, insecure bool)
 		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true} //nolint:gosec
 	}
 
-	client, err := axiom.NewClient(
-		axiom.SetURL(baseURL),
-		axiom.SetAccessToken(accessToken),
-		axiom.SetOrgID(orgID),
+	options := []axiom.Option{
+		axiom.SetNoEnv(),
+		axiom.SetUserAgent("axiom-cli/" + version.Release()),
 		axiom.SetClient(httpClient),
-		axiom.SetUserAgent("axiom-cli/"+version.Release()),
-	)
+	}
+
+	if baseURL != "" {
+		options = append(options, axiom.SetURL(baseURL))
+	}
+	if accessToken != "" {
+		options = append(options, axiom.SetAccessToken(accessToken))
+	}
+	if orgID != "" {
+		options = append(options, axiom.SetOrgID(orgID))
+	}
+
+	client, err := axiom.NewClient(options...)
 	if err != nil {
 		return nil, err
 	}
