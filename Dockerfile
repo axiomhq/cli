@@ -3,9 +3,9 @@ FROM alpine
 LABEL maintainer="Axiom, Inc. <info@axiom.co>"
 
 # Upgrade packages and install ca-certificates.
-RUN apk update --no-cache
-RUN apk upgrade --no-cache
-RUN apk add --no-cache ca-certificates
+RUN apk update --no-cache \
+    apk upgrade --no-cache \
+    apk add --no-cache ca-certificates
 
 # Copy binary into image.
 COPY axiom /usr/bin/axiom
