@@ -8,7 +8,7 @@ require (
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
 	github.com/axiomhq/axiom-go v0.6.2
 	github.com/axiomhq/pkg v0.1.0
-	github.com/briandowns/spinner v1.16.0
+	github.com/briandowns/spinner v1.13.0
 	github.com/cli/cli v1.14.0
 	github.com/dustin/go-humanize v1.0.0
 	github.com/golangci/golangci-lint v1.42.1
@@ -18,7 +18,7 @@ require (
 	github.com/mattn/go-colorable v0.1.10
 	github.com/mattn/go-isatty v0.0.14
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d
-	github.com/muesli/reflow v0.3.0
+	github.com/muesli/reflow v0.2.0
 	github.com/muesli/termenv v0.9.0
 	github.com/nwidger/jsoncolor v0.3.0
 	github.com/pelletier/go-toml v1.9.4

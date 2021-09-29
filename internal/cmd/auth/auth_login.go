@@ -11,7 +11,7 @@ import (
 	"github.com/axiomhq/axiom-go/axiom"
 	"github.com/spf13/cobra"
 
-	axiomClient "github.com/axiomhq/cli/internal/client"
+	"github.com/axiomhq/cli/internal/client"
 	"github.com/axiomhq/cli/internal/cmdutil"
 	"github.com/axiomhq/cli/internal/config"
 	"github.com/axiomhq/cli/pkg/surveyext"
@@ -134,7 +134,7 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 	// cloud deployment. If only one organization is available, that one is
 	// selected by default, without asking the user for it.
 	if axiom.IsPersonalToken(opts.Token) && deploymentKind == typeCloud && opts.OrganizationID == "" {
-		client, err := axiomClient.New(ctx, opts.URL, opts.Token, "", opts.Config.Insecure)
+		client, err := client.New(ctx, opts.URL, opts.Token, "", opts.Config.Insecure)
 		if err != nil {
 			return err
 		}
@@ -209,7 +209,7 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 		}
 	}
 
-	client, err := axiomClient.New(ctx, opts.URL, opts.Token, opts.OrganizationID, opts.Config.Insecure)
+	client, err := client.New(ctx, opts.URL, opts.Token, opts.OrganizationID, opts.Config.Insecure)
 	if err != nil {
 		return err
 	}

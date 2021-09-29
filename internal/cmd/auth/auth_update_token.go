@@ -9,7 +9,7 @@ import (
 	"github.com/axiomhq/axiom-go/axiom"
 	"github.com/spf13/cobra"
 
-	axiomClient "github.com/axiomhq/cli/internal/client"
+	"github.com/axiomhq/cli/internal/client"
 	"github.com/axiomhq/cli/internal/cmdutil"
 	"github.com/axiomhq/cli/internal/config"
 	"github.com/axiomhq/cli/pkg/surveyext"
@@ -85,7 +85,7 @@ func runUpdateToken(ctx context.Context, opts *updateTokenOptions) error {
 	// deployment, so no need to check for existence.
 	activeDeployment, _ := opts.Config.GetActiveDeployment()
 
-	client, err := axiomClient.New(ctx, activeDeployment.URL, opts.Token, activeDeployment.OrganizationID, opts.Config.Insecure)
+	client, err := client.New(ctx, activeDeployment.URL, opts.Token, activeDeployment.OrganizationID, opts.Config.Insecure)
 	if err != nil {
 		return err
 	}

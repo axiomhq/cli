@@ -11,7 +11,7 @@ import (
 	"github.com/muesli/reflow/dedent"
 	"github.com/spf13/cobra"
 
-	axiomClient "github.com/axiomhq/cli/internal/client"
+	"github.com/axiomhq/cli/internal/client"
 	"github.com/axiomhq/cli/internal/cmdutil"
 )
 
@@ -77,7 +77,7 @@ func runStatus(ctx context.Context, opts *statusOptions) error {
 			continue
 		}
 
-		client, err := axiomClient.New(ctx, deployment.URL, deployment.Token, deployment.OrganizationID, opts.Config.Insecure)
+		client, err := client.New(ctx, deployment.URL, deployment.Token, deployment.OrganizationID, opts.Config.Insecure)
 		if err != nil {
 			return err
 		}
