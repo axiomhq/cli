@@ -26,7 +26,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
-	golang.org/x/tools v0.1.6
+	golang.org/x/tools v0.1.7
 	gotest.tools/gotestsum v1.7.0
 )
 
