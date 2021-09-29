@@ -8,7 +8,7 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 
-	axiomClient "github.com/axiomhq/cli/internal/client"
+	"github.com/axiomhq/cli/internal/client"
 	"github.com/axiomhq/cli/internal/cmdutil"
 	"github.com/axiomhq/cli/internal/config"
 )
@@ -62,7 +62,7 @@ func newSwitchOrgCmd(f *cmdutil.Factory) *cobra.Command {
 			// active deployment, so no need to check for existence.
 			activeDeployment, _ := f.Config.GetActiveDeployment()
 
-			client, err := axiomClient.New(cmd.Context(), activeDeployment.URL, activeDeployment.Token, orgID, f.Config.Insecure)
+			client, err := client.New(cmd.Context(), activeDeployment.URL, activeDeployment.Token, orgID, f.Config.Insecure)
 			if err != nil {
 				return err
 			}
