@@ -11,19 +11,19 @@ import (
 	"github.com/axiomhq/cli/internal/config"
 
 	// Core commands
-	ingestCmd "github.com/axiomhq/cli/cmd/axiom/ingest"
-	queryCmd "github.com/axiomhq/cli/cmd/axiom/query"
-	streamCmd "github.com/axiomhq/cli/cmd/axiom/stream"
+	ingestCmd "github.com/axiomhq/cli/internal/cmd/ingest"
+	queryCmd "github.com/axiomhq/cli/internal/cmd/query"
+	streamCmd "github.com/axiomhq/cli/internal/cmd/stream"
 
 	// Management commands
-	configCmd "github.com/axiomhq/cli/cmd/axiom/config"
-	datasetCmd "github.com/axiomhq/cli/cmd/axiom/dataset"
-	organizationCmd "github.com/axiomhq/cli/cmd/axiom/organization"
+	configCmd "github.com/axiomhq/cli/internal/cmd/config"
+	datasetCmd "github.com/axiomhq/cli/internal/cmd/dataset"
+	organizationCmd "github.com/axiomhq/cli/internal/cmd/organization"
 
 	// Additional commands
-	authCmd "github.com/axiomhq/cli/cmd/axiom/auth"
-	completionCmd "github.com/axiomhq/cli/cmd/axiom/completion"
-	versionCmd "github.com/axiomhq/cli/cmd/axiom/version"
+	authCmd "github.com/axiomhq/cli/internal/cmd/auth"
+	completionCmd "github.com/axiomhq/cli/internal/cmd/completion"
+	versionCmd "github.com/axiomhq/cli/internal/cmd/version"
 )
 
 // NewRootCmd creates and returns the root command.

@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra/doc"
 	"github.com/spf13/pflag"
 
-	"github.com/axiomhq/cli/cmd/axiom/root"
+	"github.com/axiomhq/cli/internal/cmd/root"
 	"github.com/axiomhq/cli/internal/cmdutil"
 	"github.com/axiomhq/cli/internal/config"
 )
