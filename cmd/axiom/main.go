@@ -12,6 +12,7 @@ import (
 
 	surveyCore "github.com/AlecAivazis/survey/v2/core"
 	surveyTerm "github.com/AlecAivazis/survey/v2/terminal"
+	"github.com/axiomhq/axiom-go/axiom"
 	"github.com/mgutz/ansi"
 	"github.com/muesli/termenv"
 	"github.com/spf13/cobra"
@@ -27,9 +28,10 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		os.Interrupt,
 		os.Kill,
-		syscall.SIGHUP,
-		syscall.SIGINT,
+		syscall.SIGTERM,
 		syscall.SIGQUIT,
+		syscall.SIGINT,
+		syscall.SIGHUP,
 	)
 	defer cancel()
 
@@ -95,6 +97,12 @@ func printError(w io.Writer, err error, cmd *cobra.Command) {
 	// We don't want to print an error if it is explicitly marked as silent or
 	// a survey prompt is terminated by interrupt.
 	if errors.Is(err, cmdutil.ErrSilent) || errors.Is(err, surveyTerm.InterruptErr) {
+		return
+	}
+
+	// Print some nicer output for "Not Found" or "Conflict" errors.
+	if errors.Is(err, axiom.ErrNotFound) || errors.Is(err, axiom.ErrExists) {
+		fmt.Fprintf(w, "Error: %s\n", errors.Unwrap(err))
 		return
 	}
 
