@@ -84,7 +84,7 @@ docker run axiomhq/cli
 ### Validate installation
 
 In all cases the installation can be validated by running `axiom -v` in the
-terminal:
+terminal which will return the CLI version number. Example:
 
 ```shell
 $ axiom -v
