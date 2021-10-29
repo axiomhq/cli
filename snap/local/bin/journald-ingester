@@ -20,4 +20,4 @@ if [ -z ${AXIOM_DATASET} ]; then
     exit 0
 fi
 
-exec journalctl --output=json --no-page --follow | ${SNAP}/bin/axiom ingest -C ${CONFFILE} ${AXIOM_DATASET}
+exec journalctl --output=json --no-page --follow | ${SNAP}/bin/axiom ingest -C ${CONFFILE} --timestamp-field=__REALTIME_TIMESTAMP ${AXIOM_DATASET}
