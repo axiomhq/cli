@@ -382,6 +382,7 @@ func ingestEvery(ctx context.Context, client *axiom.Client, r io.Reader, opts *o
 					_ = pw.CloseWithError(ctx.Err())
 					return
 				default:
+					time.Sleep(time.Millisecond)
 				}
 
 				if !scanner.Scan() {
@@ -415,6 +416,8 @@ func ingestEvery(ctx context.Context, client *axiom.Client, r io.Reader, opts *o
 			case <-done:
 				_ = pw.Close()
 				return
+			default:
+				time.Sleep(time.Millisecond)
 			}
 		}
 	}()
