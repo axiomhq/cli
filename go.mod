@@ -13,7 +13,7 @@ require (
 	github.com/dustin/go-humanize v1.0.0
 	github.com/golangci/golangci-lint v1.42.1
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
-	github.com/goreleaser/goreleaser v0.180.3
+	github.com/goreleaser/goreleaser v0.184.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/mattn/go-colorable v0.1.10
 	github.com/mattn/go-isatty v0.0.14
@@ -63,6 +63,7 @@ require (
 	github.com/Microsoft/go-winio v0.4.16 // indirect
 	github.com/OpenPeeDeeP/depguard v1.0.1 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20210512092938-c05353c2d58c // indirect
+	github.com/alecthomas/jsonschema v0.0.0-20211022214203-8b29eab41725 // indirect
 	github.com/alexkohler/prealloc v1.0.0 // indirect
 	github.com/apex/log v1.9.0 // indirect
 	github.com/ashanbrown/forbidigo v1.2.0 // indirect
@@ -111,6 +112,7 @@ require (
 	github.com/go-git/gcfg v1.5.0 // indirect
 	github.com/go-git/go-billy/v5 v5.1.0 // indirect
 	github.com/go-git/go-git/v5 v5.3.0 // indirect
+	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible // indirect
 	github.com/go-toolsmith/astcast v1.0.0 // indirect
 	github.com/go-toolsmith/astcopy v1.0.0 // indirect
 	github.com/go-toolsmith/astequal v1.0.0 // indirect
@@ -134,7 +136,7 @@ require (
 	github.com/golangci/revgrep v0.0.0-20210208091834-cd28932614b5 // indirect
 	github.com/golangci/unconvert v0.0.0-20180507085042-28b1c447d1f4 // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
-	github.com/google/go-github/v35 v35.3.0 // indirect
+	github.com/google/go-github/v39 v39.2.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/rpmpack v0.0.0-20210410105602-e20c988a6f5a // indirect
 	github.com/google/uuid v1.3.0 // indirect
@@ -156,6 +158,7 @@ require (
 	github.com/hashicorp/go-version v1.2.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
+	github.com/iancoleman/orderedmap v0.0.0-20190318233801-ac98e3ecb4b0 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
@@ -227,6 +230,7 @@ require (
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/tdakkota/asciicheck v0.0.0-20200416200610-e657995f937b // indirect
+	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	github.com/tetafro/godot v1.4.9 // indirect
 	github.com/timakin/bodyclose v0.0.0-20200424151742-cb6215831a94 // indirect
 	github.com/tomarrell/wrapcheck/v2 v2.3.0 // indirect
