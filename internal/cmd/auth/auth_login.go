@@ -234,7 +234,7 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 		cs := opts.IO.ColorScheme()
 
 		if user != nil {
-			if opts.URL == axiom.CloudURL {
+			if opts.URL == axiom.CloudURL && axiom.IsPersonalToken(opts.Token) {
 				organization, err := client.Organizations.Get(ctx, opts.OrganizationID)
 				if err != nil {
 					return err
