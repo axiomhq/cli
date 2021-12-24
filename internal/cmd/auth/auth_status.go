@@ -146,5 +146,6 @@ func runStatus(ctx context.Context, opts *statusOptions) error {
 	if failed {
 		return cmdutil.ErrSilent
 	}
+
 	return nil
 }

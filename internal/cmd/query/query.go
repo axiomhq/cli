@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -104,7 +103,7 @@ func NewQueryCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.Flags().BoolVarP(&opts.NoCache, "no-cache", "c", false, "Disable cache usage")
 	cmd.Flags().BoolVarP(&opts.Save, "save", "s", false, "Save query on the server side")
 
-	_ = cmd.RegisterFlagCompletionFunc("format", formatCompletion)
+	_ = cmd.RegisterFlagCompletionFunc("format", cmdutil.FormatCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("start-time", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("end-time", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("timestamp-format", cmdutil.NoCompletion)
@@ -196,14 +195,4 @@ func run(ctx context.Context, opts *options) error {
 	}
 
 	return nil
-}
-
-func formatCompletion(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	res := make([]string, 0, len(iofmt.Formats()))
-	for _, validFormat := range iofmt.Formats() {
-		if strings.HasPrefix(validFormat.String(), toComplete) {
-			res = append(res, validFormat.String())
-		}
-	}
-	return res, cobra.ShellCompDirectiveNoFileComp
 }
