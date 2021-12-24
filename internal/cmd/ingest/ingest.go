@@ -3,7 +3,6 @@ package ingest
 import (
 	"bufio"
 	"bytes"
-	"compress/gzip"
 	"context"
 	"errors"
 	"fmt"
@@ -345,12 +344,12 @@ func ingestEvery(ctx context.Context, client *axiom.Client, r io.Reader, opts *o
 }
 
 func ingest(ctx context.Context, client *axiom.Client, r io.Reader, typ axiom.ContentType, opts *options) (*axiom.IngestStatus, error) {
-	gzr, err := axiom.GZIPStreamer(r, gzip.BestSpeed)
+	gzr, err := axiom.GzipEncoder(r)
 	if err != nil {
 		return nil, fmt.Errorf("could not apply compression: %w", err)
 	}
 
-	res, err := client.Datasets.Ingest(ctx, opts.Dataset, gzr, typ, axiom.GZIP, axiom.IngestOptions{
+	res, err := client.Datasets.Ingest(ctx, opts.Dataset, gzr, typ, axiom.Gzip, axiom.IngestOptions{
 		TimestampField:  opts.TimestampField,
 		TimestampFormat: opts.TimestampFormat,
 		CSVDelimiter:    opts.Delimiter,

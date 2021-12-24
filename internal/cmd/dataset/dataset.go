@@ -2,13 +2,11 @@ package dataset
 
 import (
 	"context"
-	"strings"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
-	"github.com/axiomhq/cli/pkg/iofmt"
 )
 
 // NewDatasetCmd creates and returns the dataset command.
@@ -69,14 +67,4 @@ func getDatasetNames(ctx context.Context, f *cmdutil.Factory) ([]string, error) 
 	}
 
 	return datasetNames, nil
-}
-
-func formatCompletion(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	res := make([]string, 0, len(iofmt.Formats()))
-	for _, validFormat := range iofmt.Formats() {
-		if strings.HasPrefix(validFormat.String(), toComplete) {
-			res = append(res, validFormat.String())
-		}
-	}
-	return res, cobra.ShellCompDirectiveNoFileComp
 }

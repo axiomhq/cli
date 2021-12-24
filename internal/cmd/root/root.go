@@ -19,6 +19,7 @@ import (
 	configCmd "github.com/axiomhq/cli/internal/cmd/config"
 	datasetCmd "github.com/axiomhq/cli/internal/cmd/dataset"
 	organizationCmd "github.com/axiomhq/cli/internal/cmd/organization"
+	tokenCmd "github.com/axiomhq/cli/internal/cmd/token"
 
 	// Additional commands
 	authCmd "github.com/axiomhq/cli/internal/cmd/auth"
@@ -112,6 +113,7 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.AddCommand(configCmd.NewConfigCmd(f))
 	cmd.AddCommand(datasetCmd.NewDatasetCmd(f))
 	cmd.AddCommand(organizationCmd.NewOrganizationCmd(f))
+	cmd.AddCommand(tokenCmd.NewTokenCmd(f))
 
 	// Additional commands
 	cmd.AddCommand(authCmd.NewAuthCmd(f))

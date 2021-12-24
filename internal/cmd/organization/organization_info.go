@@ -55,7 +55,7 @@ func newInfoCmd(f *cmdutil.Factory) *cobra.Command {
 
 	cmd.Flags().StringVarP(&opts.Format, "format", "f", iofmt.Table.String(), "Format to output data in")
 
-	_ = cmd.RegisterFlagCompletionFunc("format", formatCompletion)
+	_ = cmd.RegisterFlagCompletionFunc("format", cmdutil.FormatCompletion)
 
 	return cmd
 }
@@ -121,7 +121,7 @@ func runInfo(ctx context.Context, opts *infoOptions) error {
 		trb.AddField(organization.Plan.String(), nil)
 		trb.AddField(organization.PlanCreated.Format(time.RFC1123), cs.Gray)
 		trb.AddField(organization.PlanExpires.Format(time.RFC1123), cs.Gray)
-		trb.AddField(boolToStr(cs, organization.Trialed), nil)
+		trb.AddField(boolToStrReverseColors(cs, organization.Trialed), nil)
 	}
 
 	return iofmt.FormatToTable(opts.IO, 1, header, nil, contentRow)

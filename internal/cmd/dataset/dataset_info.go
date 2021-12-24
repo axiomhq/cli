@@ -57,7 +57,7 @@ func newInfoCmd(f *cmdutil.Factory) *cobra.Command {
 
 	cmd.Flags().StringVarP(&opts.Format, "format", "f", iofmt.Table.String(), "Format to output data in")
 
-	_ = cmd.RegisterFlagCompletionFunc("format", formatCompletion)
+	_ = cmd.RegisterFlagCompletionFunc("format", cmdutil.FormatCompletion)
 
 	return cmd
 }

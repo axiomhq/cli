@@ -2,13 +2,11 @@ package organization
 
 import (
 	"context"
-	"strings"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
-	"github.com/axiomhq/cli/pkg/iofmt"
 	"github.com/axiomhq/cli/pkg/terminal"
 )
 
@@ -42,16 +40,6 @@ func NewOrganizationCmd(f *cmdutil.Factory) *cobra.Command {
 	return cmd
 }
 
-func formatCompletion(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	res := make([]string, 0, len(iofmt.Formats()))
-	for _, validFormat := range iofmt.Formats() {
-		if strings.HasPrefix(validFormat.String(), toComplete) {
-			res = append(res, validFormat.String())
-		}
-	}
-	return res, cobra.ShellCompDirectiveNoFileComp
-}
-
 func getOrganizationIDs(ctx context.Context, f *cmdutil.Factory) ([]string, error) {
 	client, err := f.Client(ctx)
 	if err != nil {
@@ -81,4 +69,11 @@ func boolToStr(cs *terminal.ColorScheme, b bool) string {
 		return cs.SuccessIcon()
 	}
 	return cs.ErrorIcon()
+}
+
+func boolToStrReverseColors(cs *terminal.ColorScheme, b bool) string {
+	if b {
+		return cs.Red("✓")
+	}
+	return cs.Green("✖")
 }

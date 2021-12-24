@@ -45,7 +45,7 @@ func newListCmd(f *cmdutil.Factory) *cobra.Command {
 
 	cmd.Flags().StringVarP(&opts.Format, "format", "f", iofmt.Table.String(), "Format to output data in")
 
-	_ = cmd.RegisterFlagCompletionFunc("format", formatCompletion)
+	_ = cmd.RegisterFlagCompletionFunc("format", cmdutil.FormatCompletion)
 
 	return cmd
 }
@@ -99,7 +99,7 @@ func runList(ctx context.Context, opts *listOptions) error {
 		trb.AddField(strings.Title(organization.Plan.String()), nil)
 		trb.AddField(organization.PlanCreated.Format(time.RFC1123), cs.Gray)
 		trb.AddField(organization.PlanExpires.Format(time.RFC1123), cs.Gray)
-		trb.AddField(boolToStr(cs, organization.Trialed), nil)
+		trb.AddField(boolToStrReverseColors(cs, organization.Trialed), nil)
 	}
 
 	return iofmt.FormatToTable(opts.IO, len(organizations), header, nil, contentRow)

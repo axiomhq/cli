@@ -27,7 +27,7 @@ func newStatsCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "stats [(-f|--format=)json]",
+		Use:   "stats [(-f|--format=)json|table]",
 		Short: "Get statistics about all datasets",
 		Long: heredoc.Doc(`
 			Get statistics about all datasets.
@@ -53,7 +53,7 @@ func newStatsCmd(f *cmdutil.Factory) *cobra.Command {
 
 	cmd.Flags().StringVarP(&opts.Format, "format", "f", "", "Format to output data in")
 
-	_ = cmd.RegisterFlagCompletionFunc("format", formatCompletion)
+	_ = cmd.RegisterFlagCompletionFunc("format", cmdutil.FormatCompletion)
 
 	return cmd
 }
