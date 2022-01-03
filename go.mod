@@ -10,6 +10,7 @@ require (
 	github.com/axiomhq/pkg v0.3.0
 	github.com/briandowns/spinner v1.18.0
 	github.com/cli/cli v1.14.0
+	github.com/cpuguy83/go-md2man v1.0.10
 	github.com/dustin/go-humanize v1.0.0
 	github.com/golangci/golangci-lint v1.43.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
@@ -221,6 +222,7 @@ require (
 	github.com/quasilyte/go-ruleguard v0.3.13 // indirect
 	github.com/quasilyte/regex/syntax v0.0.0-20200407221936-30656e2c4a95 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/russross/blackfriday v1.5.2 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/ryancurrah/gomodguard v1.2.3 // indirect
 	github.com/ryanrolds/sqlclosecheck v0.3.0 // indirect
