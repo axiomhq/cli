@@ -37,6 +37,7 @@ func rootUsageFunc(cmd *cobra.Command) error {
 		cmd.Println("\n\nFlags:")
 		cmd.Print(indent.String(dedent.String(flagUsages), 2))
 	}
+
 	return nil
 }
 

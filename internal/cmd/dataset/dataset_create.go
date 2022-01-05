@@ -52,10 +52,10 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.Name, "name", "n", "", "Name of the deployment")
-	cmd.Flags().StringVarP(&opts.Description, "description", "d", "", "Description of the deployment")
+	cmd.Flags().StringVarP(&opts.Name, "name", "n", "", "Name of the dataset")
+	cmd.Flags().StringVarP(&opts.Description, "description", "d", "", "Description of the dataset")
 
-	_ = cmd.RegisterFlagCompletionFunc("name", cmdutil.DatasetCompletionFunc(f))
+	_ = cmd.RegisterFlagCompletionFunc("name", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("description", cmdutil.NoCompletion)
 
 	if !opts.IO.IsStdinTTY() {

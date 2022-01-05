@@ -3,7 +3,6 @@ package ingest
 import (
 	"bufio"
 	"bytes"
-	"compress/gzip"
 	"context"
 	"errors"
 	"fmt"
@@ -60,16 +59,20 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 			is automatically detected.
 
 			Each object is assigned an event timestamp from the configured
-			timestamp field (default "_time"). If the there is no timestamp
-			field Axiom will assign the server side time of reception. The
-			timestamp format can be configured by specifying a pattern with the
-			reference date:
+			timestamp field (default "_time"). If there is no timestamp field
+			Axiom will assign the server side time of reception. The timestamp
+			format can be configured by specifying a pattern with the reference
+			date:
 
 				Mon Jan 2 15:04:05 -0700 MST 2006
 
 			Omitted elements in the pattern are treated as zero or one as
 			applicable. See the Go reference documentation for examples:
 			https://pkg.go.dev/time#pkg-constants
+
+			For Unix timestamps, leave the timestamp format unspecified and just
+			provide the value as a number. Can be seconds, milliseconds,
+			microseconds or nanoseconds.
 		`),
 
 		DisableFlagsInUseLine: true,
@@ -341,12 +344,12 @@ func ingestEvery(ctx context.Context, client *axiom.Client, r io.Reader, opts *o
 }
 
 func ingest(ctx context.Context, client *axiom.Client, r io.Reader, typ axiom.ContentType, opts *options) (*axiom.IngestStatus, error) {
-	gzr, err := axiom.GZIPStreamer(r, gzip.BestSpeed)
+	gzr, err := axiom.GzipEncoder(r)
 	if err != nil {
 		return nil, fmt.Errorf("could not apply compression: %w", err)
 	}
 
-	res, err := client.Datasets.Ingest(ctx, opts.Dataset, gzr, typ, axiom.GZIP, axiom.IngestOptions{
+	res, err := client.Datasets.Ingest(ctx, opts.Dataset, gzr, typ, axiom.Gzip, axiom.IngestOptions{
 		TimestampField:  opts.TimestampField,
 		TimestampFormat: opts.TimestampFormat,
 		CSVDelimiter:    opts.Delimiter,

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -74,7 +73,7 @@ func NewStreamCmd(f *cmdutil.Factory) *cobra.Command {
 
 	cmd.Flags().StringVarP(&opts.Format, "format", "f", iofmt.Table.String(), "Format to output data in")
 
-	_ = cmd.RegisterFlagCompletionFunc("format", formatCompletion)
+	_ = cmd.RegisterFlagCompletionFunc("format", cmdutil.FormatCompletion)
 
 	return cmd
 }
@@ -173,14 +172,4 @@ func run(ctx context.Context, opts *options) error {
 		case <-t.C:
 		}
 	}
-}
-
-func formatCompletion(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	res := make([]string, 0, len(iofmt.Formats()))
-	for _, validFormat := range iofmt.Formats() {
-		if strings.HasPrefix(validFormat.String(), toComplete) {
-			res = append(res, validFormat.String())
-		}
-	}
-	return res, cobra.ShellCompDirectiveNoFileComp
 }
