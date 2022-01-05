@@ -178,7 +178,7 @@ More information about the project layout is documented
 
 ## License
 
-&copy; Axiom, Inc., 2021
+&copy; Axiom, Inc., 2022
 
 Distributed under MIT License (`The MIT License`).
 
