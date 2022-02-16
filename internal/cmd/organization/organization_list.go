@@ -59,7 +59,7 @@ func runList(ctx context.Context, opts *listOptions) error {
 	progStop := opts.IO.StartActivityIndicator()
 	defer progStop()
 
-	organizations, err := client.Organizations.List(ctx)
+	organizations, err := client.Organizations.Cloud.List(ctx)
 	if err != nil {
 		return err
 	}

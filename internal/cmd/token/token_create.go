@@ -100,7 +100,7 @@ func completeCreate(ctx context.Context, opts *createOptions) error {
 		})
 	}
 
-	if (opts.tokenType == TypeAPI || opts.tokenType == TypeIngest) && len(opts.Scopes) == 0 {
+	if opts.tokenType == typeAPI && len(opts.Scopes) == 0 {
 		datasetNames, err := getDatasetNames(ctx, opts.Factory)
 		if err != nil {
 			return err
@@ -111,13 +111,13 @@ func completeCreate(ctx context.Context, opts *createOptions) error {
 				Name: "scopes",
 				Prompt: &survey.MultiSelect{
 					Message: "What scopes should the token have?",
-					Options: datasetNames,
+					Options: append([]string{"*"}, datasetNames...),
 				},
 			})
 		}
 	}
 
-	if opts.tokenType == TypeAPI && len(opts.Permissions) == 0 {
+	if opts.tokenType == typeAPI && len(opts.Permissions) == 0 {
 		questions = append(questions, &survey.Question{
 			Name: "permissions",
 			Prompt: &survey.MultiSelect{
@@ -144,13 +144,10 @@ func runCreate(ctx context.Context, opts *createOptions) error {
 		viewFunc   func(context.Context, string) (*axiom.RawToken, error)
 	)
 	switch opts.tokenType {
-	case TypeAPI:
+	case typeAPI:
 		createFunc = client.Tokens.API.Create
 		viewFunc = client.Tokens.API.View
-	case TypeIngest:
-		createFunc = client.Tokens.Ingest.Create
-		viewFunc = client.Tokens.Ingest.View
-	case TypePersonal:
+	case typePersonal:
 		createFunc = client.Tokens.Personal.Create
 		viewFunc = client.Tokens.Personal.View
 	default:

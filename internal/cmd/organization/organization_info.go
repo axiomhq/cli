@@ -85,7 +85,7 @@ func runInfo(ctx context.Context, opts *infoOptions) error {
 	progStop := opts.IO.StartActivityIndicator()
 	defer progStop()
 
-	organization, err := client.Organizations.Get(ctx, opts.ID)
+	organization, err := client.Organizations.Cloud.Get(ctx, opts.ID)
 	if err != nil {
 		return err
 	}

@@ -31,14 +31,10 @@ func ValidateURL(val interface{}) error {
 // ValidateToken validates that the given input is a valid Axiom access token
 // (personal or ingest).
 func ValidateToken(val interface{}) error {
-	token, ok := val.(string)
-	if !ok {
+	if token, ok := val.(string); !ok {
 		return fmt.Errorf("token cannot be of type %v", reflect.TypeOf(val).Name())
-	}
-
-	if !axiom.IsPersonalToken(token) && !axiom.IsIngestToken(token) {
+	} else if !axiom.IsPersonalToken(token) && !axiom.IsAPIToken(token) {
 		return errors.New("token is not an axiom access token (missing prefix)")
 	}
-
 	return nil
 }

@@ -49,7 +49,7 @@ func getOrganizationIDs(ctx context.Context, f *cmdutil.Factory) ([]string, erro
 	stop := f.IO.StartActivityIndicator()
 	defer stop()
 
-	organizations, err := client.Organizations.List(ctx)
+	organizations, err := client.Organizations.Cloud.List(ctx)
 	if err != nil {
 		return nil, err
 	}
