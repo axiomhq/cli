@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -18,6 +19,20 @@ import (
 
 	"github.com/axiomhq/cli/internal/cmdutil"
 	"github.com/axiomhq/cli/pkg/utils"
+)
+
+var (
+	validContentTypes = []string{
+		axiom.JSON.String(),
+		axiom.NDJSON.String(),
+		axiom.CSV.String(),
+	}
+
+	validContentEncodings = []string{
+		axiom.Identity.String(),
+		axiom.Gzip.String(),
+		axiom.Zstd.String(),
+	}
 )
 
 type options struct {
@@ -38,6 +53,13 @@ type options struct {
 	// is only valid when ingesting a stream of newline delimited JSON objects
 	// of unknown length.
 	FlushEvery time.Duration
+	// ContentType of the data to ingest.
+	ContentType axiom.ContentType
+	// ContentEncoding of the data to ingest.
+	ContentEncoding axiom.ContentEncoding
+
+	contentType     string
+	contentEncoding string
 }
 
 // NewIngestCmd creates and returns the ingest command.
@@ -47,7 +69,7 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "ingest <dataset-name> [(-f|--file) <filename> [ ...]] [--timestamp-field <timestamp-field>] [--timestamp-format <timestamp-format>] [--flush-every <duration>]",
+		Use:   "ingest <dataset-name> [(-f|--file) <filename> [ ...]] [--timestamp-field <timestamp-field>] [--timestamp-format <timestamp-format>] [--flush-every <duration>] [(-t|--content-type <content-type>] [(-e|--content-encoding <content-encoding>]",
 		Short: "Ingest data",
 		Long: heredoc.Doc(`
 			Ingest data into an Axiom dataset.
@@ -92,9 +114,13 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 			# newline delimited JSON.
 			$ ./loggen -ndjson | axiom ingest gen-logs
 
+			# Send a set of gzip compressed logs to a dataset called
+			# "my-logs". The content type is automatically detected. 
+			$ zcat log*.gz | axiom ingest my-logs
+			
 			# Send a set of gzip compressed JSON logs to a dataset called
 			# "my-logs":
-			$ zcat log*.gz | axiom ingest my-logs
+			$ cat log*.json.gz | axiom ingest my-logs -t=json -e=gzip
 		`),
 
 		Annotations: map[string]string{
@@ -106,10 +132,24 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 			cmdutil.NeedsDatasets(f),
 		),
 
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			// When no files are specified, stdin is the file to use.
 			if len(opts.Filenames) == 0 {
 				opts.Filenames = []string{"-"}
+			}
+
+			// If set, parse content type and content encoding from their string
+			// representation.
+			if opts.ContentType, err = contentTypeFromString(opts.contentType); err != nil && cmd.Flag("content-type").Changed {
+				return err
+			} else if opts.ContentEncoding, err = contentEncodingFromString(opts.contentEncoding); err != nil && cmd.Flag("content-encoding").Changed {
+				return err
+			}
+
+			// If the content encoding is set to anything else than "identity",
+			// make sure the content type is set, as well.
+			if opts.ContentEncoding != axiom.Identity && opts.ContentType == 0 {
+				return fmt.Errorf("content encoding set but content type not set")
 			}
 
 			if err := complete(cmd.Context(), opts); err != nil {
@@ -124,11 +164,15 @@ func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.Flags().StringVar(&opts.TimestampFormat, "timestamp-format", "", "Format used in the the timestamp field. Default uses a heuristic parser. Must be expressed using the reference time 'Mon Jan 2 15:04:05 -0700 MST 2006'")
 	cmd.Flags().StringVarP(&opts.Delimiter, "delimiter", "d", "", "Delimiter that separates CSV fields (only valid when input is CSV")
 	cmd.Flags().DurationVar(&opts.FlushEvery, "flush-every", time.Second, "Buffer flush interval for newline delimited JSON streams of unknown length")
+	cmd.Flags().StringVarP(&opts.contentType, "content-type", "t", "", "Content type of the data to ingest (will auto-detect if not set, must be set if content encoding is set and content type is not identity)")
+	cmd.Flags().StringVarP(&opts.contentEncoding, "content-encoding", "e", axiom.Identity.String(), "Content encoding of the data to ingest")
 
 	_ = cmd.RegisterFlagCompletionFunc("timestamp-field", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("timestamp-format", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("delimiter", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("flush-every", cmdutil.NoCompletion)
+	_ = cmd.RegisterFlagCompletionFunc("content-type", contentTypeCompletion)
+	_ = cmd.RegisterFlagCompletionFunc("content-encoding", contentEncodingCompletion)
 
 	if opts.IO.IsStdinTTY() {
 		_ = cmd.MarkFlagRequired("file")
@@ -202,10 +246,15 @@ func run(ctx context.Context, opts *options, flushEverySet bool) error {
 			r   io.Reader
 			typ axiom.ContentType
 		)
-		if r, typ, err = axiom.DetectContentType(rc); err != nil {
-			_ = rc.Close()
-			lastErr = fmt.Errorf("could not detect %q content type: %w", filename, err)
-			break
+		if opts.ContentEncoding == axiom.Identity && opts.ContentType == 0 {
+			if r, typ, err = axiom.DetectContentType(rc); err != nil {
+				_ = rc.Close()
+				lastErr = fmt.Errorf("could not detect %q content type: %w", filename, err)
+				break
+			}
+		} else {
+			r = rc
+			typ = opts.ContentType
 		}
 
 		if flushEverySet && typ != axiom.NDJSON {
@@ -273,17 +322,17 @@ func ingestEvery(ctx context.Context, client *axiom.Client, r io.Reader, opts *o
 	go func() {
 		defer close(readers)
 
-		// Add first reader
+		// Add first reader.
 		pr, pw := io.Pipe()
 		readers <- pr
 
 		scanner := bufio.NewScanner(r)
-		// Start with a 64 byte buffer, check up until 1 MB per line
+		// Start with a 64 byte buffer, check up until 1 MB per line.
 		scanner.Buffer(make([]byte, 64), 1024*1024)
 		scanner.Split(splitLinesMulti)
 
 		// We need to scan in a go func to make sure we don't block on
-		// scanner.Scan()
+		// `scanner.Scan()`.
 		done := make(chan struct{})
 		lines := make(chan []byte)
 		defer close(lines)
@@ -344,12 +393,17 @@ func ingestEvery(ctx context.Context, client *axiom.Client, r io.Reader, opts *o
 }
 
 func ingest(ctx context.Context, client *axiom.Client, r io.Reader, typ axiom.ContentType, opts *options) (*axiom.IngestStatus, error) {
-	gzr, err := axiom.GzipEncoder(r)
-	if err != nil {
-		return nil, fmt.Errorf("could not apply compression: %w", err)
+	// If the data to ingest is not compressed, it gets zstd compressed.
+	enc := opts.ContentEncoding
+	if opts.ContentEncoding == axiom.Identity {
+		var err error
+		if r, err = axiom.ZstdEncoder(r); err != nil {
+			return nil, err
+		}
+		enc = axiom.Zstd
 	}
 
-	res, err := client.Datasets.Ingest(ctx, opts.Dataset, gzr, typ, axiom.Gzip, axiom.IngestOptions{
+	res, err := client.Datasets.Ingest(ctx, opts.Dataset, r, typ, enc, axiom.IngestOptions{
 		TimestampField:  opts.TimestampField,
 		TimestampFormat: opts.TimestampFormat,
 		CSVDelimiter:    opts.Delimiter,
@@ -390,4 +444,52 @@ func splitLinesMulti(data []byte, atEOF bool) (advance int, token []byte, err er
 	}
 	// Request more data.
 	return 0, nil, nil
+}
+
+func contentTypeCompletion(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	res := make([]string, 0, len(validContentTypes))
+	for _, contentType := range validContentTypes {
+		if strings.HasPrefix(contentType, toComplete) {
+			res = append(res, contentType)
+		}
+	}
+	return res, cobra.ShellCompDirectiveNoFileComp
+}
+
+func contentEncodingCompletion(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	res := make([]string, 0, len(validContentEncodings))
+	for _, contentEncoding := range validContentEncodings {
+		if strings.HasPrefix(contentEncoding, toComplete) {
+			res = append(res, contentEncoding)
+		}
+	}
+	return res, cobra.ShellCompDirectiveNoFileComp
+}
+
+func contentTypeFromString(s string) (ct axiom.ContentType, err error) {
+	switch strings.ToLower(s) {
+	case "json":
+		ct = axiom.JSON
+	case "ndjson":
+		ct = axiom.NDJSON
+	case "csv":
+		ct = axiom.CSV
+	default:
+		err = fmt.Errorf("invalid content type %q", s)
+	}
+	return ct, err
+}
+
+func contentEncodingFromString(s string) (ct axiom.ContentEncoding, err error) {
+	switch strings.ToLower(s) {
+	case "", "identity":
+		ct = axiom.Identity
+	case "gzip":
+		ct = axiom.Gzip
+	case "zstd":
+		ct = axiom.Zstd
+	default:
+		err = fmt.Errorf("invalid content encoding %q", s)
+	}
+	return ct, err
 }

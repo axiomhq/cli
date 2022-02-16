@@ -129,7 +129,6 @@ func permissionCompletion(_ *cobra.Command, _ []string, toComplete string) ([]st
 			res = append(res, permission)
 		}
 	}
-
 	return res, cobra.ShellCompDirectiveNoFileComp
 }
 
