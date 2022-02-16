@@ -10,6 +10,7 @@ require (
 	github.com/axiomhq/pkg v0.3.0
 	github.com/briandowns/spinner v1.18.1
 	github.com/cli/cli v1.14.0
+	github.com/cli/safeexec v1.0.0
 	github.com/cpuguy83/go-md2man v1.0.10
 	github.com/dustin/go-humanize v1.0.0
 	github.com/golangci/golangci-lint v1.44.0

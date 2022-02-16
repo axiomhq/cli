@@ -96,7 +96,10 @@ func main() {
 func printError(w io.Writer, err error, cmd *cobra.Command) {
 	// We don't want to print an error if it is explicitly marked as silent or
 	// a survey prompt is terminated by interrupt.
-	if errors.Is(err, cmdutil.ErrSilent) || errors.Is(err, surveyTerm.InterruptErr) {
+	var pagerPipeError *terminal.ErrClosedPagerPipe
+	if err == cmdutil.ErrSilent ||
+		errors.Is(err, surveyTerm.InterruptErr) ||
+		errors.As(err, &pagerPipeError) {
 		return
 	}
 
