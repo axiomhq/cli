@@ -29,7 +29,6 @@ func FormatCompletion(_ *cobra.Command, _ []string, toComplete string) ([]string
 			res = append(res, validFormat.String())
 		}
 	}
-
 	return res, cobra.ShellCompDirectiveNoFileComp
 }
 
