@@ -87,7 +87,7 @@ func runLicense(ctx context.Context, opts *licenseOptions) error {
 	progStop := opts.IO.StartActivityIndicator()
 	defer progStop()
 
-	organization, err := client.Organizations.Get(ctx, opts.ID)
+	organization, err := client.Organizations.Cloud.Get(ctx, opts.ID)
 	if err != nil {
 		return err
 	}

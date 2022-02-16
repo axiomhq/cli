@@ -98,10 +98,12 @@ func runUpdateToken(ctx context.Context, opts *updateTokenOptions) error {
 		if user, err = client.Users.Current(ctx); err != nil {
 			return err
 		}
-	} else if axiom.IsIngestToken(opts.Token) {
-		if err = client.Tokens.Ingest.Validate(ctx); err != nil {
-			return err
-		}
+		// TODO(lukasmalkmus): We need to wait for a `Validate` method for API
+		// tokens.
+		// } else if axiom.IsAPIToken(opts.Token) {
+		// 	if err = client.Tokens.API.Validate(ctx); err != nil {
+		// 		return err
+		// 	}
 	}
 
 	stop()
@@ -111,7 +113,7 @@ func runUpdateToken(ctx context.Context, opts *updateTokenOptions) error {
 
 		if user != nil {
 			if activeDeployment.URL == axiom.CloudURL {
-				organization, err := client.Organizations.Get(ctx, activeDeployment.OrganizationID)
+				organization, err := client.Organizations.Cloud.Get(ctx, activeDeployment.OrganizationID)
 				if err != nil {
 					return err
 				}

@@ -104,11 +104,9 @@ func runDelete(ctx context.Context, opts *deleteOptions) error {
 
 	var deleteFunc func(context.Context, string) error
 	switch opts.tokenType {
-	case TypeAPI:
+	case typeAPI:
 		deleteFunc = client.Tokens.API.Delete
-	case TypeIngest:
-		deleteFunc = client.Tokens.Ingest.Delete
-	case TypePersonal:
+	case typePersonal:
 		deleteFunc = client.Tokens.Personal.Delete
 	default:
 		return fmt.Errorf("unknown token type: %s", opts.tokenType)

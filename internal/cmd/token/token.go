@@ -15,12 +15,14 @@ import (
 
 //  All valid token types.
 const (
-	TypeAPI      = "api"
-	TypeIngest   = "ingest"
-	TypePersonal = "personal"
+	typeAPI      = "api"
+	typePersonal = "personal"
 )
 
-var validPermissions = []string{axiom.CanIngest.String(), axiom.CanQuery.String()}
+var validPermissions = []string{
+	axiom.CanIngest.String(),
+	axiom.CanQuery.String(),
+}
 
 // NewTokenCmd creates and returns the token command.
 func NewTokenCmd(f *cmdutil.Factory) *cobra.Command {
@@ -39,9 +41,8 @@ func NewTokenCmd(f *cmdutil.Factory) *cobra.Command {
 		),
 	}
 
-	cmd.AddCommand(newTokenCmd(f, TypeAPI))
-	cmd.AddCommand(newTokenCmd(f, TypeIngest))
-	cmd.AddCommand(newTokenCmd(f, TypePersonal))
+	cmd.AddCommand(newTokenCmd(f, typeAPI))
+	cmd.AddCommand(newTokenCmd(f, typePersonal))
 
 	return cmd
 }
@@ -53,9 +54,9 @@ func newTokenCmd(f *cmdutil.Factory, tokenType string) *cobra.Command {
 		Long:  "Manage " + tokenType + " tokens.",
 
 		Example: heredoc.Doc(`
-			$ axiom token ` + tokenType + ` create --name=ingest-all --scope="*"
+			$ axiom token ` + tokenType + ` create --name=my-token
 			$ axiom token ` + tokenType + ` list
-			$ axiom token ` + tokenType + ` delete ingest-all
+			$ axiom token ` + tokenType + ` delete my-token
 		`),
 	}
 
@@ -149,11 +150,9 @@ func tokenCompletionFunc(f *cmdutil.Factory, tokenType string) cmdutil.Completio
 
 		var listFunc func(ctx context.Context) ([]*axiom.Token, error)
 		switch tokenType {
-		case TypeAPI:
+		case typeAPI:
 			listFunc = client.Tokens.API.List
-		case TypeIngest:
-			listFunc = client.Tokens.Ingest.List
-		case TypePersonal:
+		case typePersonal:
 			listFunc = client.Tokens.Personal.List
 		default:
 			return nil, cobra.ShellCompDirectiveNoFileComp
@@ -183,11 +182,9 @@ func getTokenNames(ctx context.Context, f *cmdutil.Factory, tokenType string) ([
 
 	var listFunc func(context.Context) ([]*axiom.Token, error)
 	switch tokenType {
-	case TypeAPI:
+	case typeAPI:
 		listFunc = client.Tokens.API.List
-	case TypeIngest:
-		listFunc = client.Tokens.Ingest.List
-	case TypePersonal:
+	case typePersonal:
 		listFunc = client.Tokens.Personal.List
 	default:
 		return nil, fmt.Errorf("unknown token type: %s", tokenType)
@@ -214,11 +211,9 @@ func getTokenNames(ctx context.Context, f *cmdutil.Factory, tokenType string) ([
 func getTokenIDFromName(ctx context.Context, client *axiom.Client, tokenType, name string) (string, error) {
 	var listFunc func(context.Context) ([]*axiom.Token, error)
 	switch tokenType {
-	case TypeAPI:
+	case typeAPI:
 		listFunc = client.Tokens.API.List
-	case TypeIngest:
-		listFunc = client.Tokens.Ingest.List
-	case TypePersonal:
+	case typePersonal:
 		listFunc = client.Tokens.Personal.List
 	default:
 		return "", fmt.Errorf("unknown token type: %s", tokenType)
