@@ -43,7 +43,7 @@ func newLicenseCmd(f *cmdutil.Factory) *cobra.Command {
 			# Interactively get the license of an organization:
 			$ axiom organization license
 			
-			# Get the license of an organization and provide the organization ID
+			# Get the license of an organization and provide the organization id
 			# as an argument:
 			$ axiom organization license my-org-123
 		`),

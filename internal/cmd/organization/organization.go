@@ -2,12 +2,16 @@ package organization
 
 import (
 	"context"
+	"sort"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
 	"github.com/axiomhq/cli/pkg/terminal"
+
+	// Subcommands
+	keysCmd "github.com/axiomhq/cli/internal/cmd/organization/keys"
 )
 
 const defaultSelfhostOrganizationID = "axiom"
@@ -23,6 +27,7 @@ func NewOrganizationCmd(f *cmdutil.Factory) *cobra.Command {
 			$ axiom organization list
 			$ axiom organization license my-org-123
 			$ axiom organization info my-org-123
+			$ axiom organization keys get my-org-123
 		`),
 
 		Annotations: map[string]string{
@@ -38,6 +43,9 @@ func NewOrganizationCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.AddCommand(newInfoCmd(f))
 	cmd.AddCommand(newLicenseCmd(f))
 	cmd.AddCommand(newListCmd(f))
+
+	// Subcommands
+	cmd.AddCommand(keysCmd.NewKeysCmd(f))
 
 	return cmd
 }
@@ -62,6 +70,7 @@ func getOrganizationIDs(ctx context.Context, f *cmdutil.Factory) ([]string, erro
 	for i, organization := range organizations {
 		organizationIDs[i] = organization.ID
 	}
+	sort.Strings(organizationIDs)
 
 	return organizationIDs, nil
 }

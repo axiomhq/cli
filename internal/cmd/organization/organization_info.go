@@ -41,7 +41,7 @@ func newInfoCmd(f *cmdutil.Factory) *cobra.Command {
 			# Interactively get info of an organization:
 			$ axiom organization info
 			
-			# Get info of an organization and provide the organization ID as an
+			# Get info of an organization and provide the organization id as an
 			# argument:
 			$ axiom organization info my-org-123
 		`),
