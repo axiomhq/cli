@@ -24,7 +24,7 @@ var topics = map[string]string{
 		AXIOM_DEPLOYMENT: The deployment to use. Overwrittes the choice loaded
 		from the configuration file.
 
-		AXIOM_ORG_ID: The organization ID of the organization the access token
+		AXIOM_ORG_ID: The organization id of the organization the access token
 		is valid for. Only valid for Axiom Cloud.
 		
 		AXIOM_PAGER, PAGER (in order of precedence): A terminal paging program
