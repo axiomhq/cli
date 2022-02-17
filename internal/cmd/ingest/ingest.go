@@ -395,12 +395,14 @@ func ingestEvery(ctx context.Context, client *axiom.Client, r io.Reader, opts *o
 func ingest(ctx context.Context, client *axiom.Client, r io.Reader, typ axiom.ContentType, opts *options) (*axiom.IngestStatus, error) {
 	// If the data to ingest is not compressed, it gets zstd compressed.
 	enc := opts.ContentEncoding
-	if opts.ContentEncoding == axiom.Identity {
+	if enc == axiom.Identity {
 		var err error
 		if r, err = axiom.ZstdEncoder(r); err != nil {
 			return nil, err
 		}
 		enc = axiom.Zstd
+	} else {
+		r = io.NopCloser(r)
 	}
 
 	res, err := client.Datasets.Ingest(ctx, opts.Dataset, r, typ, enc, axiom.IngestOptions{
