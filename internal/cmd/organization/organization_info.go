@@ -78,6 +78,11 @@ func completeInfo(ctx context.Context, opts *infoOptions) error {
 		return err
 	}
 
+	if len(organizationIDs) == 1 {
+		opts.ID = organizationIDs[0]
+		return nil
+	}
+
 	return survey.AskOne(&survey.Select{
 		Message: "Which organization to get info for?",
 		Options: organizationIDs,
