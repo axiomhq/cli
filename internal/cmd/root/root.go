@@ -73,6 +73,7 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 			}
 
 			f.Config.Insecure = cmd.Flag("insecure").Changed
+			f.Config.ForceCloud = cmd.Flag("force-cloud").Changed
 			f.IO.EnableActivityIndicator(!cmd.Flag("no-spinner").Changed)
 
 			return nil
@@ -102,6 +103,7 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.PersistentFlags().StringP("token", "T", os.Getenv("AXIOM_TOKEN"), "Token to use")
 	cmd.PersistentFlags().StringP("url", "U", os.Getenv("AXIOM_URL"), "Url to use")
 	cmd.PersistentFlags().BoolP("insecure", "I", false, "Bypass certificate validation")
+	cmd.PersistentFlags().BoolP("force-cloud", "F", false, "Treat deployment as Axiom Cloud")
 	cmd.PersistentFlags().Bool("no-spinner", false, "Disable the activity indicator")
 
 	// Core commands

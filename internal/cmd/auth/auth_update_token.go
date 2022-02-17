@@ -112,8 +112,8 @@ func runUpdateToken(ctx context.Context, opts *updateTokenOptions) error {
 		cs := opts.IO.ColorScheme()
 
 		if user != nil {
-			if activeDeployment.URL == axiom.CloudURL {
-				organization, err := client.Organizations.Cloud.Get(ctx, activeDeployment.OrganizationID)
+			if activeDeployment.URL == axiom.CloudURL || opts.Config.ForceCloud {
+				organization, err := client.Organizations.Selfhost.Get(ctx, activeDeployment.OrganizationID)
 				if err != nil {
 					return err
 				}
@@ -125,7 +125,7 @@ func runUpdateToken(ctx context.Context, opts *updateTokenOptions) error {
 					cs.SuccessIcon(), cs.Bold(opts.Config.ActiveDeployment), cs.Bold(user.Name))
 			}
 		} else {
-			if activeDeployment.URL == axiom.CloudURL {
+			if activeDeployment.URL == axiom.CloudURL || opts.Config.ForceCloud {
 				fmt.Fprintf(opts.IO.ErrOut(), "%s Logged in to organization %s %s\n",
 					cs.SuccessIcon(), cs.Bold(activeDeployment.OrganizationID), cs.Red(cs.Bold("(ingestion only!)")))
 			} else {

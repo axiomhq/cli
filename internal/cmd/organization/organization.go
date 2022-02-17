@@ -10,6 +10,8 @@ import (
 	"github.com/axiomhq/cli/pkg/terminal"
 )
 
+const defaultSelfhostOrganizationID = "axiom"
+
 // NewOrganizationCmd creates and returns the organization command.
 func NewOrganizationCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd := &cobra.Command{
@@ -49,7 +51,7 @@ func getOrganizationIDs(ctx context.Context, f *cmdutil.Factory) ([]string, erro
 	stop := f.IO.StartActivityIndicator()
 	defer stop()
 
-	organizations, err := client.Organizations.Cloud.List(ctx)
+	organizations, err := client.Organizations.Selfhost.List(ctx)
 	if err != nil {
 		return nil, err
 	}
