@@ -2,6 +2,7 @@ package dataset
 
 import (
 	"context"
+	"sort"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
@@ -65,6 +66,7 @@ func getDatasetNames(ctx context.Context, f *cmdutil.Factory) ([]string, error) 
 	for i, dataset := range datasets {
 		datasetNames[i] = dataset.Name
 	}
+	sort.Strings(datasetNames)
 
 	return datasetNames, nil
 }

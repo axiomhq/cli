@@ -2,6 +2,7 @@ package cmdutil
 
 import (
 	"context"
+	"sort"
 	"strings"
 	"time"
 
@@ -29,6 +30,7 @@ func FormatCompletion(_ *cobra.Command, _ []string, toComplete string) ([]string
 			res = append(res, validFormat.String())
 		}
 	}
+	sort.Strings(res)
 	return res, cobra.ShellCompDirectiveNoFileComp
 }
 
@@ -60,6 +62,7 @@ func DatasetCompletionFunc(f *Factory) CompletionFunc {
 				res = append(res, dataset.Name)
 			}
 		}
+		sort.Strings(res)
 
 		return res, cobra.ShellCompDirectiveNoFileComp
 	}
@@ -93,6 +96,7 @@ func OrganizationCompletionFunc(f *Factory) CompletionFunc {
 				res = append(res, organization.ID)
 			}
 		}
+		sort.Strings(res)
 
 		return res, cobra.ShellCompDirectiveNoFileComp
 	}
