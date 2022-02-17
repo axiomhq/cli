@@ -10,6 +10,7 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
+	"github.com/axiomhq/axiom-go/axiom"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
@@ -63,6 +64,13 @@ func newLicenseCmd(f *cmdutil.Factory) *cobra.Command {
 }
 
 func completeLicense(ctx context.Context, opts *licenseOptions) error {
+	// A requirement for this command to execute is the presence of an active
+	// deployment, so no need to check for existence.
+	activeDeployment, _ := opts.Config.GetActiveDeployment()
+	if activeDeployment.URL != axiom.CloudURL && !opts.Config.ForceCloud {
+		opts.ID = defaultSelfhostOrganizationID
+	}
+
 	if opts.ID != "" {
 		return nil
 	}
@@ -87,7 +95,7 @@ func runLicense(ctx context.Context, opts *licenseOptions) error {
 	progStop := opts.IO.StartActivityIndicator()
 	defer progStop()
 
-	organization, err := client.Organizations.Cloud.Get(ctx, opts.ID)
+	organization, err := client.Organizations.Selfhost.Get(ctx, opts.ID)
 	if err != nil {
 		return err
 	}

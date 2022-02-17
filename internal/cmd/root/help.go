@@ -102,7 +102,7 @@ func rootHelpFunc(io *terminal.IO) func(*cobra.Command, []string) {
 				continue
 			}
 
-			s := padding.String(c.Name()+":", uint(c.NamePadding()+1)) + c.Short
+			s := padding.String(c.Name()+":", uint(c.NamePadding()+2)) + c.Short
 			if _, ok := c.Annotations["IsCore"]; ok {
 				coreCommands = append(coreCommands, s)
 			} else if _, ok := c.Annotations["IsManagement"]; ok {

@@ -139,7 +139,7 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 			return err
 		}
 
-		organizations, err := client.Organizations.Cloud.List(ctx)
+		organizations, err := client.Organizations.Selfhost.List(ctx)
 		if err != nil {
 			return err
 		}
@@ -236,8 +236,8 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 		cs := opts.IO.ColorScheme()
 
 		if user != nil {
-			if opts.URL == axiom.CloudURL && axiom.IsPersonalToken(opts.Token) {
-				organization, err := client.Organizations.Cloud.Get(ctx, opts.OrganizationID)
+			if (opts.URL == axiom.CloudURL || opts.Config.ForceCloud) && axiom.IsPersonalToken(opts.Token) {
+				organization, err := client.Organizations.Selfhost.Get(ctx, opts.OrganizationID)
 				if err != nil {
 					return err
 				}
@@ -249,7 +249,7 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 					cs.SuccessIcon(), cs.Bold(opts.Alias), cs.Bold(user.Name))
 			}
 		} else {
-			if opts.URL == axiom.CloudURL {
+			if opts.URL == axiom.CloudURL || opts.Config.ForceCloud {
 				fmt.Fprintf(opts.IO.ErrOut(), "%s Logged in to organization %s %s\n",
 					cs.SuccessIcon(), cs.Bold(opts.OrganizationID), cs.Red(cs.Bold("(ingestion only!)")))
 			} else {

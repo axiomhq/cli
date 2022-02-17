@@ -59,7 +59,10 @@ var (
 
 		  To update the token for the deployment, run:
 		  $ {{ bold "axiom auth update-token" }}
+	`)
 
+	notCloudDeploymentMsg = heredoc.Doc(`
+		{{ errorIcon }} Chosen deployment {{ bold .Deployment }} is not an Axiom Cloud deployment!
 	`)
 )
 
@@ -192,6 +195,28 @@ func NeedsPersonalAccessToken(f *Factory) RunFunc {
 		err := execTemplateSilent(f.IO, restrictedByIngestTokenMsg, map[string]string{
 			"Deployment":  f.Config.ActiveDeployment,
 			"CommandPath": cmd.CommandPath(),
+		})
+
+		return err
+	}
+}
+
+// NeedsCloudDeployment prints an error message and errors silently if the
+// active deployment is not an Axiom Cloud deployment.
+func NeedsCloudDeployment(f *Factory) RunFunc {
+	return func(cmd *cobra.Command, _ []string) error {
+		// We need an active deployment.
+		dep, ok := f.Config.GetActiveDeployment()
+		if !ok {
+			return nil
+		}
+
+		if dep.URL == axiom.CloudURL || f.Config.ForceCloud {
+			return nil
+		}
+
+		err := execTemplateSilent(f.IO, notCloudDeploymentMsg, map[string]string{
+			"Deployment": f.Config.ActiveDeployment,
 		})
 
 		return err

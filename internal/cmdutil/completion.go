@@ -82,7 +82,7 @@ func OrganizationCompletionFunc(f *Factory) CompletionFunc {
 			return nil, cobra.ShellCompDirectiveNoFileComp
 		}
 
-		organizations, err := client.Organizations.Cloud.List(ctx)
+		organizations, err := client.Organizations.Selfhost.List(ctx)
 		if err != nil {
 			return nil, cobra.ShellCompDirectiveNoFileComp
 		}

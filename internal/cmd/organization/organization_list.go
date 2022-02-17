@@ -38,6 +38,8 @@ func newListCmd(f *cmdutil.Factory) *cobra.Command {
 			$ axiom organization list
 		`),
 
+		PreRunE: cmdutil.NeedsCloudDeployment(f),
+
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runList(cmd.Context(), opts)
 		},

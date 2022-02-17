@@ -40,6 +40,7 @@ func newSwitchOrgCmd(f *cmdutil.Factory) *cobra.Command {
 		PreRunE: cmdutil.ChainRunFuncs(
 			cmdutil.NeedsDeployments(f),
 			cmdutil.NeedsActiveDeployment(f),
+			cmdutil.NeedsCloudDeployment(f),
 			cmdutil.NeedsPersonalAccessToken(f),
 		),
 
@@ -67,7 +68,7 @@ func newSwitchOrgCmd(f *cmdutil.Factory) *cobra.Command {
 				return err
 			}
 
-			organization, err := client.Organizations.Cloud.Get(cmd.Context(), orgID)
+			organization, err := client.Organizations.Selfhost.Get(cmd.Context(), orgID)
 			if err != nil {
 				return err
 			}
@@ -102,7 +103,7 @@ func getOrganizationIDs(ctx context.Context, f *cmdutil.Factory) ([]string, erro
 	stop := f.IO.StartActivityIndicator()
 	defer stop()
 
-	organizations, err := client.Organizations.Cloud.List(ctx)
+	organizations, err := client.Organizations.Selfhost.List(ctx)
 	if err != nil {
 		return nil, err
 	}
