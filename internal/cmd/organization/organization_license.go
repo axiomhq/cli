@@ -80,6 +80,11 @@ func completeLicense(ctx context.Context, opts *licenseOptions) error {
 		return err
 	}
 
+	if len(organizationIDs) == 1 {
+		opts.ID = organizationIDs[0]
+		return nil
+	}
+
 	return survey.AskOne(&survey.Select{
 		Message: "Which organization to get the license for?",
 		Options: organizationIDs,
