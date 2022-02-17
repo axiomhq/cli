@@ -3,11 +3,13 @@ package client
 import (
 	"context"
 	"crypto/tls"
-	"errors"
+	"net"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/axiomhq/axiom-go/axiom"
+	"github.com/klauspost/compress/gzhttp"
 
 	"github.com/axiomhq/pkg/version"
 )
@@ -18,14 +20,20 @@ func New(ctx context.Context, baseURL, accessToken, orgID string, insecure bool)
 		baseURL = "https://" + baseURL
 	}
 
-	httpClient := axiom.DefaultHTTPClient()
+	httpTransport := &http.Transport{
+		DialContext: (&net.Dialer{
+			Timeout: 5 * time.Second,
+		}).DialContext,
+		TLSHandshakeTimeout: 5 * time.Second,
+		ForceAttemptHTTP2:   true,
+	}
 
 	if insecure {
-		transport, ok := httpClient.Transport.(*http.Transport)
-		if !ok {
-			return nil, errors.New("could not set insecure mode")
-		}
-		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true} //nolint:gosec
+		httpTransport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true} //nolint:gosec
+	}
+
+	httpClient := &http.Client{
+		Transport: gzhttp.Transport(httpTransport),
 	}
 
 	options := []axiom.Option{
