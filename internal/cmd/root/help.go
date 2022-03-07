@@ -165,7 +165,7 @@ func rootHelpFunc(io *terminal.IO) func(*cobra.Command, []string) {
 		}
 		helpEntries = append(helpEntries, helpEntry{"LEARN MORE", `
 Use 'axiom <command> <subcommand> --help' for more information about a command.
-Read the manual at https://docs.axiom.co/cli`})
+Read the manual at https://axiom.co/docs/reference/cli`})
 		if _, ok := cmd.Annotations["help:feedback"]; ok {
 			helpEntries = append(helpEntries, helpEntry{"FEEDBACK", cmd.Annotations["help:feedback"]})
 		}
