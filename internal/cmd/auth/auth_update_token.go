@@ -65,7 +65,7 @@ func completeUpdateToken(opts *updateTokenOptions) error {
 	}
 
 	return survey.AskOne(&survey.Password{
-		Message: "What is your personal access or ingest token?",
+		Message: "What is your api or personal access token?",
 	}, &opts.Token, survey.WithValidator(survey.ComposeValidators(
 		survey.Required,
 		surveyext.ValidateToken,

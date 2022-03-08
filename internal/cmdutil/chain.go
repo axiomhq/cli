@@ -50,11 +50,12 @@ var (
 		  $ {{ bold "axiom dataset create nginx-logs" }}
 	`)
 
-	restrictedByIngestTokenMsg = heredoc.Doc(`
-		{{ errorIcon }} Deployment is configured with an Ingest Token!
+	restrictedByAPITokenMsg = heredoc.Doc(`
+		{{ errorIcon }} Deployment is configured with an API token!
 
-		  An Ingest Token is only valid for ingestion. To run {{ bold .CommandPath }}
-		  make sure to use a Personal Access Token. Help on tokens:
+		  An API token is only valid for ingestion and/or querying, depending on
+		  its permissions. To run {{ bold .CommandPath }} make sure to use a
+		  Personal Access token. Help on tokens:
 		  $ {{ bold "axiom help credentials" }}
 
 		  To update the token for the deployment, run:
@@ -192,7 +193,7 @@ func NeedsPersonalAccessToken(f *Factory) RunFunc {
 			return nil
 		}
 
-		err := execTemplateSilent(f.IO, restrictedByIngestTokenMsg, map[string]string{
+		err := execTemplateSilent(f.IO, restrictedByAPITokenMsg, map[string]string{
 			"Deployment":  f.Config.ActiveDeployment,
 			"CommandPath": cmd.CommandPath(),
 		})
