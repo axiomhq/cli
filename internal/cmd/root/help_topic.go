@@ -10,14 +10,16 @@ import (
 
 var topics = map[string]string{
 	"credentials": `
-		The supplied token can either be a Personal Access Token, created from
-		the profile page of the deployment or an Ingest Token, created from the
-		appropriate section in the deployments settings.
+		The supplied access token can either be an API token, retrieved from the
+		settings page of the Axiom deployment (Settings -> API Tokens) or a
+		Personal Access token, retrieved from the users profile page
+		(Settings -> Profile).
 
-		Be aware, that Ingest Tokens are only valid for ingestion! Using them
-		with Axiom CLI is encouraged for ingest-only situations but renders the 
-		CLI unable to do anything else. Use a Personal Access Token to get full
-		access to the deployment.
+		Be aware, that API tokens are only valid for ingestion and querying,
+		depending on their permissions! Using them with Axiom CLI is encouraged
+		for ingest-only and/or query-only situations but renders the CLI unable
+		to do anything else. Use a Personal Access Token to get full access to
+		the deployment.
 	`,
 
 	"environment": `

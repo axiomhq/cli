@@ -63,7 +63,7 @@ func newCreateCmd(f *cmdutil.Factory, tokenType string) *cobra.Command {
 
 	cmd.Flags().StringVarP(&opts.Name, "name", "n", "", "Name of the token")
 	cmd.Flags().StringVarP(&opts.Description, "description", "d", "", "Description of the token")
-	cmd.Flags().StringSliceVarP(&opts.Scopes, "scope", "s", nil, "Scope(s) of the token (for api and ingest token). Dataset name or '*' for all datasets.")
+	cmd.Flags().StringSliceVarP(&opts.Scopes, "scope", "s", nil, "Scope(s) of the token (for api tokens). Dataset name or '*' for all datasets.")
 	cmd.Flags().StringSliceVarP(&opts.Permissions, "permission", "p", nil, "Permission(s) of the token (for api tokens)")
 
 	_ = cmd.RegisterFlagCompletionFunc("name", cmdutil.NoCompletion)

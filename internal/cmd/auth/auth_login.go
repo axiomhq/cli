@@ -121,7 +121,7 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 
 	// 3. The token to use.
 	if err := survey.AskOne(&survey.Password{
-		Message: "What is your personal access or ingest token?",
+		Message: "What is your api or personal access token?",
 	}, &opts.Token, survey.WithValidator(survey.ComposeValidators(
 		survey.Required,
 		surveyext.ValidateToken,
@@ -130,7 +130,7 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 	}
 
 	// 4. Try to authenticate and fetch the organizations available to the user
-	// in case a Personal Access Token was provided and the deployment is a
+	// in case a Personal Access token was provided and the deployment is a
 	// cloud deployment. If only one organization is available, that one is
 	// selected by default, without asking the user for it.
 	if axiom.IsPersonalToken(opts.Token) && deploymentKind == typeCloud && opts.OrganizationID == "" {
@@ -251,10 +251,10 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 		} else {
 			if opts.URL == axiom.CloudURL || opts.Config.ForceCloud {
 				fmt.Fprintf(opts.IO.ErrOut(), "%s Logged in to organization %s %s\n",
-					cs.SuccessIcon(), cs.Bold(opts.OrganizationID), cs.Red(cs.Bold("(ingestion only!)")))
+					cs.SuccessIcon(), cs.Bold(opts.OrganizationID), cs.Red(cs.Bold("(ingestion/query only!)")))
 			} else {
 				fmt.Fprintf(opts.IO.ErrOut(), "%s Logged in to deployment %s %s\n",
-					cs.SuccessIcon(), cs.Bold(opts.Alias), cs.Red(cs.Bold("(ingestion only!)")))
+					cs.SuccessIcon(), cs.Bold(opts.Alias), cs.Red(cs.Bold("(ingestion/query only!)")))
 			}
 		}
 	}
