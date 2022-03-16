@@ -226,7 +226,7 @@ func NeedsCloudDeployment(f *Factory) RunFunc {
 
 // execTemplateSilent parses and executes a template, but still returns
 // ErrSilent on success.
-func execTemplateSilent(io *terminal.IO, tmplStr string, data interface{}) (err error) {
+func execTemplateSilent(io *terminal.IO, tmplStr string, data any) (err error) {
 	tmpl := template.New("util").Funcs(io.ColorScheme().TemplateFuncs())
 	if tmpl, err = tmpl.Parse(tmplStr); err != nil {
 		return err

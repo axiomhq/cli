@@ -27,7 +27,7 @@ func NewFlagError(err error) *FlagError {
 
 // NewFlagErrorf returns a new, formatted *FlagError from the given format and
 // arguments.
-func NewFlagErrorf(format string, a ...interface{}) *FlagError {
+func NewFlagErrorf(format string, a ...any) *FlagError {
 	return NewFlagError(fmt.Errorf(format, a...))
 }
 

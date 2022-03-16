@@ -121,7 +121,7 @@ func run(ctx context.Context, opts *options) error {
 	}
 
 	var enc interface {
-		Encode(interface{}) error
+		Encode(any) error
 	}
 	if opts.IO.ColorEnabled() {
 		enc = jsoncolor.NewEncoder(opts.IO.Out())
