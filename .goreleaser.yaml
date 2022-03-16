@@ -15,6 +15,7 @@ builds:
         - netgo
         - static_build
       flags:
+        - -buildvcs=false
         - -buildmode=pie
         - -installsuffix=cgo
         - -trimpath
@@ -42,6 +43,7 @@ builds:
     
   - <<: *build_defaults
     flags:
+      - -buildvcs=false
       - -buildmode=exe
       - -installsuffix=cgo
       - -trimpath
@@ -57,6 +59,7 @@ builds:
 
   - <<: *build_defaults
     flags:
+      - -buildvcs=false
       - -buildmode=exe
       - -installsuffix=cgo
       - -trimpath

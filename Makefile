@@ -36,7 +36,7 @@ GO_LD_FLAGS += -X github.com/axiomhq/pkg/version.buildDate=$(BUILD_DATE)
 GO_LD_FLAGS += -X github.com/axiomhq/pkg/version.buildUser=$(USER)
 
 # FLAGS
-GO_FLAGS 			:= -buildmode=pie -installsuffix=cgo -trimpath -tags='$(GO_TAGS)' -ldflags='$(GO_LD_FLAGS)'
+GO_FLAGS 			:= -buildvcs=false -buildmode=pie -installsuffix=cgo -trimpath -tags='$(GO_TAGS)' -ldflags='$(GO_LD_FLAGS)'
 GO_TEST_FLAGS		:= -race -coverprofile=$(COVERPROFILE)
 GORELEASER_FLAGS	:= --snapshot --rm-dist
 

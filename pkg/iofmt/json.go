@@ -9,11 +9,11 @@ import (
 
 // jsonEncoder is an interface implemented by most JSON encoders.
 type jsonEncoder interface {
-	Encode(interface{}) error
+	Encode(any) error
 }
 
 // FormatToJSON formats the given data in JSON format.
-func FormatToJSON(w io.Writer, v interface{}, colorEnabled bool) error {
+func FormatToJSON(w io.Writer, v any, colorEnabled bool) error {
 	var encoder jsonEncoder
 	if colorEnabled {
 		encoder = jsoncolor.NewEncoder(w)

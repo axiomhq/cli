@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"strings"
 	"time"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
 	"github.com/axiomhq/cli/pkg/iofmt"
@@ -93,12 +94,13 @@ func runList(ctx context.Context, opts *listOptions) error {
 		}
 	}
 
+	caser := cases.Title(language.English)
 	contentRow := func(trb iofmt.TableRowBuilder, k int) {
 		organization := organizations[k]
 
 		trb.AddField(organization.ID, nil)
 		trb.AddField(organization.Name, nil)
-		trb.AddField(strings.Title(organization.Plan.String()), nil)
+		trb.AddField(caser.String(organization.Plan.String()), nil)
 		trb.AddField(organization.PlanCreated.Format(time.RFC1123), cs.Gray)
 		trb.AddField(organization.PlanExpires.Format(time.RFC1123), cs.Gray)
 		trb.AddField(boolToStrReverseColors(cs, organization.Trialed), nil)

@@ -11,7 +11,7 @@ import (
 )
 
 // ValidateURL validates that the given input is a valid url.
-func ValidateURL(val interface{}) error {
+func ValidateURL(val any) error {
 	rawURL, ok := val.(string)
 	if !ok {
 		return fmt.Errorf("url cannot be of type %v", reflect.TypeOf(val).Name())
@@ -30,7 +30,7 @@ func ValidateURL(val interface{}) error {
 
 // ValidateToken validates that the given input is a valid Axiom access token
 // (personal or ingest).
-func ValidateToken(val interface{}) error {
+func ValidateToken(val any) error {
 	if token, ok := val.(string); !ok {
 		return fmt.Errorf("token cannot be of type %v", reflect.TypeOf(val).Name())
 	} else if !axiom.IsPersonalToken(token) && !axiom.IsAPIToken(token) {
