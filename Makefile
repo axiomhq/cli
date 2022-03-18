@@ -29,7 +29,7 @@ MANPAGES_DIR	:= man
 GO_TAGS := osusergo netgo static_build
 
 # GO LD FLAGS
-GO_LD_FLAGS := -s -w -extldflags "-fno-PIC -static -Wl -z now -z relro"
+GO_LD_FLAGS := -s -w -extldflags "-fno-PIC -static"
 GO_LD_FLAGS += -X github.com/axiomhq/pkg/version.release=$(RELEASE)
 GO_LD_FLAGS += -X github.com/axiomhq/pkg/version.revision=$(REVISION)
 GO_LD_FLAGS += -X github.com/axiomhq/pkg/version.buildDate=$(BUILD_DATE)
