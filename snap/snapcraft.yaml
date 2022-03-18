@@ -14,7 +14,7 @@ compression: lzo
 parts:
   axiom-cli:
     plugin: go
-    go-channel: 1.18/stable
+    go-channel: 1.17/stable
     source: .
     prime:
       - -bin/gen-cli-docs
