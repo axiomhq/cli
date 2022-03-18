@@ -50,16 +50,20 @@ var (
 		  $ {{ bold "axiom dataset create nginx-logs" }}
 	`)
 
-	restrictedByIngestTokenMsg = heredoc.Doc(`
-		{{ errorIcon }} Deployment is configured with an Ingest Token!
+	restrictedByAPITokenMsg = heredoc.Doc(`
+		{{ errorIcon }} Deployment is configured with an API token!
 
-		  An Ingest Token is only valid for ingestion. To run {{ bold .CommandPath }}
-		  make sure to use a Personal Access Token. Help on tokens:
+		  An API token is only valid for ingestion and/or querying, depending on
+		  its permissions. To run {{ bold .CommandPath }} make sure to use a
+		  Personal Access token. Help on tokens:
 		  $ {{ bold "axiom help credentials" }}
 
 		  To update the token for the deployment, run:
 		  $ {{ bold "axiom auth update-token" }}
+	`)
 
+	notCloudDeploymentMsg = heredoc.Doc(`
+		{{ errorIcon }} Chosen deployment {{ bold .Deployment }} is not an Axiom Cloud deployment!
 	`)
 )
 
@@ -189,9 +193,31 @@ func NeedsPersonalAccessToken(f *Factory) RunFunc {
 			return nil
 		}
 
-		err := execTemplateSilent(f.IO, restrictedByIngestTokenMsg, map[string]string{
+		err := execTemplateSilent(f.IO, restrictedByAPITokenMsg, map[string]string{
 			"Deployment":  f.Config.ActiveDeployment,
 			"CommandPath": cmd.CommandPath(),
+		})
+
+		return err
+	}
+}
+
+// NeedsCloudDeployment prints an error message and errors silently if the
+// active deployment is not an Axiom Cloud deployment.
+func NeedsCloudDeployment(f *Factory) RunFunc {
+	return func(cmd *cobra.Command, _ []string) error {
+		// We need an active deployment.
+		dep, ok := f.Config.GetActiveDeployment()
+		if !ok {
+			return nil
+		}
+
+		if dep.URL == axiom.CloudURL || f.Config.ForceCloud {
+			return nil
+		}
+
+		err := execTemplateSilent(f.IO, notCloudDeploymentMsg, map[string]string{
+			"Deployment": f.Config.ActiveDeployment,
 		})
 
 		return err

@@ -2,6 +2,7 @@ package terminal
 
 import (
 	"context"
+	"errors"
 	"io"
 	"io/ioutil"
 	"os"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/briandowns/spinner"
+	"github.com/cli/safeexec"
 	"github.com/google/shlex"
 	"github.com/mattn/go-colorable"
 	"github.com/mattn/go-isatty"
@@ -25,6 +27,12 @@ const (
 
 	spinnerType = 11
 )
+
+// ErrClosedPagerPipe is the error returned when writing to a pager that has
+// been closed.
+type ErrClosedPagerPipe struct {
+	error
+}
 
 // IO is used to interact with the terminal, files and any other I/O sources.
 type IO struct {
@@ -160,7 +168,12 @@ func (io *IO) StartPager(ctx context.Context) (func(), error) {
 		env = append(env, "LV=-c")
 	}
 
-	cmd := exec.CommandContext(ctx, args[0], args[1:]...) //nolint:gosec
+	exe, err := safeexec.LookPath(args[0])
+	if err != nil {
+		return func() {}, err
+	}
+
+	cmd := exec.CommandContext(ctx, exe, args[1:]...)
 	cmd.Env = env
 	cmd.Stdout = io.out
 	cmd.Stderr = io.errOut
@@ -170,7 +183,7 @@ func (io *IO) StartPager(ctx context.Context) (func(), error) {
 		return func() {}, err
 	}
 	prevOut := io.out
-	io.out = out
+	io.out = &pagerWriter{out}
 
 	if err = cmd.Start(); err != nil {
 		return func() {}, err
@@ -257,4 +270,18 @@ func TestIO() *IO {
 		errOut:  ioutil.Discard,
 		origOut: ioutil.Discard,
 	}
+}
+
+// pagerWriter implements an `io.WriteCloser`` that wraps all EPIPE errors in an
+// `ErrClosedPagerPipe` type.
+type pagerWriter struct {
+	io.WriteCloser
+}
+
+func (w *pagerWriter) Write(d []byte) (int, error) {
+	n, err := w.WriteCloser.Write(d)
+	if err != nil && (errors.Is(err, io.ErrClosedPipe) || isEpipeError(err)) {
+		return n, &ErrClosedPagerPipe{err}
+	}
+	return n, err
 }

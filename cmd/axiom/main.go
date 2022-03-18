@@ -12,11 +12,12 @@ import (
 
 	surveyCore "github.com/AlecAivazis/survey/v2/core"
 	surveyTerm "github.com/AlecAivazis/survey/v2/terminal"
+	"github.com/axiomhq/axiom-go/axiom"
 	"github.com/mgutz/ansi"
 	"github.com/muesli/termenv"
 	"github.com/spf13/cobra"
 
-	"github.com/axiomhq/cli/cmd/axiom/root"
+	"github.com/axiomhq/cli/internal/cmd/root"
 	"github.com/axiomhq/cli/internal/cmdutil"
 	"github.com/axiomhq/cli/internal/config"
 	"github.com/axiomhq/cli/pkg/terminal"
@@ -27,9 +28,10 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		os.Interrupt,
 		os.Kill,
-		syscall.SIGHUP,
-		syscall.SIGINT,
+		syscall.SIGTERM,
 		syscall.SIGQUIT,
+		syscall.SIGINT,
+		syscall.SIGHUP,
 	)
 	defer cancel()
 
@@ -94,7 +96,16 @@ func main() {
 func printError(w io.Writer, err error, cmd *cobra.Command) {
 	// We don't want to print an error if it is explicitly marked as silent or
 	// a survey prompt is terminated by interrupt.
-	if errors.Is(err, cmdutil.ErrSilent) || errors.Is(err, surveyTerm.InterruptErr) {
+	var pagerPipeError *terminal.ErrClosedPagerPipe
+	if err == cmdutil.ErrSilent ||
+		errors.Is(err, surveyTerm.InterruptErr) ||
+		errors.As(err, &pagerPipeError) {
+		return
+	}
+
+	// Print some nicer output for "Not Found" or "Conflict" errors.
+	if errors.Is(err, axiom.ErrNotFound) || errors.Is(err, axiom.ErrExists) {
+		fmt.Fprintf(w, "Error: %s\n", errors.Unwrap(err))
 		return
 	}
 
