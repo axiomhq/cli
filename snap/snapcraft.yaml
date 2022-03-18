@@ -1,6 +1,6 @@
 name: axiom
 base: core20
-version: '0.1'
+adopt-info: axiom-cli
 summary: The power of Axiom on the command line.
 description: |
   Axiom is a Next-Generation Data Platform
@@ -19,8 +19,8 @@ parts:
     prime:
       - -bin/gen-cli-docs
     override-build: |
-      export GOPATH=$SNAPCRAFT_PRIME/bin
-      make install
+      GOPATH=$SNAPCRAFT_PART_INSTALL/bin make install
+      snapcraftctl set-version `$SNAPCRAFT_PART_INSTALL/bin/axiom --version | cut -d " " -f 4`
     override-prime: |
       snapcraftctl prime
       mkdir -p $SNAPCRAFT_PRIME/share/
