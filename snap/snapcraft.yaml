@@ -9,14 +9,18 @@ description: |
 
 grade: stable
 confinement: strict
+compression: lzo
 
 parts:
   axiom-cli:
     plugin: go
-    go-channel: 1.17/stable
+    go-channel: 1.18/stable
     source: .
     prime:
       - -bin/gen-cli-docs
+    override-build: |
+      export GOPATH=$SNAPCRAFT_PRIME/bin
+      make install
     override-prime: |
       snapcraftctl prime
       mkdir -p $SNAPCRAFT_PRIME/share/
