@@ -101,7 +101,7 @@ To send all system logs to Axiom:
 
 ```shell
 # Allow Axiom to access system logs
-sudo snap connect axiom log-observer
+sudo snap connect axiom:log-observe
 
 # Configure the background service
 sudo snap set axiom journald-dataset=DATASET journald-url=URL journald-token=TOKEN
