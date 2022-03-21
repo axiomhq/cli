@@ -99,7 +99,7 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 	// Overrides
 	cmd.PersistentFlags().StringP("config", "C", "", "Path to configuration file to use")
 	cmd.PersistentFlags().StringP("deployment", "D", "", "Deployment to use")
-	cmd.PersistentFlags().StringP("org-id", "O", os.Getenv("AXIOM_ORG_ID"), "Organization ID to use (only valid for Axiom Cloud)")
+	cmd.PersistentFlags().StringP("org-id", "O", os.Getenv("AXIOM_ORG_ID"), "Organization ID to use")
 	cmd.PersistentFlags().StringP("token", "T", os.Getenv("AXIOM_TOKEN"), "Token to use")
 	cmd.PersistentFlags().StringP("url", "U", os.Getenv("AXIOM_URL"), "Url to use")
 	cmd.PersistentFlags().BoolP("insecure", "I", false, "Bypass certificate validation")

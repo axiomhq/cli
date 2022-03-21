@@ -82,7 +82,7 @@ func newLoginCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.Flags().StringVarP(&opts.Type, "type", "t", strings.ToLower(typeCloud), "Type of the deployment")
 	cmd.Flags().StringVarP(&opts.URL, "url", "u", axiom.CloudURL, "Url of the deployment")
 	cmd.Flags().StringVarP(&opts.Alias, "alias", "a", "", "Alias of the deployment")
-	cmd.Flags().StringVarP(&opts.OrganizationID, "org-id", "o", "", "Organization ID (only valid for Axiom Cloud)")
+	cmd.Flags().StringVarP(&opts.OrganizationID, "org-id", "o", "", "Organization ID")
 	cmd.Flags().BoolVarP(&opts.Force, "force", "f", false, "Skip the confirmation prompt")
 
 	_ = cmd.RegisterFlagCompletionFunc("type", cmdutil.NoCompletion)
