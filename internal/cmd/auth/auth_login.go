@@ -209,7 +209,7 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 		}
 	}
 
-	client, err := client.New(ctx, opts.URL, opts.Token, opts.OrganizationID, opts.Config.Insecure)
+	axiomClient, err := client.New(ctx, opts.URL, opts.Token, opts.OrganizationID, opts.Config.Insecure)
 	if err != nil {
 		return err
 	}
@@ -219,7 +219,7 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 
 	var user *axiom.AuthenticatedUser
 	if axiom.IsPersonalToken(opts.Token) {
-		if user, err = client.Users.Current(ctx); err != nil {
+		if user, err = axiomClient.Users.Current(ctx); err != nil {
 			return err
 		}
 		// TODO(lukasmalkmus): We need to wait for a `Validate` method for API
@@ -236,8 +236,8 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 		cs := opts.IO.ColorScheme()
 
 		if user != nil {
-			if (opts.URL == axiom.CloudURL || opts.Config.ForceCloud) && axiom.IsPersonalToken(opts.Token) {
-				organization, err := client.Organizations.Selfhost.Get(ctx, opts.OrganizationID)
+			if (client.IsCloudURL(opts.URL) || opts.Config.ForceCloud) && axiom.IsPersonalToken(opts.Token) {
+				organization, err := axiomClient.Organizations.Selfhost.Get(ctx, opts.OrganizationID)
 				if err != nil {
 					return err
 				}
@@ -249,7 +249,7 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 					cs.SuccessIcon(), cs.Bold(opts.Alias), cs.Bold(user.Name))
 			}
 		} else {
-			if opts.URL == axiom.CloudURL || opts.Config.ForceCloud {
+			if client.IsCloudURL(opts.URL) || opts.Config.ForceCloud {
 				fmt.Fprintf(opts.IO.ErrOut(), "%s Logged in to organization %s %s\n",
 					cs.SuccessIcon(), cs.Bold(opts.OrganizationID), cs.Red(cs.Bold("(ingestion/query only!)")))
 			} else {

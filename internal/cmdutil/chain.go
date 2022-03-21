@@ -8,6 +8,7 @@ import (
 	"github.com/axiomhq/axiom-go/axiom"
 	"github.com/spf13/cobra"
 
+	"github.com/axiomhq/cli/internal/client"
 	"github.com/axiomhq/cli/pkg/terminal"
 )
 
@@ -212,7 +213,7 @@ func NeedsCloudDeployment(f *Factory) RunFunc {
 			return nil
 		}
 
-		if dep.URL == axiom.CloudURL || f.Config.ForceCloud {
+		if client.IsCloudURL(dep.URL) || f.Config.ForceCloud {
 			return nil
 		}
 

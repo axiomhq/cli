@@ -85,7 +85,7 @@ func runUpdateToken(ctx context.Context, opts *updateTokenOptions) error {
 	// deployment, so no need to check for existence.
 	activeDeployment, _ := opts.Config.GetActiveDeployment()
 
-	client, err := client.New(ctx, activeDeployment.URL, opts.Token, activeDeployment.OrganizationID, opts.Config.Insecure)
+	axiomClient, err := client.New(ctx, activeDeployment.URL, opts.Token, activeDeployment.OrganizationID, opts.Config.Insecure)
 	if err != nil {
 		return err
 	}
@@ -95,7 +95,7 @@ func runUpdateToken(ctx context.Context, opts *updateTokenOptions) error {
 
 	var user *axiom.AuthenticatedUser
 	if axiom.IsPersonalToken(opts.Token) {
-		if user, err = client.Users.Current(ctx); err != nil {
+		if user, err = axiomClient.Users.Current(ctx); err != nil {
 			return err
 		}
 		// TODO(lukasmalkmus): We need to wait for a `Validate` method for API
@@ -112,8 +112,8 @@ func runUpdateToken(ctx context.Context, opts *updateTokenOptions) error {
 		cs := opts.IO.ColorScheme()
 
 		if user != nil {
-			if activeDeployment.URL == axiom.CloudURL || opts.Config.ForceCloud {
-				organization, err := client.Organizations.Selfhost.Get(ctx, activeDeployment.OrganizationID)
+			if client.IsCloudURL(activeDeployment.URL) || opts.Config.ForceCloud {
+				organization, err := axiomClient.Organizations.Selfhost.Get(ctx, activeDeployment.OrganizationID)
 				if err != nil {
 					return err
 				}
@@ -125,7 +125,7 @@ func runUpdateToken(ctx context.Context, opts *updateTokenOptions) error {
 					cs.SuccessIcon(), cs.Bold(opts.Config.ActiveDeployment), cs.Bold(user.Name))
 			}
 		} else {
-			if activeDeployment.URL == axiom.CloudURL || opts.Config.ForceCloud {
+			if client.IsCloudURL(activeDeployment.URL) || opts.Config.ForceCloud {
 				fmt.Fprintf(opts.IO.ErrOut(), "%s Logged in to organization %s %s\n",
 					cs.SuccessIcon(), cs.Bold(activeDeployment.OrganizationID), cs.Red(cs.Bold("(ingestion only!)")))
 			} else {
