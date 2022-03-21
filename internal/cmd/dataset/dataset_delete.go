@@ -73,6 +73,9 @@ func completeDelete(ctx context.Context, opts *deleteOptions) error {
 	datasetNames, err := getDatasetNames(ctx, opts.Factory)
 	if err != nil {
 		return err
+	} else if len(datasetNames) == 1 {
+		opts.Name = datasetNames[0]
+		return nil
 	}
 
 	return survey.AskOne(&survey.Select{

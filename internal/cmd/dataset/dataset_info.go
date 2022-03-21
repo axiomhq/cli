@@ -70,6 +70,9 @@ func completeInfo(ctx context.Context, opts *infoOptions) error {
 	datasetNames, err := getDatasetNames(ctx, opts.Factory)
 	if err != nil {
 		return err
+	} else if len(datasetNames) == 1 {
+		opts.Name = datasetNames[0]
+		return nil
 	}
 
 	return survey.AskOne(&survey.Select{
