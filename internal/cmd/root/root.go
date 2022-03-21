@@ -105,6 +105,7 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.PersistentFlags().BoolP("insecure", "I", false, "Bypass certificate validation")
 	cmd.PersistentFlags().BoolP("force-cloud", "F", false, "Treat deployment as Axiom Cloud")
 	cmd.PersistentFlags().Bool("no-spinner", false, "Disable the activity indicator")
+	_ = cmd.PersistentFlags().MarkHidden("force-cloud")
 
 	// Core commands
 	cmd.AddCommand(ingestCmd.NewIngestCmd(f))
