@@ -32,7 +32,7 @@ func newRotateCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "rotate [<organization-id>] [(-f|--format=)json|table] [-f|--force]",
+		Use:   "rotate [<organization-id>] [(-f|--format)=json|table] [-f|--force]",
 		Short: "Rotate shared access keys of an organization",
 
 		Args:              cmdutil.PopulateFromArgs(f, &opts.ID),

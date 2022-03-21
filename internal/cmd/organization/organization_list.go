@@ -29,7 +29,7 @@ func newListCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "list [(-f|--format=)json|table]",
+		Use:   "list [(-f|--format)=json|table]",
 		Short: "List all organizations",
 
 		Aliases: []string{"ls"},

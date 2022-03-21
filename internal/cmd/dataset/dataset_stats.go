@@ -27,7 +27,7 @@ func newStatsCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "stats [(-f|--format=)json|table]",
+		Use:   "stats [(-f|--format)=json|table]",
 		Short: "Get statistics about all datasets",
 		Long: heredoc.Doc(`
 			Get statistics about all datasets.

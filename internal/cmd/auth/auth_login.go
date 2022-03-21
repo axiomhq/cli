@@ -27,8 +27,11 @@ var validDeploymentTypes = []string{typeCloud, typeSelfhost}
 type loginOptions struct {
 	*cmdutil.Factory
 
-	// Url of the deployment to authenticate with. If not supplied as a flag,
-	// which is optional, the user will be asked for it.
+	// Type of the deployment to authenticate with. Default to "Cloud". Can be
+	// overwritten by flag.
+	Type string
+	// Url of the deployment to authenticate with. Default to the Axiom Cloud
+	// URL. Can be overwritten by flag.
 	URL string
 	// Alias of the deployment for future reference. If not supplied as a flag,
 	// which is optional, the user will be asked for it.
@@ -51,7 +54,7 @@ func newLoginCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "login [--url <deployment-url>] [(-a|--alias) <deployment-alias>] [(-o|--org-id) <organization-id>] [-f|--force]",
+		Use:   "login [(-t|--type)=cloud|selfhost] [(-u|--url) <deployment-url>] [(-a|--alias) <deployment-alias>] [(-o|--org-id) <organization-id>] [-f|--force]",
 		Short: "Login to an Axiom deployment",
 
 		DisableFlagsInUseLine: true,
@@ -76,17 +79,20 @@ func newLoginCmd(f *cmdutil.Factory) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&opts.URL, "url", "", "Url of the deployment")
+	cmd.Flags().StringVarP(&opts.Type, "type", "t", strings.ToLower(typeCloud), "Type of the deployment")
+	cmd.Flags().StringVarP(&opts.URL, "url", "u", axiom.CloudURL, "Url of the deployment")
 	cmd.Flags().StringVarP(&opts.Alias, "alias", "a", "", "Alias of the deployment")
 	cmd.Flags().StringVarP(&opts.OrganizationID, "org-id", "o", "", "Organization ID (only valid for Axiom Cloud)")
 	cmd.Flags().BoolVarP(&opts.Force, "force", "f", false, "Skip the confirmation prompt")
 
+	_ = cmd.RegisterFlagCompletionFunc("type", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("url", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("alias", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("org-id", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("force", cmdutil.NoCompletion)
 
 	if !opts.IO.IsStdinTTY() {
+		_ = cmd.MarkFlagRequired("type")
 		_ = cmd.MarkFlagRequired("url")
 		_ = cmd.MarkFlagRequired("alias")
 		_ = cmd.MarkFlagRequired("force")
@@ -97,16 +103,19 @@ func newLoginCmd(f *cmdutil.Factory) *cobra.Command {
 
 func completeLogin(ctx context.Context, opts *loginOptions) error {
 	// 1. Cloud or Selfhost?
-	var deploymentKind string
-	if err := survey.AskOne(&survey.Select{
-		Message: "Which kind of Axiom deployment are you using?",
-		Options: validDeploymentTypes,
-	}, &deploymentKind, opts.IO.SurveyIO()); err != nil {
-		return err
+	if opts.Type == "" {
+		if err := survey.AskOne(&survey.Select{
+			Message: "Which kind of Axiom deployment are you using?",
+			Options: validDeploymentTypes,
+		}, &opts.Type, opts.IO.SurveyIO()); err != nil {
+			return err
+		}
 	}
 
+	opts.Type = strings.ToLower(opts.Type)
+
 	// 2. If Cloud, set the correct URL instead of asking the user for it.
-	if deploymentKind == typeCloud {
+	if opts.Type == strings.ToLower(typeCloud) {
 		opts.URL = axiom.CloudURL
 	} else if opts.URL == "" {
 		if err := survey.AskOne(&survey.Input{
@@ -121,7 +130,7 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 
 	// 3. The token to use.
 	if err := survey.AskOne(&survey.Password{
-		Message: "What is your api or personal access token?",
+		Message: "What is your personal access token?",
 	}, &opts.Token, survey.WithValidator(survey.ComposeValidators(
 		survey.Required,
 		surveyext.ValidateToken,
@@ -130,21 +139,18 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 	}
 
 	// 4. Try to authenticate and fetch the organizations available to the user
-	// in case a Personal Access token was provided and the deployment is a
-	// cloud deployment. If only one organization is available, that one is
-	// selected by default, without asking the user for it.
-	if axiom.IsPersonalToken(opts.Token) && deploymentKind == typeCloud && opts.OrganizationID == "" {
+	// in case the deployment is a cloud deployment. If only one organization is
+	// available, that one is selected by default, without asking the user for
+	// it.
+	if opts.Type == strings.ToLower(typeCloud) && opts.OrganizationID == "" {
 		client, err := client.New(ctx, opts.URL, opts.Token, "", opts.Config.Insecure)
 		if err != nil {
 			return err
 		}
 
-		organizations, err := client.Organizations.Selfhost.List(ctx)
-		if err != nil {
+		if organizations, err := client.Organizations.Selfhost.List(ctx); err != nil {
 			return err
-		}
-
-		if len(organizations) == 1 {
+		} else if len(organizations) == 1 {
 			opts.OrganizationID = organizations[0].ID
 		} else {
 			organizationIDs := make([]string, len(organizations))
@@ -176,6 +182,7 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 		}, &opts.Alias, survey.WithValidator(survey.ComposeValidators(
 			survey.Required,
 			survey.MinLength(3),
+			surveyext.NotIn(opts.Config.DeploymentAliases()),
 		)), opts.IO.SurveyIO()); err != nil {
 			return err
 		}
@@ -217,17 +224,9 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 	stop := opts.IO.StartActivityIndicator()
 	defer stop()
 
-	var user *axiom.AuthenticatedUser
-	if axiom.IsPersonalToken(opts.Token) {
-		if user, err = axiomClient.Users.Current(ctx); err != nil {
-			return err
-		}
-		// TODO(lukasmalkmus): We need to wait for a `Validate` method for API
-		// tokens.
-		// } else if axiom.IsAPIToken(opts.Token) {
-		// 	if err = client.Tokens.API.Validate(ctx); err != nil {
-		// 		return err
-		// 	}
+	user, err := axiomClient.Users.Current(ctx)
+	if err != nil {
+		return err
 	}
 
 	stop()

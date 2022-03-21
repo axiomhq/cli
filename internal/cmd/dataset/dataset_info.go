@@ -31,7 +31,7 @@ func newInfoCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "info [<dataset-name>] [(-f|--format=)json|table]",
+		Use:   "info [<dataset-name>] [(-f|--format)=json|table]",
 		Short: "Get info about a dataset",
 
 		Args:              cmdutil.PopulateFromArgs(f, &opts.Name),

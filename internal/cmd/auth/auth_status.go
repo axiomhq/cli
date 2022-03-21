@@ -81,9 +81,8 @@ func runStatus(ctx context.Context, opts *statusOptions) error {
 		client, err := client.New(ctx, deployment.URL, deployment.Token, deployment.OrganizationID, opts.Config.Insecure)
 		if err != nil {
 			info = fmt.Sprintf("%s %s", cs.ErrorIcon(), errors.Unwrap(err))
-		} else if axiom.IsPersonalToken(deployment.Token) {
-			var user *axiom.AuthenticatedUser
-			if user, err = client.Users.Current(ctx); errors.Is(err, axiom.ErrUnauthenticated) {
+		} else {
+			if user, err := client.Users.Current(ctx); errors.Is(err, axiom.ErrUnauthenticated) {
 				info = fmt.Sprintf("%s %s", cs.ErrorIcon(), "Invalid credentials")
 				failed = true
 			} else if err != nil {
@@ -104,23 +103,6 @@ func runStatus(ctx context.Context, opts *statusOptions) error {
 					}
 				}
 			}
-		} else if axiom.IsAPIToken(deployment.Token) {
-			// if err = client.Tokens.API.Validate(ctx); errors.Is(err, axiom.ErrUnauthenticated) {
-			// 	info = fmt.Sprintf("%s %s", cs.ErrorIcon(), "Invalid credentials")
-			// 	failed = true
-			// } else if err != nil {
-			// 	info = fmt.Sprintf("%s %s", cs.ErrorIcon(), err)
-			// 	failed = true
-			// } else {
-			if deployment.OrganizationID == "" {
-				info = fmt.Sprintf("%s Using api token", cs.WarningIcon())
-			} else {
-				info = fmt.Sprintf("%s Logged in to %s using an api token", cs.WarningIcon(),
-					cs.Bold(deployment.OrganizationID))
-			}
-			// }
-		} else {
-			info = fmt.Sprintf("%s %s", cs.ErrorIcon(), "Unknown token type")
 		}
 
 		statusInfo[v] = append(statusInfo[v], info)

@@ -6,7 +6,6 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
-	"github.com/axiomhq/axiom-go/axiom"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/client"
@@ -65,7 +64,7 @@ func completeUpdateToken(opts *updateTokenOptions) error {
 	}
 
 	return survey.AskOne(&survey.Password{
-		Message: "What is your api or personal access token?",
+		Message: "What is your personal access token?",
 	}, &opts.Token, survey.WithValidator(survey.ComposeValidators(
 		survey.Required,
 		surveyext.ValidateToken,
@@ -93,17 +92,9 @@ func runUpdateToken(ctx context.Context, opts *updateTokenOptions) error {
 	stop := opts.IO.StartActivityIndicator()
 	defer stop()
 
-	var user *axiom.AuthenticatedUser
-	if axiom.IsPersonalToken(opts.Token) {
-		if user, err = axiomClient.Users.Current(ctx); err != nil {
-			return err
-		}
-		// TODO(lukasmalkmus): We need to wait for a `Validate` method for API
-		// tokens.
-		// } else if axiom.IsAPIToken(opts.Token) {
-		// 	if err = client.Tokens.API.Validate(ctx); err != nil {
-		// 		return err
-		// 	}
+	user, err := axiomClient.Users.Current(ctx)
+	if err != nil {
+		return err
 	}
 
 	stop()

@@ -48,7 +48,7 @@ func NewQueryCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "query [<apl-query>] [(-f|--format=)json|table] [--start-time <start-time>] [--end-time <end-time>] [--timestamp-format <timestamp-format>] [-c|--no-cache] [-s|--save]",
+		Use:   "query [<apl-query>] [(-f|--format)=json|table] [--start-time <start-time>] [--end-time <end-time>] [--timestamp-format <timestamp-format>] [-c|--no-cache] [-s|--save]",
 		Short: "Query data using APL",
 		Long: heredoc.Doc(`
 			Query data from an Axiom dataset using APL, the Axiom Processing
