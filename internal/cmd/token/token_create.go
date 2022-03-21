@@ -154,7 +154,14 @@ func runCreate(ctx context.Context, opts *createOptions) error {
 		return fmt.Errorf("unknown token type: %s", opts.tokenType)
 	}
 
-	var permissions []axiom.Permission
+	// Translate the permission string to the `axiom.Permission` type.
+	permissions := make([]axiom.Permission, len(opts.Permissions))
+	for k, v := range opts.Permissions {
+		if permissions[k], err = permissionFromString(v); err != nil {
+			return err
+		}
+	}
+
 	token, err := createFunc(ctx, axiom.TokenCreateUpdateRequest{
 		Name:        opts.Name,
 		Description: opts.Description,
@@ -179,4 +186,19 @@ func runCreate(ctx context.Context, opts *createOptions) error {
 	}
 
 	return nil
+}
+
+func permissionFromString(s string) (permission axiom.Permission, err error) {
+	switch s {
+	// case emptyPermission.String():
+	// 	permission = emptyPermission
+	case axiom.CanIngest.String():
+		permission = axiom.CanIngest
+	case axiom.CanQuery.String():
+		permission = axiom.CanQuery
+	default:
+		err = fmt.Errorf("unknown permission %q", s)
+	}
+
+	return permission, err
 }
