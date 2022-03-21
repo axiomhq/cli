@@ -74,6 +74,9 @@ func completeDelete(ctx context.Context, opts *deleteOptions) error {
 	tokenNames, err := getTokenNames(ctx, opts.Factory, opts.tokenType)
 	if err != nil {
 		return err
+	} else if len(tokenNames) == 1 {
+		opts.Name = tokenNames[0]
+		return nil
 	}
 
 	return survey.AskOne(&survey.Select{

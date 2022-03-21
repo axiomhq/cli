@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
+	"github.com/axiomhq/cli/pkg/surveyext"
 )
 
 type createOptions struct {
@@ -45,7 +46,7 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 		`),
 
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			if err := completeCreate(opts); err != nil {
+			if err := completeCreate(cmd.Context(), opts); err != nil {
 				return err
 			}
 			return runCreate(cmd.Context(), opts)
@@ -66,8 +67,13 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 	return cmd
 }
 
-func completeCreate(opts *createOptions) error {
+func completeCreate(ctx context.Context, opts *createOptions) error {
 	questions := make([]*survey.Question, 0, 2)
+
+	datasetNames, err := getDatasetNames(ctx, opts.Factory)
+	if err != nil {
+		return err
+	}
 
 	if opts.Name == "" {
 		questions = append(questions, &survey.Question{
@@ -76,6 +82,7 @@ func completeCreate(opts *createOptions) error {
 			Validate: survey.ComposeValidators(
 				survey.Required,
 				survey.MinLength(3),
+				surveyext.NotIn(datasetNames),
 			),
 		})
 	}

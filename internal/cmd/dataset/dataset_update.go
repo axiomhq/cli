@@ -69,6 +69,9 @@ func completeUpdate(ctx context.Context, opts *updateOptions) error {
 	datasetNames, err := getDatasetNames(ctx, opts.Factory)
 	if err != nil {
 		return err
+	} else if len(datasetNames) == 1 {
+		opts.Name = datasetNames[0]
+		return nil
 	}
 
 	if opts.Name == "" {

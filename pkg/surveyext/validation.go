@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/axiomhq/axiom-go/axiom"
 )
 
@@ -37,4 +38,23 @@ func ValidateToken(val any) error {
 		return errors.New("token is not an axiom access token (missing prefix)")
 	}
 	return nil
+}
+
+// NotIn returns a validation function that returns an error if the value is in
+// the given list.
+func NotIn(ss []string) survey.Validator {
+	return func(val any) error {
+		v, ok := val.(string)
+		if !ok {
+			return fmt.Errorf("input cannot be of type %v", reflect.TypeOf(val).Name())
+		}
+
+		for _, s := range ss {
+			if v == s {
+				return fmt.Errorf("input cannot be %q", v)
+			}
+		}
+
+		return nil
+	}
 }

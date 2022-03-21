@@ -201,6 +201,9 @@ func complete(ctx context.Context, opts *options) error {
 		datasets, err := client.Datasets.List(ctx)
 		if err != nil {
 			return err
+		} else if len(datasets) == 1 {
+			opts.Dataset = datasets[0].Name
+			return nil
 		}
 
 		stop()

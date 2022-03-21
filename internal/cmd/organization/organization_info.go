@@ -76,9 +76,7 @@ func completeInfo(ctx context.Context, opts *infoOptions) error {
 	organizationIDs, err := getOrganizationIDs(ctx, opts.Factory)
 	if err != nil {
 		return err
-	}
-
-	if len(organizationIDs) == 1 {
+	} else if len(organizationIDs) == 1 {
 		opts.ID = organizationIDs[0]
 		return nil
 	}
