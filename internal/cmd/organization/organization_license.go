@@ -10,9 +10,9 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
-	"github.com/axiomhq/axiom-go/axiom"
 	"github.com/spf13/cobra"
 
+	"github.com/axiomhq/cli/internal/client"
 	"github.com/axiomhq/cli/internal/cmdutil"
 	"github.com/axiomhq/cli/pkg/iofmt"
 )
@@ -67,7 +67,7 @@ func completeLicense(ctx context.Context, opts *licenseOptions) error {
 	// A requirement for this command to execute is the presence of an active
 	// deployment, so no need to check for existence.
 	activeDeployment, _ := opts.Config.GetActiveDeployment()
-	if activeDeployment.URL != axiom.CloudURL && !opts.Config.ForceCloud {
+	if !client.IsCloudURL(activeDeployment.URL) && !opts.Config.ForceCloud {
 		opts.ID = defaultSelfhostOrganizationID
 	}
 
