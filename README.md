@@ -142,10 +142,10 @@ For full command reference, see the list below, or visit
 | axiom organization list        | List all organizations                                     |
 | axiom organization keys get    | Get shared access keys of an organization                  |
 | axiom organization keys rotate | Rotate shared access keys of an organization               |
-| axiom token api create         | Create a token                                             |
-| axiom token api delete         | Delete a token                                             |
-| axiom token personal create    | Create a token                                             |
-| axiom token personal delete    | Delete a token                                             |
+| axiom token api create         | Create an api token                                        |
+| axiom token api delete         | Delete an api token                                        |
+| axiom token personal create    | Create a personal token                                    |
+| axiom token personal delete    | Delete a personal token                                    |
 
 **Additional Commands**
 

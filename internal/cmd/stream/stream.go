@@ -36,7 +36,7 @@ func NewStreamCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "stream [<dataset-name>] [(-f|--format=)json|table]",
+		Use:   "stream [<dataset-name>] [(-f|--format)=json|table]",
 		Short: "Livestream data",
 		Long:  `Livestream data from an Axiom dataset.`,
 

@@ -33,7 +33,7 @@ func newLicenseCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "license [<organization-id>] [(-f|--format=)json|table]",
+		Use:   "license [<organization-id>] [(-f|--format)=json|table]",
 		Short: "Get license of an organization",
 
 		Args:              cmdutil.PopulateFromArgs(f, &opts.ID),

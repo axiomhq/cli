@@ -34,8 +34,8 @@ func ValidateURL(val any) error {
 func ValidateToken(val any) error {
 	if token, ok := val.(string); !ok {
 		return fmt.Errorf("token cannot be of type %v", reflect.TypeOf(val).Name())
-	} else if !axiom.IsPersonalToken(token) && !axiom.IsAPIToken(token) {
-		return errors.New("token is not an axiom access token (missing prefix)")
+	} else if !axiom.IsPersonalToken(token) {
+		return errors.New("token is not a personal access token (missing 'xapt-' prefix)")
 	}
 	return nil
 }

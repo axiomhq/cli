@@ -29,7 +29,7 @@ func newGetCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "get [<organization-id>] [(-f|--format=)json|table]",
+		Use:   "get [<organization-id>] [(-f|--format)=json|table]",
 		Short: "Get shared access keys of an organization",
 
 		Args:              cmdutil.PopulateFromArgs(f, &opts.ID),

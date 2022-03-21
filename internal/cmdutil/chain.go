@@ -51,12 +51,11 @@ var (
 		  $ {{ bold "axiom dataset create nginx-logs" }}
 	`)
 
-	restrictedByAPITokenMsg = heredoc.Doc(`
-		{{ errorIcon }} Deployment is configured with an API token!
+	noPersonalAccessTokenGiven = heredoc.Doc(`
+		{{ errorIcon }} Deployment is not configured with a personal access token!
 
-		  An API token is only valid for ingestion and/or querying, depending on
-		  its permissions. To run {{ bold .CommandPath }} make sure to use a
-		  Personal Access token. Help on tokens:
+		  To run {{ bold .CommandPath }} make sure to use a Personal Access token.
+		  Help on tokens:
 		  $ {{ bold "axiom help credentials" }}
 
 		  To update the token for the deployment, run:
@@ -194,7 +193,7 @@ func NeedsPersonalAccessToken(f *Factory) RunFunc {
 			return nil
 		}
 
-		err := execTemplateSilent(f.IO, restrictedByAPITokenMsg, map[string]string{
+		err := execTemplateSilent(f.IO, noPersonalAccessTokenGiven, map[string]string{
 			"Deployment":  f.Config.ActiveDeployment,
 			"CommandPath": cmd.CommandPath(),
 		})
