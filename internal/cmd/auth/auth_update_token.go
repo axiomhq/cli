@@ -3,6 +3,8 @@ package auth
 import (
 	"context"
 	"fmt"
+	"net/url"
+	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
@@ -63,8 +65,23 @@ func completeUpdateToken(opts *updateTokenOptions) error {
 		return nil
 	}
 
+	// A requirement for this command to execute is the presence of an active
+	// deployment, so no need to check for existence.
+	activeDeployment, _ := opts.Config.GetActiveDeployment()
+
+	depURL := activeDeployment.URL
+	if depURL != "" && !strings.HasPrefix(depURL, "http://") && !strings.HasPrefix(depURL, "https://") {
+		depURL = "https://" + depURL
+	}
+
+	u, err := url.ParseRequestURI(depURL)
+	if err != nil {
+		return err
+	}
+	u.Path = "/profile"
+
 	return survey.AskOne(&survey.Password{
-		Message: "What is your personal access token?",
+		Message: fmt.Sprintf("What is your personal access token (create one over at %s)?", u.String()),
 	}, &opts.Token, survey.WithValidator(survey.ComposeValidators(
 		survey.Required,
 		surveyext.ValidateToken,

@@ -71,6 +71,14 @@ func newLoginCmd(f *cmdutil.Factory) *cobra.Command {
 			if !opts.IO.IsStdinTTY() {
 				return nil
 			}
+
+			// If the user specifies the url, we assume he wants to authenticate
+			// against a selfhost deployment unless he explicitly specifies the
+			// hidden type flag that specifies the type of the deployment.
+			if cmd.Flag("url").Changed && !cmd.Flag("type").Changed {
+				opts.Type = typeSelfhost
+			}
+
 			return completeLogin(cmd.Context(), opts)
 		},
 
@@ -92,11 +100,10 @@ func newLoginCmd(f *cmdutil.Factory) *cobra.Command {
 	_ = cmd.RegisterFlagCompletionFunc("force", cmdutil.NoCompletion)
 
 	if !opts.IO.IsStdinTTY() {
-		_ = cmd.MarkFlagRequired("type")
-		_ = cmd.MarkFlagRequired("url")
 		_ = cmd.MarkFlagRequired("alias")
-		_ = cmd.MarkFlagRequired("force")
 	}
+
+	_ = cmd.PersistentFlags().MarkHidden("type")
 
 	return cmd
 }
@@ -128,9 +135,19 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 		}
 	}
 
+	if opts.URL != "" && !strings.HasPrefix(opts.URL, "http://") && !strings.HasPrefix(opts.URL, "https://") {
+		opts.URL = "https://" + opts.URL
+	}
+
+	u, err := url.ParseRequestURI(opts.URL)
+	if err != nil {
+		return err
+	}
+	u.Path = "/profile"
+
 	// 3. The token to use.
 	if err := survey.AskOne(&survey.Password{
-		Message: "What is your personal access token?",
+		Message: fmt.Sprintf("What is your personal access token (create one over at %s)?", u.String()),
 	}, &opts.Token, survey.WithValidator(survey.ComposeValidators(
 		survey.Required,
 		surveyext.ValidateToken,
@@ -143,12 +160,12 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 	// available, that one is selected by default, without asking the user for
 	// it.
 	if opts.Type == strings.ToLower(typeCloud) && opts.OrganizationID == "" {
-		client, err := client.New(ctx, opts.URL, opts.Token, "", opts.Config.Insecure)
+		axiomClient, err := client.New(ctx, opts.URL, opts.Token, "axiom", opts.Config.Insecure)
 		if err != nil {
 			return err
 		}
 
-		if organizations, err := client.Organizations.Selfhost.List(ctx); err != nil {
+		if organizations, err := axiomClient.Organizations.Cloud.List(ctx); err != nil {
 			return err
 		} else if len(organizations) == 1 {
 			opts.OrganizationID = organizations[0].ID
@@ -205,7 +222,7 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 	// we abort and return, not overwritting anything.
 	if _, ok := opts.Config.Deployments[opts.Alias]; ok && !opts.Force {
 		if !opts.IO.IsStdinTTY() {
-			return cmdutil.ErrSilent
+			return fmt.Errorf("deployment with alias %q already configured, overwrite with '-f|--force' flag", opts.Alias)
 		}
 
 		msg := fmt.Sprintf("Deployment with alias %q already configured! Overwrite?", opts.Alias)

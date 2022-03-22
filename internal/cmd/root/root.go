@@ -62,13 +62,13 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 			if fl := cmd.Flag("deployment"); fl.Changed {
 				f.Config.ActiveDeployment = fl.Value.String()
 			}
-			if fl := cmd.Flag("org-id"); fl.Changed {
+			if fl := cmd.Flag("auth-org-id"); fl.Changed {
 				f.Config.OrganizationIDOverride = fl.Value.String()
 			}
-			if fl := cmd.Flag("token"); fl.Changed {
+			if fl := cmd.Flag("auth-token"); fl.Changed {
 				f.Config.TokenOverride = fl.Value.String()
 			}
-			if fl := cmd.Flag("url"); fl.Changed {
+			if fl := cmd.Flag("auth-url"); fl.Changed {
 				f.Config.URLOverride = fl.Value.String()
 			}
 
@@ -99,13 +99,12 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 	// Overrides
 	cmd.PersistentFlags().StringP("config", "C", "", "Path to configuration file to use")
 	cmd.PersistentFlags().StringP("deployment", "D", "", "Deployment to use")
-	cmd.PersistentFlags().StringP("org-id", "O", os.Getenv("AXIOM_ORG_ID"), "Organization ID to use")
-	cmd.PersistentFlags().StringP("token", "T", os.Getenv("AXIOM_TOKEN"), "Token to use")
-	cmd.PersistentFlags().StringP("url", "U", os.Getenv("AXIOM_URL"), "Url to use")
+	cmd.PersistentFlags().StringP("auth-org-id", "O", os.Getenv("AXIOM_ORG_ID"), "Organization ID to use")
+	cmd.PersistentFlags().StringP("auth-token", "T", os.Getenv("AXIOM_TOKEN"), "Token to use")
+	cmd.PersistentFlags().StringP("auth-url", "U", os.Getenv("AXIOM_URL"), "Url to use")
 	cmd.PersistentFlags().BoolP("insecure", "I", false, "Bypass certificate validation")
 	cmd.PersistentFlags().BoolP("force-cloud", "F", false, "Treat deployment as Axiom Cloud")
 	cmd.PersistentFlags().Bool("no-spinner", false, "Disable the activity indicator")
-	_ = cmd.PersistentFlags().MarkHidden("force-cloud")
 
 	// Core commands
 	cmd.AddCommand(ingestCmd.NewIngestCmd(f))
@@ -126,6 +125,9 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 	// Help topics
 	cmd.AddCommand(newHelpTopic(f.IO, "credentials"))
 	cmd.AddCommand(newHelpTopic(f.IO, "environment"))
+
+	// Hidden flags
+	_ = cmd.PersistentFlags().MarkHidden("force-cloud")
 
 	return cmd
 }
