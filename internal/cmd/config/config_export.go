@@ -70,7 +70,7 @@ Be aware that this may overwrite the existing environment variables and may also
 		},
 	}
 
-	cmd.Flags().BoolVarP(&opts.Force, "force", "f", false, "Skip the confirmation prompt")
+	cmd.Flags().BoolVarP(&opts.Force, "force", "f", false, "Allow for the export of the configuration values")
 
 	_ = cmd.RegisterFlagCompletionFunc("force", cmdutil.NoCompletion)
 
