@@ -28,7 +28,7 @@ func NewConfigCmd(f *cmdutil.Factory) *cobra.Command {
 			$ axiom config edit
 
 			# Export the configuration values AXIOM_URL, AXIOM_TOKEN and AXIOM_ORG_ID from the current deployment to the current terminal session:
-			$ axiom config export
+			$ eval $(axiom config export --force)
 		`),
 
 		Annotations: map[string]string{
