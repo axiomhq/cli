@@ -26,6 +26,9 @@ func NewConfigCmd(f *cmdutil.Factory) *cobra.Command {
 
 			# Open the configuration file in the configured editor:
 			$ axiom config edit
+
+			# Export the configuration values AXIOM_URL, AXIOM_TOKEN and AXIOM_ORG_ID from the current deployment to the current terminal session:
+			$ axiom config export
 		`),
 
 		Annotations: map[string]string{
@@ -36,6 +39,7 @@ func NewConfigCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.AddCommand(newEditCmd(f))
 	cmd.AddCommand(newGetCmd(f))
 	cmd.AddCommand(newSetCmd(f))
+	cmd.AddCommand(newExportCommand(f))
 
 	return cmd
 }
