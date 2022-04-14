@@ -31,12 +31,12 @@ func newUpdateTokenCmd(f *cmdutil.Factory) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "update-token",
-		Short: "Update the token used to authenticate against an Axiom deployment",
+		Short: "Update the token used to authenticate against Axiom",
 
 		DisableFlagsInUseLine: true,
 
 		Example: heredoc.Doc(`
-			# Interactively update the token of the current Axiom deployment:
+			# Interactively update the token of the current configuration:
 			$ axiom auth update-token
 			
 			# Provide parameters on the command-line:

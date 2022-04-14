@@ -28,7 +28,7 @@ func newStatusCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "status [<deployment-alias>]",
+		Use:   "status [<alias>]",
 		Short: "View authentication status",
 
 		DisableFlagsInUseLine: true,

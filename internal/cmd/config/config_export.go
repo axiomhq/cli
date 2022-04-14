@@ -16,12 +16,19 @@ type exportOptions struct {
 	Force bool
 }
 
-var forceMessage = heredoc.Doc(`You can not export the configuration values without the --force flag.
-If you are sure you want to export the configuration values, run the command again with the --force flag.
-Ensure that you eval this command, without doing so, the configuration values will not be exported.
-Be aware that this may overwrite the existing environment variables and may also print the values to the console.`)
+var forceMessage = heredoc.Doc(`
+	You can not export the configuration values without the --force flag.
+	If you are sure you want to export the configuration values, run the command
+	again with the --force flag. Ensure that you eval this command, without
+	doing so, the configuration values will not be exported. Be aware that this
+	may overwrite the existing environment variables and may also print the
+	values to the console.
+`)
 
-var successMessage = heredoc.Doc("Environment Variables set. If they don't seem to be set, ensure that this command was ran in an eval statement.")
+var successMessage = heredoc.Doc(`
+	Environment Variables set. If they don't seem to be set, ensure that this
+	command was ran in an eval statement.
+`)
 
 func newExportCommand(f *cmdutil.Factory) *cobra.Command {
 	opts := &exportOptions{
@@ -30,15 +37,19 @@ func newExportCommand(f *cmdutil.Factory) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "export [-f|--force]",
-		Short: "Export the configuration values for the current deployment",
-		Long:  `Export the configuration values AXIOM_URL, AXIOM_TOKEN and AXIOM_ORG_ID from the current deployment to the current terminal session.`,
+		Short: "Export the configuration values",
+		Long: heredoc.Doc(`
+			Export the values AXIOM_URL, AXIOM_TOKEN and AXIOM_ORG_ID for the
+			active configuration to the current terminal session.
+		`),
 
 		DisableFlagsInUseLine: true,
 
 		ValidArgsFunction: keyCompletionFunc(f.Config),
 
 		Example: heredoc.Doc(`
-			# Export the configuration values AXIOM_URL, AXIOM_TOKEN and AXIOM_ORG_ID from the current deployment to the current terminal session:
+			# Export the values AXIOM_URL, AXIOM_TOKEN and AXIOM_ORG_ID for the
+			# current configuration to the current terminal session:
 			$ eval $(axiom config export --force)
 		`),
 

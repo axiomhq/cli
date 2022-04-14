@@ -54,13 +54,13 @@ func newLoginCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "login [(-t|--type)=cloud|selfhost] [(-u|--url) <deployment-url>] [(-a|--alias) <deployment-alias>] [(-o|--org-id) <organization-id>] [-f|--force]",
-		Short: "Login to an Axiom deployment",
+		Use:   "login [(-t|--type)=cloud|selfhost] [(-u|--url) <url>] [(-a|--alias) <alias>] [(-o|--org-id) <organization-id>] [-f|--force]",
+		Short: "Login to Axiom",
 
 		DisableFlagsInUseLine: true,
 
 		Example: heredoc.Doc(`
-			# Interactively authenticate against an Axiom deployment:
+			# Interactively authenticate against Axiom:
 			$ axiom auth login
 			
 			# Provide parameters on the command-line:

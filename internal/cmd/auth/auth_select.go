@@ -14,10 +14,10 @@ func newSelectCmd(f *cmdutil.Factory) *cobra.Command {
 	var activeDeployment string
 
 	cmd := &cobra.Command{
-		Use:   "select [<deployment-alias>]",
-		Short: "Select an Axiom deployment",
+		Use:   "select [<alias>]",
+		Short: "Select an Axiom configuration",
 		Long: heredoc.Doc(`
-			Select an Axiom deployment to use by default and persist the choice
+			Select an Axiom configuration to use by default and persist the choice
 			in the configuration file.
 		`),
 
