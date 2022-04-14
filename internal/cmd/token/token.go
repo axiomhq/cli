@@ -24,8 +24,8 @@ var validPermissions = []string{
 	axiom.CanQuery.String(),
 }
 
-// NewTokenCmd creates and returns the token command.
-func NewTokenCmd(f *cmdutil.Factory) *cobra.Command {
+// NewCmd creates and returns the token command.
+func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "token <type> <command>",
 		Short: "Manage tokens",

@@ -7,8 +7,8 @@ import (
 	"github.com/axiomhq/cli/internal/cmdutil"
 )
 
-// NewCompletionCmd creates and returns the completion command.
-func NewCompletionCmd(f *cmdutil.Factory) *cobra.Command {
+// NewCmd creates and returns the completion command.
+func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "completion <command>",
 		Short: "Generate shell completion scripts",

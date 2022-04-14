@@ -41,8 +41,8 @@ type options struct {
 	endTime   time.Time
 }
 
-// NewQueryCmd creates and returns the query command.
-func NewQueryCmd(f *cmdutil.Factory) *cobra.Command {
+// NewCmd creates and returns the query command.
+func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	opts := &options{
 		Factory: f,
 	}

@@ -10,8 +10,8 @@ import (
 	"github.com/axiomhq/cli/internal/config"
 )
 
-// NewConfigCmd creates and returns the config command.
-func NewConfigCmd(f *cmdutil.Factory) *cobra.Command {
+// NewCmd creates and returns the config command.
+func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "config <command>",
 		Short: "Manage configuration",

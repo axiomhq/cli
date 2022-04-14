@@ -27,8 +27,8 @@ import (
 	versionCmd "github.com/axiomhq/cli/internal/cmd/version"
 )
 
-// NewRootCmd creates and returns the root command.
-func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
+// NewCmd creates and returns the root command.
+func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "axiom <command> <subcommand>",
 		Short: "Axiom CLI",
@@ -107,20 +107,20 @@ func NewRootCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.PersistentFlags().Bool("no-spinner", false, "Disable the activity indicator")
 
 	// Core commands
-	cmd.AddCommand(ingestCmd.NewIngestCmd(f))
-	cmd.AddCommand(queryCmd.NewQueryCmd(f))
-	cmd.AddCommand(streamCmd.NewStreamCmd(f))
+	cmd.AddCommand(ingestCmd.NewCmd(f))
+	cmd.AddCommand(queryCmd.NewCmd(f))
+	cmd.AddCommand(streamCmd.NewCmd(f))
 
 	// Management commands
-	cmd.AddCommand(configCmd.NewConfigCmd(f))
-	cmd.AddCommand(datasetCmd.NewDatasetCmd(f))
-	cmd.AddCommand(organizationCmd.NewOrganizationCmd(f))
-	cmd.AddCommand(tokenCmd.NewTokenCmd(f))
+	cmd.AddCommand(configCmd.NewCmd(f))
+	cmd.AddCommand(datasetCmd.NewCmd(f))
+	cmd.AddCommand(organizationCmd.NewCmd(f))
+	cmd.AddCommand(tokenCmd.NewCmd(f))
 
 	// Additional commands
-	cmd.AddCommand(authCmd.NewAuthCmd(f))
-	cmd.AddCommand(completionCmd.NewCompletionCmd(f))
-	cmd.AddCommand(versionCmd.NewVersionCmd(f, version.Print("Axiom CLI")))
+	cmd.AddCommand(authCmd.NewCmd(f))
+	cmd.AddCommand(completionCmd.NewCmd(f))
+	cmd.AddCommand(versionCmd.NewCmd(f, version.Print("Axiom CLI")))
 
 	// Help topics
 	cmd.AddCommand(newHelpTopic(f.IO, "credentials"))

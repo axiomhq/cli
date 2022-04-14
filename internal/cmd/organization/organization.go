@@ -16,8 +16,8 @@ import (
 
 const defaultSelfhostOrganizationID = "axiom"
 
-// NewOrganizationCmd creates and returns the organization command.
-func NewOrganizationCmd(f *cmdutil.Factory) *cobra.Command {
+// NewCmd creates and returns the organization command.
+func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "organization <command>",
 		Short: "Manage organizations",
@@ -45,7 +45,7 @@ func NewOrganizationCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.AddCommand(newListCmd(f))
 
 	// Subcommands
-	cmd.AddCommand(keysCmd.NewKeysCmd(f))
+	cmd.AddCommand(keysCmd.NewCmd(f))
 
 	return cmd
 }

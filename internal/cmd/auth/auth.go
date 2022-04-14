@@ -12,8 +12,8 @@ import (
 	"github.com/axiomhq/cli/internal/config"
 )
 
-// NewAuthCmd creates and returns the auth command.
-func NewAuthCmd(f *cmdutil.Factory) *cobra.Command {
+// NewCmd creates and returns the auth command.
+func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "auth <command>",
 		Short: "Manage authentication state",

@@ -8,8 +8,8 @@ import (
 	"github.com/axiomhq/cli/internal/cmdutil"
 )
 
-// NewVersionCmd creates and returns the version command.
-func NewVersionCmd(f *cmdutil.Factory, version string) *cobra.Command {
+// NewCmd creates and returns the version command.
+func NewCmd(f *cmdutil.Factory, version string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "version",
 		Short: "Print version",
