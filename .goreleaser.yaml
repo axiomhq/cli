@@ -176,27 +176,20 @@ dockers:
       - --label=org.opencontainers.image.revision={{ .FullCommit }}
       - --label=org.opencontainers.image.version={{ .Version }}
       - --label=org.opencontainers.image.vendor=Axiom, Inc.
-
 aurs:
   - name: axiom-bin
     ids:
-      - axiom
+      - nix
     homepage: "https://www.axiom.co/"
     description: "Powerful log analytics from the comfort of your command-line"
     maintainers:
-      - 'tyler <tyler@axiom.co>'
+      - 'Tyler Thompson <tyler@axiom.co>'
       - 'axiom <hello@axiom.co>'
     license: "MIT"
     private_key : '{{ .Env.AUR_KEY }}'
     git_url: 'ssh://aur@aur.archlinux.org/axiom-bin.git'
     provides:
       - axiom
-    package: |-
-      # binary file
-      install -Dm755 "./axiom" "${pkgdir}/usr/bin/axiom"
-
-      # license
-      install -Dm644 "./LICENSE" "${pkgdir}/usr/share/licenses/axiom/LICENSE"
     commit_author:
-      name: axiom
-      email: hello@axiom.co
+      name: Tyler Thompson
+      email: tyler@axiom.co
