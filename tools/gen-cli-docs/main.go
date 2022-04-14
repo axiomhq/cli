@@ -45,7 +45,7 @@ func main() {
 	f := cmdutil.NewFactory()
 	f.Config = &config.Config{}
 
-	rootCmd := root.NewRootCmd(f)
+	rootCmd := root.NewCmd(f)
 	if err := os.MkdirAll(*dir, 0755); err != nil {
 		fatal(err)
 	}

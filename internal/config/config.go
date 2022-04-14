@@ -70,6 +70,12 @@ func (c *Config) GetActiveDeployment() (Deployment, bool) {
 	return dep, true
 }
 
+// HasDefaultConfigFile returns true if the default configuration file exists.
+func (c *Config) HasDefaultConfigFile() bool {
+	_, err := os.Stat(c.ConfigFilePath)
+	return !os.IsNotExist(err)
+}
+
 // Deployment is the configuration for an Axiom instance.
 type Deployment struct {
 	URL            string `toml:"url"`

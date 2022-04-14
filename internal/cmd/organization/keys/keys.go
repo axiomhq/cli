@@ -10,8 +10,8 @@ import (
 	"github.com/axiomhq/cli/internal/cmdutil"
 )
 
-// NewKeysCmd creates and returns the keys command.
-func NewKeysCmd(f *cmdutil.Factory) *cobra.Command {
+// NewCmd creates and returns the keys command.
+func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "keys <command>",
 		Short: "Manage organization shared access keys",

@@ -29,8 +29,8 @@ type options struct {
 	Format string
 }
 
-// NewStreamCmd creates and returns the stream command.
-func NewStreamCmd(f *cmdutil.Factory) *cobra.Command {
+// NewCmd creates and returns the stream command.
+func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	opts := &options{
 		Factory: f,
 	}

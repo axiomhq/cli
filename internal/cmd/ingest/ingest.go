@@ -62,8 +62,8 @@ type options struct {
 	contentEncoding string
 }
 
-// NewIngestCmd creates and returns the ingest command.
-func NewIngestCmd(f *cmdutil.Factory) *cobra.Command {
+// NewCmd creates and returns the ingest command.
+func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	opts := &options{
 		Factory: f,
 	}

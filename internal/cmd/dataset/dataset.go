@@ -10,8 +10,8 @@ import (
 	"github.com/axiomhq/cli/internal/cmdutil"
 )
 
-// NewDatasetCmd creates and returns the dataset command.
-func NewDatasetCmd(f *cmdutil.Factory) *cobra.Command {
+// NewCmd creates and returns the dataset command.
+func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "dataset <command>",
 		Short: "Manage datasets",

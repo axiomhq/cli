@@ -17,10 +17,12 @@ import (
 	"github.com/muesli/termenv"
 	"github.com/spf13/cobra"
 
-	"github.com/axiomhq/cli/internal/cmd/root"
 	"github.com/axiomhq/cli/internal/cmdutil"
 	"github.com/axiomhq/cli/internal/config"
 	"github.com/axiomhq/cli/pkg/terminal"
+
+	// Commands
+	"github.com/axiomhq/cli/internal/cmd/root"
 )
 
 func main() {
@@ -79,8 +81,7 @@ func main() {
 		os.Exit(2)
 	}
 
-	rootCmd := root.NewRootCmd(f)
-
+	rootCmd := root.NewCmd(f)
 	cmdutil.DefaultCompletion(rootCmd)
 	cmdutil.InheritRootPersistenPreRun(rootCmd)
 
