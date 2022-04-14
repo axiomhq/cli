@@ -13,18 +13,18 @@ import (
 )
 
 var (
-	noDeploymentsMsg = heredoc.Doc(`
+	noDeploymentsMsgTmpl = heredoc.Doc(`
 		{{ errorIcon }} No deployments configured!
 
 		  Setup a deployment by logging into it:
 		  $ {{ bold "axiom auth login" }}
 	`)
 
-	badDeploymentMsg = heredoc.Doc(`
+	badDeploymentMsgTmpl = heredoc.Doc(`
 		{{ errorIcon }} Chosen deployment {{ bold .Deployment }} is not configured!
 	`)
 
-	badActiveDeploymentMsg = heredoc.Doc(`
+	badActiveDeploymentMsgTmpl = heredoc.Doc(`
 		{{ errorIcon }} Chosen deployment {{ bold .Deployment }} is not configured!
 
 		  Select a deployment which is persisted by setting the {{ bold "active_deployment" }}
@@ -43,7 +43,7 @@ var (
 		  without first configuring it.
 	`)
 
-	noDatasetsMsg = heredoc.Doc(`
+	noDatasetsMsgTmpl = heredoc.Doc(`
 		{{ errorIcon }} No datasets present on configured deployment!
 
 		  Explicitly create a datatset on the configured deployment:
@@ -62,7 +62,7 @@ var (
 		  $ {{ bold "axiom auth update-token" }}
 	`)
 
-	notCloudDeploymentMsg = heredoc.Doc(`
+	notCloudDeploymentMsgTmpl = heredoc.Doc(`
 		{{ errorIcon }} Chosen deployment {{ bold .Deployment }} is not an Axiom Cloud deployment!
 	`)
 )
@@ -102,7 +102,7 @@ func NeedsActiveDeployment(f *Factory) RunFunc {
 		if _, ok := f.Config.GetActiveDeployment(); ok {
 			return nil
 		} else if f.Config.ActiveDeployment != "" {
-			return execTemplateSilent(f.IO, badActiveDeploymentMsg, map[string]string{
+			return execTemplateSilent(f.IO, badActiveDeploymentMsgTmpl, map[string]string{
 				"Deployment":  f.Config.ActiveDeployment,
 				"CommandPath": cmd.CommandPath(),
 			})
@@ -110,7 +110,7 @@ func NeedsActiveDeployment(f *Factory) RunFunc {
 
 		// At this point, we need at least one configured deployment.
 		if len(f.Config.Deployments) == 0 {
-			return execTemplateSilent(f.IO, noDeploymentsMsg, nil)
+			return execTemplateSilent(f.IO, noDeploymentsMsgTmpl, nil)
 		}
 
 		// When not running interactively and no active deployment is given, the
@@ -131,7 +131,7 @@ func NeedsActiveDeployment(f *Factory) RunFunc {
 func NeedsDeployments(f *Factory) RunFunc {
 	return func(cmd *cobra.Command, _ []string) error {
 		if len(f.Config.Deployments) == 0 {
-			return execTemplateSilent(f.IO, noDeploymentsMsg, nil)
+			return execTemplateSilent(f.IO, noDeploymentsMsgTmpl, nil)
 		}
 		return nil
 	}
@@ -142,7 +142,7 @@ func NeedsDeployments(f *Factory) RunFunc {
 func NeedsValidDeployment(f *Factory, alias *string) RunFunc {
 	return func(cmd *cobra.Command, _ []string) error {
 		if _, ok := f.Config.Deployments[*alias]; !ok && *alias != "" {
-			return execTemplateSilent(f.IO, badDeploymentMsg, map[string]string{
+			return execTemplateSilent(f.IO, badDeploymentMsgTmpl, map[string]string{
 				"Deployment": *alias,
 			})
 		}
@@ -170,7 +170,7 @@ func NeedsDatasets(f *Factory) RunFunc {
 		}
 
 		if len(datasets) == 0 {
-			return execTemplateSilent(f.IO, noDatasetsMsg, map[string]string{
+			return execTemplateSilent(f.IO, noDatasetsMsgTmpl, map[string]string{
 				"Deployment": f.Config.ActiveDeployment,
 			})
 		}
@@ -216,7 +216,7 @@ func NeedsCloudDeployment(f *Factory) RunFunc {
 			return nil
 		}
 
-		err := execTemplateSilent(f.IO, notCloudDeploymentMsg, map[string]string{
+		err := execTemplateSilent(f.IO, notCloudDeploymentMsgTmpl, map[string]string{
 			"Deployment": f.Config.ActiveDeployment,
 		})
 

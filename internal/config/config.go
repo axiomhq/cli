@@ -71,8 +71,8 @@ func (c *Config) GetActiveDeployment() (Deployment, bool) {
 }
 
 // HasDefaultConfigFile returns true if the default configuration file exists.
-func (c *Config) HasDefaultConfigFile() bool {
-	_, err := os.Stat(c.ConfigFilePath)
+func HasDefaultConfigFile() bool {
+	_, err := os.Stat(defaultConfigFile())
 	return !os.IsNotExist(err)
 }
 

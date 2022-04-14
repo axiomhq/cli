@@ -8,7 +8,7 @@ import (
 var (
 	// ErrSilent is an error that triggers a non zero exit code without any
 	// error message.
-	ErrSilent = errors.New("ErrSilent")
+	ErrSilent = errors.New("silent error")
 	// ErrNoPromptArgRequired is raised when the application is not running
 	// interactively and thus requires an argument on the command-line instead
 	// of prompting for input.
