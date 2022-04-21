@@ -46,7 +46,7 @@ var (
 	noDatasetsMsgTmpl = heredoc.Doc(`
 		{{ errorIcon }} No datasets present on configured deployment!
 
-		  Explicitly create a datatset on the configured deployment:
+		  Explicitly create a dataset on the configured deployment:
 		  $ {{ bold "axiom dataset create" }}
 		  $ {{ bold "axiom dataset create nginx-logs" }}
 	`)
