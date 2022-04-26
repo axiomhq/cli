@@ -259,7 +259,8 @@ func (io *IO) Doc(s string) string {
 }
 
 func isTerminal(f *os.File) bool {
-	return isatty.IsTerminal(f.Fd()) || isatty.IsCygwinTerminal(f.Fd())
+	fd := f.Fd()
+	return isatty.IsTerminal(fd) || isatty.IsCygwinTerminal(fd)
 }
 
 // TestIO returns an IO which does not read or write to any real outputs.
