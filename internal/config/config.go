@@ -204,3 +204,11 @@ func (c *Config) Write() error {
 
 	return f.Sync()
 }
+
+// IsEmpty returns true if the configuration does not contain any non-zero
+// values for its user configurable fields.
+func (c *Config) IsEmpty() bool {
+	return c.ActiveDeployment == "" && len(c.Deployments) == 0 && !c.Insecure &&
+		c.URLOverride == "" && c.TokenOverride == "" &&
+		c.OrganizationIDOverride == "" && !c.ForceCloud
+}
