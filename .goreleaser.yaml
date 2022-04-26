@@ -29,8 +29,6 @@ builds:
     id: darwin
     goos:
       - darwin
-    goamd64:
-      - v2
     goarch:
       - amd64
       - arm64
@@ -39,8 +37,6 @@ builds:
     id: linux
     goos:
       - linux
-    goamd64:
-      - v2
     goarch:
       - amd64
       - arm64
@@ -70,8 +66,6 @@ builds:
     id: docker
     goos:
       - linux
-    goamd64:
-      - v2
     goarch:
       - amd64
 
@@ -79,8 +73,6 @@ builds:
     id: windows
     goos:
       - windows
-    goamd64:
-      - v2
     goarch:
       - amd64
       - 386
@@ -162,7 +154,6 @@ brews:
 dockers:
   - ids: 
      - docker
-    goamd64: v2
     image_templates:
       - "docker.io/axiomhq/cli:{{ .Major }}"
       - "docker.io/axiomhq/cli:{{ .Major }}.{{ .Minor }}"
