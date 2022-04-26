@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"sort"
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
 	"github.com/axiomhq/axiom-go/axiom"
+	"github.com/shurcooL/go/browser"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/client"
@@ -139,15 +141,29 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 		opts.URL = "https://" + opts.URL
 	}
 
+	// Suggest this URL to the user for creating a personal token.
 	u, err := url.ParseRequestURI(opts.URL)
 	if err != nil {
 		return err
 	}
 	u.Path = "/profile"
 
+	// 3. Wheather to open the browser or not.
+	cs := opts.IO.ColorScheme()
+	askTokenMsg := "What is your personal access token?"
+	if ok, err := surveyext.AskConfirm("You need to retrieve a personal access token from your profile page. Should I open that page in your default browser?",
+		true, opts.IO.SurveyIO()); err != nil {
+		return err
+	} else if !ok {
+		askTokenMsg = fmt.Sprintf("What is your personal access token (create one over at %s)?", u.String())
+	} else if ok = browser.Open(u.String()); !ok {
+		fmt.Fprintf(opts.IO.ErrOut(), "%s Something went wrong! Please open %s in your browser, manually.\n",
+			cs.ErrorIcon(), u.String())
+	}
+
 	// 3. The token to use.
 	if err := survey.AskOne(&survey.Password{
-		Message: fmt.Sprintf("What is your personal access token (create one over at %s)?", u.String()),
+		Message: askTokenMsg,
 	}, &opts.Token, survey.WithValidator(survey.ComposeValidators(
 		survey.Required,
 		surveyext.ValidateToken,
@@ -165,21 +181,30 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 			return err
 		}
 
-		if organizations, err := axiomClient.Organizations.Cloud.List(ctx); err != nil {
+		if organizations, err := axiomClient.Organizations.Selfhost.List(ctx); err != nil {
 			return err
 		} else if len(organizations) == 1 {
 			opts.OrganizationID = organizations[0].ID
 		} else {
-			organizationIDs := make([]string, len(organizations))
+			organizationNames := make([]string, len(organizations))
 			for k, organization := range organizations {
-				organizationIDs[k] = organization.ID
+				organizationNames[k] = organization.Name
 			}
+			sort.Strings(organizationNames)
 
+			var organizationName string
 			if err := survey.AskOne(&survey.Select{
 				Message: "Which organization to use?",
-				Options: organizationIDs,
-			}, &opts.OrganizationID, opts.IO.SurveyIO()); err != nil {
+				Options: organizationNames,
+			}, &organizationName, opts.IO.SurveyIO()); err != nil {
 				return err
+			}
+
+			for _, organization := range organizations {
+				if organization.Name == organizationName {
+					opts.OrganizationID = organization.ID
+					break
+				}
 			}
 		}
 	}
@@ -189,6 +214,12 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 	hostRef := firstSubDomain(opts.URL)
 	if _, ok := opts.Config.Deployments[hostRef]; ok {
 		hostRef = ""
+	}
+
+	// Just use "cloud" as the alias if this is their first deployment and they
+	// are authenticating against Axiom Cloud.
+	if hostRef == "cloud" {
+		opts.Alias = "cloud"
 	}
 
 	// 5. Ask for an alias to use.
