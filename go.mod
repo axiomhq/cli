@@ -23,7 +23,7 @@ require (
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d
 	github.com/muesli/reflow v0.3.0
 	github.com/muesli/termenv v0.11.0
-	github.com/nwidger/jsoncolor v0.3.1
+	github.com/nwidger/jsoncolor v0.3.0
 	github.com/pelletier/go-toml v1.9.4
 	github.com/shurcooL/go v0.0.0-20180423040247-9e1955d9fb6e
 	github.com/spf13/cobra v1.4.0
