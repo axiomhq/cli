@@ -13,15 +13,15 @@ jobs:
     name: Codegen Diff
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
         with:
           go-version: ${{ env.GOVERSION }}
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: |
-            ~/go/pkg/mod
             ~/.cache/go-build
+            ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: ${{ runner.os }}-go-
       - run: make generate man
@@ -32,13 +32,11 @@ jobs:
     needs: gen-diff
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
         with:
           go-version: ${{ env.GOVERSION }}
-      - uses: golangci/golangci-lint-action@v2
-        with:
-          skip-go-installation: true
+      - uses: golangci/golangci-lint-action@v3
 
   test:
     name: Test
@@ -55,15 +53,15 @@ jobs:
             update-goreportcard: true
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
         with:
           go-version: ${{ env.GOVERSION }}
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: |
-            ~/go/pkg/mod
             ~/.cache/go-build
+            ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: ${{ runner.os }}-go-
       - run: make test
@@ -81,29 +79,29 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
         with:
           go-version: ${{ env.GOVERSION }}
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: |
-            ~/go/pkg/mod
             ~/.cache/go-build
+            ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: ${{ runner.os }}-go-
       - uses: goreleaser/goreleaser-action@v2
         with:
           args: build --snapshot
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: binaries
           path: |
-            dist/darwin_darwin_amd64/axiom
-            dist/linux_linux_amd64/axiom
-            dist/windows_windows_amd64/axiom.exe
+            dist/darwin_darwin_amd64_v2/axiom
+            dist/linux_linux_amd64_v2/axiom
+            dist/windows_windows_amd64_v2/axiom.exe
 
   binary-integration:
     name: Binary integration
@@ -129,16 +127,13 @@ jobs:
       AXIOM_TOKEN: ${{ secrets.TESTING_AZURE_1_STAGING_ACCESS_TOKEN }}
       AXIOM_DATASET: cli-test-${{ github.run_id }}-${{ matrix.goos }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
-        with:
-          name: binaries
-          path: dist
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
       - name: Test (Unix)
         if: matrix.goos == 'darwin' || matrix.goos == 'linux'
         run: |
-          chmod +x dist/${{ matrix.goos }}_${{ matrix.goos }}_amd64/axiom
-          mv dist/${{ matrix.goos }}_${{ matrix.goos }}_amd64/axiom /usr/local/bin/axiom
+          chmod +x artifact/${{ matrix.goos }}_${{ matrix.goos }}_amd64_v2/axiom
+          mv artifact/${{ matrix.goos }}_${{ matrix.goos }}_amd64_v2/axiom /usr/local/bin/axiom
           axiom version -I
           axiom dataset create -n=${{ env.AXIOM_DATASET }} -d="CLI Integration test"
           axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.json.gz -t=json -e=gzip
@@ -152,8 +147,8 @@ jobs:
       - name: Test (Windows)
         if: matrix.goos == 'windows'
         run: |
-          chmod +x dist/${{ matrix.goos }}_${{ matrix.goos }}_amd64/axiom.exe
-          mv dist/${{ matrix.goos }}_${{ matrix.goos }}_amd64/axiom.exe C:/Windows/System32/axiom.exe
+          chmod +x artifact/${{ matrix.goos }}_${{ matrix.goos }}_amd64_v2/axiom.exe
+          mv artifact/${{ matrix.goos }}_${{ matrix.goos }}_amd64_v2/axiom.exe C:/Windows/System32/axiom.exe
           axiom version -I
           gunzip testdata/logs.*.gz
           axiom dataset create -n=${{ env.AXIOM_DATASET }} -d="CLI Integration test"
