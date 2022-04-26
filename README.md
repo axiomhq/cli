@@ -95,6 +95,18 @@ axiom <command>
 axiom <command> <subcommand> [flags]
 ```
 
+### Configuration
+
+The default configuration file is `.axiom.toml` located in the home directory.
+Configuration values can also be set using flags or the environment. Flags get
+precedence over environment variables which get precedence over the
+configuration file values.
+
+#### Troubleshooting
+
+When `axiom` does not respect your configuration or unexpected errors occur,
+make sure your environment is clean of any `AXIOM_` prefixed variables.
+
 ## Documentation
 
 To learn how to log in to Axiom and start gaining instant, actionable insights,
