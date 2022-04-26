@@ -11,8 +11,6 @@
 **The [Axiom](https://axiom.co) command-line application is a fast and
 straightforward tool for interacting with [Axiom](https://axiom.co).**
 
-<p align="center"><img src=".github/img/demo.gif?raw=true"/></p>
-
 ---
 
 ## Table of Contents
