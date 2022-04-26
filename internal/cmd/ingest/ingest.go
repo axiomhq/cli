@@ -201,9 +201,6 @@ func complete(ctx context.Context, opts *options) error {
 		datasets, err := client.Datasets.List(ctx)
 		if err != nil {
 			return err
-		} else if len(datasets) == 1 {
-			opts.Dataset = datasets[0].Name
-			return nil
 		}
 
 		stop()
@@ -212,6 +209,10 @@ func complete(ctx context.Context, opts *options) error {
 		for i, dataset := range datasets {
 			datasetNames[i] = dataset.Name
 		}
+	}
+
+	if len(datasetNames) == 0 {
+		return errors.New("missing dataset")
 	}
 
 	return survey.AskOne(&survey.Select{
