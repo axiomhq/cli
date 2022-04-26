@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"fmt"
+	"sort"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
@@ -114,6 +115,7 @@ func getOrganizationIDs(ctx context.Context, f *cmdutil.Factory) ([]string, erro
 	for i, organization := range organizations {
 		organizationIDs[i] = organization.ID
 	}
+	sort.Strings(organizationIDs)
 
 	return organizationIDs, nil
 }
