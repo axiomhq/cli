@@ -160,8 +160,9 @@ brews:
       assert_match "Axiom CLI version #{version}", shell_output("#{bin}/{{ .ProjectName }} -v")
 
 dockers:
-  - ids:
-      - docker
+  - ids: 
+     - docker
+    goamd64: v2
     image_templates:
       - "docker.io/axiomhq/cli:{{ .Major }}"
       - "docker.io/axiomhq/cli:{{ .Major }}.{{ .Minor }}"
