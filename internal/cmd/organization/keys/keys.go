@@ -7,6 +7,7 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 
+	"github.com/axiomhq/cli/internal/cmd/auth"
 	"github.com/axiomhq/cli/internal/cmdutil"
 )
 
@@ -27,7 +28,10 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 			"IsManagement": "true",
 		},
 
-		PersistentPreRunE: cmdutil.NeedsCloudDeployment(f),
+		PersistentPreRunE: cmdutil.ChainRunFuncs(
+			cmdutil.AsksForSetup(f, auth.NewLoginCmd(f)),
+			cmdutil.NeedsCloudDeployment(f),
+		),
 	}
 
 	cmd.AddCommand(newGetCmd(f))

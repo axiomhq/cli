@@ -11,6 +11,7 @@ import (
 	"github.com/axiomhq/cli/pkg/terminal"
 
 	// Subcommands
+	"github.com/axiomhq/cli/internal/cmd/auth"
 	keysCmd "github.com/axiomhq/cli/internal/cmd/organization/keys"
 )
 
@@ -35,6 +36,7 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 		},
 
 		PersistentPreRunE: cmdutil.ChainRunFuncs(
+			cmdutil.AsksForSetup(f, auth.NewLoginCmd(f)),
 			cmdutil.NeedsActiveDeployment(f),
 			cmdutil.NeedsPersonalAccessToken(f),
 		),

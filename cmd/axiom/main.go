@@ -9,11 +9,9 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
-	"text/template"
 
 	surveyCore "github.com/AlecAivazis/survey/v2/core"
 	surveyTerm "github.com/AlecAivazis/survey/v2/terminal"
-	"github.com/MakeNowJust/heredoc"
 	"github.com/axiomhq/axiom-go/axiom"
 	"github.com/mgutz/ansi"
 	"github.com/muesli/termenv"
@@ -21,20 +19,12 @@ import (
 
 	"github.com/axiomhq/cli/internal/cmdutil"
 	"github.com/axiomhq/cli/internal/config"
-	"github.com/axiomhq/cli/pkg/surveyext"
 	"github.com/axiomhq/cli/pkg/terminal"
 
 	// Commands
 
 	"github.com/axiomhq/cli/internal/cmd/root"
 )
-
-var intialSetupSkippedMsgTmpl = heredoc.Doc(`
-	{{ warningIcon }} Skipped setup. Most functionality will be limited.
-
-	  To login to Axiom, run:
-	  $ {{ bold "axiom login" }}
-`)
 
 func main() {
 	// Setup signal handling.
@@ -96,44 +86,7 @@ func main() {
 	cmdutil.DefaultCompletion(rootCmd)
 	cmdutil.InheritRootPersistenPreRun(rootCmd)
 
-	// Go through setup if the default configuration file is not present, no
-	// configuration value is set and a TTY is attached.
-	if !config.HasDefaultConfigFile() && f.Config.IsEmpty() && f.IO.IsStdinTTY() {
-		// If the user is trying to login or get the version, we don't want to
-		// interfer with that.
-		if args, l := os.Args[1:], len(os.Args[1:]); l < 1 || l > 2 ||
-			l == 2 && (args[0] != "auth" || args[1] != "login") ||
-			l == 1 && args[0] != "-v" {
-			if ok, err := surveyext.AskConfirm("This seems to be your first time running this CLI. Do you want to login to Axiom?", true, f.IO.SurveyIO()); err != nil {
-				printError(f.IO.ErrOut(), err, nil)
-				os.Exit(1)
-			} else if !ok {
-				tmpl := template.New("setup").Funcs(f.IO.ColorScheme().TemplateFuncs())
-				if tmpl, err = tmpl.Parse(intialSetupSkippedMsgTmpl); err != nil {
-					printError(f.IO.ErrOut(), err, nil)
-				} else if err = tmpl.Execute(f.IO.ErrOut(), nil); err != nil {
-					printError(f.IO.ErrOut(), err, nil)
-				}
-
-				// Write default config file to prevent this message from
-				// showing up again.
-				_ = f.Config.Write()
-
-				os.Exit(0)
-			}
-
-			rootCmd.SetArgs([]string{"auth", "login"})
-			if cmd, err := rootCmd.ExecuteContextC(ctx); err != nil {
-				printError(f.IO.ErrOut(), err, cmd)
-				os.Exit(1)
-			} else if root.HasFailed() {
-				os.Exit(1)
-			}
-		}
-	}
-
 	// Finally execute the root command.
-	rootCmd.SetArgs(os.Args[1:])
 	if cmd, err := rootCmd.ExecuteContextC(ctx); err != nil {
 		printError(f.IO.ErrOut(), err, cmd)
 		os.Exit(1)

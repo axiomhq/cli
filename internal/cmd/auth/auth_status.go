@@ -45,6 +45,7 @@ func newStatusCmd(f *cmdutil.Factory) *cobra.Command {
 		`),
 
 		PreRunE: cmdutil.ChainRunFuncs(
+			cmdutil.AsksForSetup(f, NewLoginCmd(f)),
 			cmdutil.NeedsDeployments(f),
 			cmdutil.NeedsValidDeployment(f, &opts.Alias),
 		),

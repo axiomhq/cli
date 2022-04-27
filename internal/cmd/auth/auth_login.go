@@ -50,7 +50,8 @@ type loginOptions struct {
 	Force bool
 }
 
-func newLoginCmd(f *cmdutil.Factory) *cobra.Command {
+// NewLoginCmd creates ans returns the login command.
+func NewLoginCmd(f *cmdutil.Factory) *cobra.Command {
 	opts := &loginOptions{
 		Factory: f,
 	}
