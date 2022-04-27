@@ -33,7 +33,7 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 		},
 	}
 
-	cmd.AddCommand(newLoginCmd(f))
+	cmd.AddCommand(NewLoginCmd(f))
 	cmd.AddCommand(newLogoutCmd(f))
 	cmd.AddCommand(newSelectCmd(f))
 	cmd.AddCommand(newStatusCmd(f))

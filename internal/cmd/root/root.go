@@ -11,6 +11,7 @@ import (
 	"github.com/axiomhq/cli/internal/config"
 
 	// Core commands
+	"github.com/axiomhq/cli/internal/cmd/auth"
 	ingestCmd "github.com/axiomhq/cli/internal/cmd/ingest"
 	queryCmd "github.com/axiomhq/cli/internal/cmd/query"
 	streamCmd "github.com/axiomhq/cli/internal/cmd/stream"
@@ -77,6 +78,12 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 			f.IO.EnableActivityIndicator(!cmd.Flag("no-spinner").Changed)
 
 			return nil
+		},
+
+		PreRunE: cmdutil.AsksForSetup(f, auth.NewLoginCmd(f)),
+
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return cmd.Help()
 		},
 	}
 

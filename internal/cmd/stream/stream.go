@@ -14,6 +14,7 @@ import (
 	"github.com/nwidger/jsoncolor"
 	"github.com/spf13/cobra"
 
+	"github.com/axiomhq/cli/internal/cmd/auth"
 	"github.com/axiomhq/cli/internal/cmdutil"
 	"github.com/axiomhq/cli/pkg/iofmt"
 )
@@ -59,6 +60,7 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 		},
 
 		PreRunE: cmdutil.ChainRunFuncs(
+			cmdutil.AsksForSetup(f, auth.NewLoginCmd(f)),
 			cmdutil.NeedsActiveDeployment(f),
 			cmdutil.NeedsDatasets(f),
 		),

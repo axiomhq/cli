@@ -43,7 +43,10 @@ func newUpdateTokenCmd(f *cmdutil.Factory) *cobra.Command {
 			$ echo $AXIOM_PERSONAL_ACCESS_TOKEN | axiom auth update-token
 		`),
 
-		PersistentPreRunE: cmdutil.NeedsActiveDeployment(f),
+		PersistentPreRunE: cmdutil.ChainRunFuncs(
+			cmdutil.AsksForSetup(f, NewLoginCmd(f)),
+			cmdutil.NeedsActiveDeployment(f),
+		),
 
 		PreRunE: func(*cobra.Command, []string) error {
 			if !opts.IO.IsStdinTTY() {

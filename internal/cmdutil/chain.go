@@ -9,6 +9,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/client"
+	"github.com/axiomhq/cli/internal/config"
+	"github.com/axiomhq/cli/pkg/surveyext"
 	"github.com/axiomhq/cli/pkg/terminal"
 )
 
@@ -41,6 +43,13 @@ var (
 
 		  For non-interactive use, set AXIOM_TOKEN and AXIOM_URL to target a deployment directly,
 		  without first configuring it.
+	`)
+
+	intialSetupSkippedMsgTmpl = heredoc.Doc(`
+		{{ warningIcon }} Skipped setup. Most functionality will be limited.
+
+		To login to Axiom, run:
+		$ {{ bold "axiom login" }}
 	`)
 
 	noDatasetsMsgTmpl = heredoc.Doc(`
@@ -88,6 +97,29 @@ func ChainRunFuncs(fns ...RunFunc) RunFunc {
 func NeedsRootPersistentPreRunE() RunFunc {
 	return func(cmd *cobra.Command, args []string) error {
 		return cmd.Root().PersistentPreRunE(cmd, args)
+	}
+}
+
+// AsksForSetup will ask the user to setup Axiom in case it is not yet
+// configured.
+func AsksForSetup(f *Factory, loginCmd *cobra.Command) RunFunc {
+	return func(cmd *cobra.Command, _ []string) error {
+		if config.HasDefaultConfigFile() || !f.Config.IsEmpty() || !f.IO.IsStdinTTY() || !f.IO.IsStdoutTTY() || !f.IO.IsStderrTTY() {
+			return nil
+		}
+
+		if ok, err := surveyext.AskConfirm("This seems to be your first time running this CLI. Do you want to login to Axiom?", true, f.IO.SurveyIO()); err != nil {
+			return err
+		} else if !ok {
+			// Write default config file to prevent this message from showing up
+			// again.
+			if err := f.Config.Write(); err != nil {
+				return err
+			}
+			return execTemplateSilent(f.IO, intialSetupSkippedMsgTmpl, nil)
+		}
+
+		return loginCmd.ExecuteContext(cmd.Context())
 	}
 }
 
