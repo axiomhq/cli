@@ -98,8 +98,8 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&opts.Format, "format", "f", iofmt.Table.String(), "Format to output data in")
-	cmd.Flags().StringVar(&opts.StartTime, "start-time", "", "Start time of the query")
-	cmd.Flags().StringVar(&opts.EndTime, "end-time", "", "End time of the query")
+	cmd.Flags().StringVar(&opts.StartTime, "start-time", "", "Start time of the query - may also be a relative time eg: -24h, -20m")
+	cmd.Flags().StringVar(&opts.EndTime, "end-time", "", "End time of the query - may also be a relative time eg: -24h, -20m")
 	cmd.Flags().StringVar(&opts.TimestampFormat, "timestamp-format", "", "Format used in the the timestamp field. Default uses a heuristic parser. Must be expressed using the reference time 'Mon Jan 2 15:04:05 -0700 MST 2006'")
 	cmd.Flags().BoolVarP(&opts.NoCache, "no-cache", "c", false, "Disable cache usage")
 	cmd.Flags().BoolVarP(&opts.Save, "save", "s", false, "Save query on the server side")
@@ -114,24 +114,32 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	return cmd
 }
 
+func timeStrToTime(timeStr string, timestampFormat string) (time.Time, error) {
+	if timestampFormat != "" {
+		// parse the timestamp as absoute because we have a definitive format
+		return time.Parse(timestampFormat, timeStr)
+	}
+
+	// try relative dates first
+	duration, err := time.ParseDuration(timeStr)
+	if err == nil {
+		return time.Now().Add(duration), nil
+	}
+
+	// try absolute dates without format
+	return dateparse.ParseAny(timeStr)
+}
+
 func complete(opts *options) (err error) {
 	if ts := opts.StartTime; ts != "" {
-		if tsf := opts.TimestampFormat; tsf != "" {
-			opts.startTime, err = time.Parse(tsf, ts)
-		} else {
-			opts.startTime, err = dateparse.ParseAny(ts)
-		}
+		opts.startTime, err = timeStrToTime(ts, opts.TimestampFormat)
 		if err != nil {
 			return err
 		}
 	}
 
 	if ts := opts.EndTime; ts != "" {
-		if tsf := opts.TimestampFormat; tsf != "" {
-			opts.endTime, err = time.Parse(tsf, ts)
-		} else {
-			opts.endTime, err = dateparse.ParseAny(ts)
-		}
+		opts.endTime, err = timeStrToTime(ts, opts.TimestampFormat)
 		if err != nil {
 			return err
 		}
