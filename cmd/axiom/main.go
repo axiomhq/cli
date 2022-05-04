@@ -112,6 +112,15 @@ func printError(w io.Writer, err error, cmd *cobra.Command) {
 		return
 	}
 
+	// Print some nicer errors for context related errors.
+	if errors.Is(err, context.Canceled) {
+		fmt.Fprintln(w, "Error: Operation was canceled")
+		return
+	} else if errors.Is(err, context.DeadlineExceeded) {
+		fmt.Fprintln(w, "Error: Operation timed out")
+		return
+	}
+
 	fmt.Fprintf(w, "Error: %s\n", err)
 
 	// Only print the command usage if the error is related to bad user input.
