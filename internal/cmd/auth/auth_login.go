@@ -6,10 +6,12 @@ import (
 	"net/url"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
 	"github.com/axiomhq/axiom-go/axiom"
+	"github.com/axiomhq/axiom-go/axiom/auth"
 	"github.com/shurcooL/go/browser"
 	"github.com/spf13/cobra"
 
@@ -29,6 +31,9 @@ var validDeploymentTypes = []string{typeCloud, typeSelfhost}
 type loginOptions struct {
 	*cmdutil.Factory
 
+	// AutoLogin specifies if the CLI redirects to the Axiom UI for
+	// authentication.
+	AutoLogin bool
 	// Type of the deployment to authenticate with. Default to "Cloud". Can be
 	// overwritten by flag.
 	Type string
@@ -71,7 +76,7 @@ func NewLoginCmd(f *cmdutil.Factory) *cobra.Command {
 		`),
 
 		PreRunE: func(cmd *cobra.Command, _ []string) error {
-			if !opts.IO.IsStdinTTY() {
+			if !opts.IO.IsStdinTTY() || opts.AutoLogin {
 				return nil
 			}
 
@@ -86,16 +91,21 @@ func NewLoginCmd(f *cmdutil.Factory) *cobra.Command {
 		},
 
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if opts.IO.IsStdinTTY() && opts.AutoLogin {
+				return autoLogin(cmd.Context(), opts)
+			}
 			return runLogin(cmd.Context(), opts)
 		},
 	}
 
+	cmd.Flags().BoolVar(&opts.AutoLogin, "auto-login", true, "Login through the Axiom UI")
 	cmd.Flags().StringVarP(&opts.Type, "type", "t", strings.ToLower(typeCloud), "Type of the deployment")
 	cmd.Flags().StringVarP(&opts.URL, "url", "u", axiom.CloudURL, "Url of the deployment")
 	cmd.Flags().StringVarP(&opts.Alias, "alias", "a", "", "Alias of the deployment")
 	cmd.Flags().StringVarP(&opts.OrganizationID, "org-id", "o", "", "Organization ID")
 	cmd.Flags().BoolVarP(&opts.Force, "force", "f", false, "Skip the confirmation prompt")
 
+	_ = cmd.RegisterFlagCompletionFunc("auto-login", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("type", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("url", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("alias", cmdutil.NoCompletion)
@@ -124,8 +134,9 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 
 	opts.Type = strings.ToLower(opts.Type)
 
-	// 2. If Cloud, set the correct URL instead of asking the user for it.
-	if opts.Type == strings.ToLower(typeCloud) {
+	// 2. If Cloud mode but no URL, set the correct URL instead of asking the
+	// user for it.
+	if opts.Type == strings.ToLower(typeCloud) && opts.URL == "" {
 		opts.URL = axiom.CloudURL
 	} else if opts.URL == "" {
 		if err := survey.AskOne(&survey.Input{
@@ -211,7 +222,8 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 	}
 
 	// Make a useful suggestion for the alias to use (subdomain) but omit the
-	// sugesstion if a deployment with that alias is already configured.
+	// sugesstion if a deployment with that alias is already configured. Cut the
+	// port, if present.
 	hostRef := firstSubDomain(opts.URL)
 	if _, ok := opts.Config.Deployments[hostRef]; ok {
 		hostRef = ""
@@ -219,8 +231,8 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 
 	// Just use "cloud" as the alias if this is their first deployment and they
 	// are authenticating against Axiom Cloud.
-	if hostRef == "cloud" {
-		opts.Alias = "cloud"
+	if hostRef == strings.ToLower(typeCloud) {
+		opts.Alias = hostRef
 	}
 
 	// 5. Ask for an alias to use.
@@ -240,6 +252,112 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 	return nil
 }
 
+func autoLogin(ctx context.Context, opts *loginOptions) error {
+	opts.Type = strings.ToLower(opts.Type)
+
+	// 1. If Cloud mode but no URL, set the correct URL instead of asking the
+	// user for it.
+	if opts.Type == strings.ToLower(typeCloud) && opts.URL == "" {
+		opts.URL = axiom.CloudURL
+	} else if opts.URL == "" {
+		if err := survey.AskOne(&survey.Input{
+			Message: "What is the url of the deployment?",
+		}, &opts.URL, survey.WithValidator(survey.ComposeValidators(
+			survey.Required,
+			surveyext.ValidateURL,
+		)), opts.IO.SurveyIO()); err != nil {
+			return err
+		}
+	}
+
+	if opts.URL != "" && !strings.HasPrefix(opts.URL, "http://") && !strings.HasPrefix(opts.URL, "https://") {
+		opts.URL = "https://" + opts.URL
+	}
+
+	// 2. Wheather to open the browser or not. But the URL to open and have the
+	// user login is presented nonetheless.
+	stop := func() {}
+	defer stop()
+	loginFunc := func(_ context.Context, loginURL string) error {
+		if ok, err := surveyext.AskConfirm("You need to login to Axiom. Should I open your default browser?",
+			true, opts.IO.SurveyIO()); err != nil {
+			return err
+		} else if !ok {
+			fmt.Fprintf(opts.IO.ErrOut(), "Please open %s in your browser, manually.\n", loginURL)
+		} else if ok = browser.Open(loginURL); !ok {
+			fmt.Fprintf(opts.IO.ErrOut(), "%s Something went wrong! Please open %s in your browser, manually.\n",
+				opts.IO.ColorScheme().ErrorIcon(), loginURL)
+		}
+
+		fmt.Fprintln(opts.IO.ErrOut(), "Waiting for authentication...")
+
+		stop = opts.IO.StartActivityIndicator()
+
+		return nil
+	}
+
+	// Wait one minute before timing out.
+	authContext, authCancel := context.WithTimeout(ctx, time.Minute*5)
+	defer authCancel()
+
+	var err error
+	if opts.Token, err = auth.Login(authContext, opts.URL, loginFunc); err != nil {
+		return err
+	}
+
+	// 3. Try to authenticate and fetch the organizations available to the user
+	// in case the deployment is a cloud deployment. If at least one
+	// organization is available, the first one is selected.
+	if opts.Type == strings.ToLower(typeCloud) && opts.OrganizationID == "" {
+		axiomClient, err := client.New(ctx, opts.URL, opts.Token, "axiom", opts.Config.Insecure)
+		if err != nil {
+			return err
+		}
+
+		organizations, err := axiomClient.Organizations.Selfhost.List(ctx)
+		if err != nil {
+			return err
+		}
+
+		if len(organizations) > 0 {
+			opts.OrganizationID = organizations[0].ID
+		}
+	}
+
+	stop()
+
+	// Make a useful suggestion for the alias to use (subdomain) but omit the
+	// sugesstion if a deployment with that alias is already configured. Cut the
+	// port, if present.
+	hostRef := firstSubDomain(opts.URL)
+	if _, ok := opts.Config.Deployments[hostRef]; ok {
+		hostRef = ""
+	}
+
+	// Just use "cloud" as the alias if this is their first deployment and they
+	// are authenticating against Axiom Cloud.
+	if hostRef == strings.ToLower(typeCloud) {
+		opts.Alias = hostRef
+	}
+
+	// 4. Ask for an alias to use.
+	if opts.Alias == "" {
+		if err := survey.AskOne(&survey.Input{
+			Message: "Under which name should the deployment be referenced in the future?",
+			Default: hostRef,
+		}, &opts.Alias, survey.WithValidator(survey.ComposeValidators(
+			survey.Required,
+			survey.MinLength(3),
+			surveyext.NotIn(opts.Config.DeploymentAliases()),
+		)), opts.IO.SurveyIO()); err != nil {
+			return err
+		}
+	}
+
+	// 5. Try to login with the retrieved credentials.
+	return runLogin(ctx, opts)
+}
+
 func runLogin(ctx context.Context, opts *loginOptions) error {
 	// Read token from stdin, if no TTY is attached.
 	if !opts.IO.IsStdinTTY() {
@@ -249,9 +367,9 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 		}
 	}
 
-	// If a deployment with the alias exists in the config, we ask the user if he
-	// wants to overwrite it, if "--force" is not set. When no TTY is attached,
-	// we abort and return, not overwritting anything.
+	// If a deployment with the alias exists in the config, we ask the user if
+	// he wants to overwrite it, if "--force" is not set. When no TTY is
+	// attached, we abort and return, not overwritting anything.
 	if _, ok := opts.Config.Deployments[opts.Alias]; ok && !opts.Force {
 		if !opts.IO.IsStdinTTY() {
 			return fmt.Errorf("deployment with alias %q already configured, overwrite with '-f|--force' flag", opts.Alias)
@@ -324,7 +442,7 @@ func firstSubDomain(s string) string {
 	}
 
 	var hostRef string
-	hostRefParts := strings.Split(u.Host, ".")
+	hostRefParts := strings.Split(u.Hostname(), ".")
 	if len(hostRefParts) > 0 {
 		hostRef = hostRefParts[0]
 	}
