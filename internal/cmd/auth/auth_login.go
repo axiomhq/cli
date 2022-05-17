@@ -296,7 +296,7 @@ func autoLogin(ctx context.Context, opts *loginOptions) error {
 		return nil
 	}
 
-	// Wait one minute before timing out.
+	// Wait five minutes before timing out.
 	authContext, authCancel := context.WithTimeout(ctx, time.Minute*5)
 	defer authCancel()
 
