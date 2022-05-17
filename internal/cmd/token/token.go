@@ -57,7 +57,6 @@ func newTokenCmd(f *cmdutil.Factory, tokenType string) *cobra.Command {
 
 		Example: heredoc.Doc(`
 			$ axiom token ` + tokenType + ` create --name=my-token
-			$ axiom token ` + tokenType + ` list
 			$ axiom token ` + tokenType + ` delete my-token
 		`),
 	}
