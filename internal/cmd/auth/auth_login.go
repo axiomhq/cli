@@ -277,7 +277,6 @@ func autoLogin(ctx context.Context, opts *loginOptions) error {
 	// 2. Wheather to open the browser or not. But the URL to open and have the
 	// user login is presented nonetheless.
 	stop := func() {}
-	defer stop()
 	loginFunc := func(_ context.Context, loginURL string) error {
 		if ok, err := surveyext.AskConfirm("You need to login to Axiom. Should I open your default browser?",
 			true, opts.IO.SurveyIO()); err != nil {
@@ -292,6 +291,7 @@ func autoLogin(ctx context.Context, opts *loginOptions) error {
 		fmt.Fprintln(opts.IO.ErrOut(), "Waiting for authentication...")
 
 		stop = opts.IO.StartActivityIndicator()
+		defer stop()
 
 		return nil
 	}
