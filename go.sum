@@ -286,8 +286,8 @@ github.com/aws/aws-sdk-go-v2/service/sts v1.11.1/go.mod h1:UV2N5HaPfdbDpkgkz4sRz
 github.com/aws/smithy-go v1.8.0/go.mod h1:SObp3lf9smib00L/v3U2eAKG8FyQ7iLrJnQiAmR5n+E=
 github.com/aws/smithy-go v1.9.0 h1:c7FUdEqrQA1/UVKKCNDFQPNKGp4FQg3YW4Ck5SLTG58=
 github.com/aws/smithy-go v1.9.0/go.mod h1:SObp3lf9smib00L/v3U2eAKG8FyQ7iLrJnQiAmR5n+E=
-github.com/axiomhq/axiom-go v0.10.0-rc.2 h1:hmcbCID+7vqTa4PeM2r5774HrC7zc97RdU90VffDqjE=
-github.com/axiomhq/axiom-go v0.10.0-rc.2/go.mod h1:lO0ShSW+RBpKFJD0Mw7MhPNd6lD9VGeME95AcDlRCDA=
+github.com/axiomhq/axiom-go v0.10.0 h1:Fs1OFLTHdu2vnV+ed4LCMSGaFZOMqPr0SS1ebp1yz40=
+github.com/axiomhq/axiom-go v0.10.0/go.mod h1:lO0ShSW+RBpKFJD0Mw7MhPNd6lD9VGeME95AcDlRCDA=
 github.com/axiomhq/pkg v0.3.0 h1:v4scDFPmXB+Wayb8AapIXQcFrBLwr5ERAcevPaIW5GI=
 github.com/axiomhq/pkg v0.3.0/go.mod h1:OjLkiHiN2mO6apKe0RP4vSuhsqhXC4hQGPMt8cTaCmQ=
 github.com/aybabtme/rgbterm v0.0.0-20170906152045-cc83f3b3ce59/go.mod h1:q/89r3U2H7sSsE2t6Kca0lfwTK8JdoNGS/yzM/4iH5I=
