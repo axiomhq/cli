@@ -41,9 +41,9 @@ func main() {
 	// Setup the factory which flows through the command call stack.
 	f := cmdutil.NewFactory()
 
-	// Setup the I/O for the "browser" package, globally.
-	browser.Stdout = f.IO.Out()
-	browser.Stderr = f.IO.ErrOut()
+	// Ignore errors from the browser command.
+	browser.Stdout = io.Discard
+	browser.Stderr = io.Discard
 
 	// Set survey colored output, if enabled, and override its poor choice of
 	// color.
