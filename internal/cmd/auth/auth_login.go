@@ -12,7 +12,7 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	"github.com/axiomhq/axiom-go/axiom"
 	"github.com/axiomhq/axiom-go/axiom/auth"
-	"github.com/shurcooL/go/browser"
+	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/client"
@@ -161,16 +161,14 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 	u.Path = "/profile"
 
 	// 3. Wheather to open the browser or not.
-	cs := opts.IO.ColorScheme()
 	askTokenMsg := "What is your personal access token?"
 	if ok, err := surveyext.AskConfirm("You need to retrieve a personal access token from your profile page. Should I open that page in your default browser?",
 		true, opts.IO.SurveyIO()); err != nil {
 		return err
 	} else if !ok {
 		askTokenMsg = fmt.Sprintf("What is your personal access token (create one over at %s)?", u.String())
-	} else if ok = browser.Open(u.String()); !ok {
-		fmt.Fprintf(opts.IO.ErrOut(), "%s Something went wrong! Please open %s in your browser, manually.\n",
-			cs.ErrorIcon(), u.String())
+	} else if err = browser.OpenURL(u.String()); err != nil {
+		return err
 	}
 
 	// 3. The token to use.
@@ -283,9 +281,8 @@ func autoLogin(ctx context.Context, opts *loginOptions) error {
 			return err
 		} else if !ok {
 			fmt.Fprintf(opts.IO.ErrOut(), "Please open %s in your browser, manually.\n", loginURL)
-		} else if ok = browser.Open(loginURL); !ok {
-			fmt.Fprintf(opts.IO.ErrOut(), "%s Something went wrong! Please open %s in your browser, manually.\n",
-				opts.IO.ColorScheme().ErrorIcon(), loginURL)
+		} else if err = browser.OpenURL(loginURL); err != nil {
+			return err
 		}
 
 		fmt.Fprintln(opts.IO.ErrOut(), "Waiting for authentication...")

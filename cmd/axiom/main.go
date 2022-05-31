@@ -15,6 +15,7 @@ import (
 	"github.com/axiomhq/axiom-go/axiom"
 	"github.com/mgutz/ansi"
 	"github.com/muesli/termenv"
+	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
@@ -22,7 +23,6 @@ import (
 	"github.com/axiomhq/cli/pkg/terminal"
 
 	// Commands
-
 	"github.com/axiomhq/cli/internal/cmd/root"
 )
 
@@ -40,6 +40,10 @@ func main() {
 
 	// Setup the factory which flows through the command call stack.
 	f := cmdutil.NewFactory()
+
+	// Setup the I/O for the "browser" package, globally.
+	browser.Stdout = f.IO.Out()
+	browser.Stderr = f.IO.ErrOut()
 
 	// Set survey colored output, if enabled, and override its poor choice of
 	// color.

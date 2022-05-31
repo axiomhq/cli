@@ -25,7 +25,7 @@ require (
 	github.com/muesli/termenv v0.11.0
 	github.com/nwidger/jsoncolor v0.3.0
 	github.com/pelletier/go-toml v1.9.5
-	github.com/shurcooL/go v0.0.0-20200502201357-93f07166e636
+	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.7.1
