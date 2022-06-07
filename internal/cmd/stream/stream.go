@@ -66,10 +66,15 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 		),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := complete(cmd.Context(), opts); err != nil {
-				return err
+			err := StartCharmDatasetsStream(cmd.Context(), opts)
+			// TODO: implement better fallback (y/n prompt)
+			if err != nil {
+				if err := complete(cmd.Context(), opts); err != nil {
+					return err
+				}
+				return run(cmd.Context(), opts)
 			}
-			return run(cmd.Context(), opts)
+			return nil
 		},
 	}
 

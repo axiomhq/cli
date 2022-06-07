@@ -9,6 +9,8 @@ require (
 	github.com/axiomhq/axiom-go v0.9.1
 	github.com/axiomhq/pkg v0.3.0
 	github.com/briandowns/spinner v1.18.1
+	github.com/charmbracelet/bubbletea v0.20.0
+	github.com/charmbracelet/lipgloss v0.5.0
 	github.com/cli/cli v1.14.0
 	github.com/cli/safeexec v1.0.0
 	github.com/cpuguy83/go-md2man v1.0.10
@@ -21,8 +23,8 @@ require (
 	github.com/mattn/go-colorable v0.1.12
 	github.com/mattn/go-isatty v0.0.14
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d
-	github.com/muesli/reflow v0.2.0
-	github.com/muesli/termenv v0.11.0
+	github.com/muesli/reflow v0.3.0
+	github.com/muesli/termenv v0.11.1-0.20220212125758-44cd13922739
 	github.com/nwidger/jsoncolor v0.3.0
 	github.com/pelletier/go-toml v1.9.5
 	github.com/shurcooL/go v0.0.0-20200502201357-93f07166e636
@@ -109,6 +111,7 @@ require (
 	github.com/chavacava/garif v0.0.0-20210405164556-e8a0a408d6af // indirect
 	github.com/cncf/udpa/go v0.0.0-20210930031921-04548b0d99d4 // indirect
 	github.com/cncf/xds/go v0.0.0-20211216145620-d92e9ce0af51 // indirect
+	github.com/containerd/console v1.0.3 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
 	github.com/daixiang0/gci v0.3.3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -213,6 +216,7 @@ require (
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/moricho/tparallel v0.2.1 // indirect
+	github.com/muesli/ansi v0.0.0-20211018074035-2e021307bc4b // indirect
 	github.com/muesli/coral v1.0.0 // indirect
 	github.com/muesli/mango v0.1.0 // indirect
 	github.com/muesli/mango-coral v1.0.1 // indirect
