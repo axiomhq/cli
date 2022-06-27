@@ -32,16 +32,26 @@ type ConnectedMsg struct {
 }
 
 func StartCharmDatasetsStream(ctx context.Context, opts *options) error {
-	m := NewCharmDatasetsStream(ctx, opts)
-	p := tea.NewProgram(m)
-	if err := p.Start(); err != nil {
-		return err
+	if opts.Dataset == "" {
+		d := NewDatasetsList(ctx, opts)
+		p := tea.NewProgram(d)
+		if err := p.Start(); err != nil {
+			return err
+		}
+	} else {
+
+		m := NewCharmDatasetsStream(ctx, opts)
+		p := tea.NewProgram(m)
+		if err := p.Start(); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
 func NewCharmDatasetsStream(ctx context.Context, opts *options) DatasetsStreamModel {
+	fmt.Println("Connecting to Axiom...")
 	client, err := opts.Client(ctx)
 	if err != nil {
 		panic(err)
@@ -86,6 +96,7 @@ func (m *DatasetsStreamModel) tick(d time.Duration) tea.Cmd {
 }
 
 func (m DatasetsStreamModel) Init() tea.Cmd {
+	fmt.Println("Init")
 	return tea.Batch(func() tea.Msg {
 		m.FullStr = docStyle.Render("Streaming...")
 		return StateMsg{running: true}
