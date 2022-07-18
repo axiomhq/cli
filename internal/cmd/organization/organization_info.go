@@ -122,8 +122,7 @@ func runInfo(ctx context.Context, opts *infoOptions) error {
 			trb.AddField("ID", cs.Bold)
 			trb.AddField("Plan", cs.Bold)
 			trb.AddField("Plan created", cs.Bold)
-			trb.AddField("Plan expires", cs.Bold)
-			trb.AddField("Trialed", cs.Bold)
+			trb.AddField("Trial", cs.Bold)
 		}
 	}
 
@@ -131,8 +130,7 @@ func runInfo(ctx context.Context, opts *infoOptions) error {
 		trb.AddField(organization.ID, nil)
 		trb.AddField(organization.Plan.String(), nil)
 		trb.AddField(organization.PlanCreated.Format(time.RFC1123), cs.Gray)
-		trb.AddField(organization.PlanExpires.Format(time.RFC1123), cs.Gray)
-		trb.AddField(boolToStrReverseColors(cs, organization.Trialed), nil)
+		trb.AddField(boolToStrReverseColors(cs, organization.Trial), nil)
 	}
 
 	return iofmt.FormatToTable(opts.IO, 1, header, nil, contentRow)

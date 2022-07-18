@@ -89,8 +89,7 @@ func runList(ctx context.Context, opts *listOptions) error {
 			trb.AddField("Name", cs.Bold)
 			trb.AddField("Plan", cs.Bold)
 			trb.AddField("Plan created", cs.Bold)
-			trb.AddField("Plan expires", cs.Bold)
-			trb.AddField("Trialed", cs.Bold)
+			trb.AddField("Trial", cs.Bold)
 		}
 	}
 
@@ -102,8 +101,7 @@ func runList(ctx context.Context, opts *listOptions) error {
 		trb.AddField(organization.Name, nil)
 		trb.AddField(caser.String(organization.Plan.String()), nil)
 		trb.AddField(organization.PlanCreated.Format(time.RFC1123), cs.Gray)
-		trb.AddField(organization.PlanExpires.Format(time.RFC1123), cs.Gray)
-		trb.AddField(boolToStrReverseColors(cs, organization.Trialed), nil)
+		trb.AddField(boolToStrReverseColors(cs, organization.Trial), nil)
 	}
 
 	return iofmt.FormatToTable(opts.IO, len(organizations), header, nil, contentRow)
