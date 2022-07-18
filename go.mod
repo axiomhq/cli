@@ -21,9 +21,7 @@ require (
 	github.com/mattn/go-colorable v0.1.12
 	github.com/mattn/go-isatty v0.0.14
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d
-	github.com/muesli/reflow v0.2.0
 	github.com/muesli/termenv v0.11.0
-	github.com/nwidger/jsoncolor v0.3.0
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/spf13/cobra v1.4.0
@@ -33,6 +31,17 @@ require (
 	golang.org/x/text v0.3.7
 	golang.org/x/tools v0.1.11-0.20220316014157-77aa08bb151a
 	gotest.tools/gotestsum v1.8.1
+)
+
+// Dependencies that need special attention and should not be upgraded without
+// being extra cautious.
+require (
+	// HINT(lukasmalkmus): Versions after v0.2.0 are broken:
+	// https://github.com/muesli/reflow/issues/44.
+	github.com/muesli/reflow v0.2.0
+	// HINT(lukasmalkmus): Versions after v0.3.0 print a newline:
+	// https://github.com/nwidger/jsoncolor/issues/5.
+	github.com/nwidger/jsoncolor v0.3.0
 )
 
 require (
