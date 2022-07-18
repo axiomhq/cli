@@ -171,7 +171,7 @@ func run(ctx context.Context, opts *options) error {
 		enc = json.NewEncoder(opts.IO.Out())
 	}
 
-	res, err := client.Datasets.APLQuery(ctx, opts.Query, apl.Options{
+	res, err := client.Datasets.APLQuery(ctx, apl.Query(opts.Query), apl.Options{
 		StartTime: opts.startTime,
 		EndTime:   opts.endTime,
 		NoCache:   opts.NoCache,
