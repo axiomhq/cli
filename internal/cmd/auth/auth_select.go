@@ -40,7 +40,7 @@ func newSelectCmd(f *cmdutil.Factory) *cobra.Command {
 			cmdutil.NeedsValidDeployment(f, &activeDeployment),
 		),
 
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(*cobra.Command, []string) error {
 			if activeDeployment == "" {
 				if err := survey.AskOne(&survey.Select{
 					Message: "Which deployment to select?",
