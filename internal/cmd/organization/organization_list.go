@@ -83,7 +83,7 @@ func runList(ctx context.Context, opts *listOptions) error {
 
 	var header iofmt.HeaderBuilderFunc
 	if opts.IO.IsStdoutTTY() {
-		header = func(w io.Writer, trb iofmt.TableRowBuilder) {
+		header = func(_ io.Writer, trb iofmt.TableRowBuilder) {
 			fmt.Fprintf(opts.IO.Out(), "Showing %s:\n\n", utils.Pluralize(cs, "organization", len(organizations)))
 			trb.AddField("ID", cs.Bold)
 			trb.AddField("Name", cs.Bold)

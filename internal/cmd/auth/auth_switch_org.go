@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
+	"github.com/axiomhq/axiom-go/axiom"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/client"
@@ -46,18 +48,34 @@ func newSwitchOrgCmd(f *cmdutil.Factory) *cobra.Command {
 			cmdutil.NeedsPersonalAccessToken(f),
 		),
 
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			if orgID == "" {
-				organizationIDs, err := getOrganizationIDs(cmd.Context(), f)
+				organizations, err := getOrganizations(cmd.Context(), f)
 				if err != nil {
 					return err
 				}
 
+				organizationNames := make([]string, len(organizations))
+				for i, organization := range organizations {
+					organizationNames[i] = organization.Name
+				}
+
+				var organizationName string
 				if err := survey.AskOne(&survey.Select{
-					Message: "Which organization to select?",
-					Options: organizationIDs,
-				}, &orgID, f.IO.SurveyIO()); err != nil {
+					Message: "Which organization to use?",
+					Options: organizationNames,
+					Description: func(_ string, idx int) string {
+						return organizations[idx].ID
+					},
+				}, &organizationName, f.IO.SurveyIO()); err != nil {
 					return err
+				}
+
+				for i, organization := range organizations {
+					if organization.Name == organizationName {
+						orgID = organizations[i].ID
+						break
+					}
 				}
 			}
 
@@ -96,7 +114,7 @@ func newSwitchOrgCmd(f *cmdutil.Factory) *cobra.Command {
 	return cmd
 }
 
-func getOrganizationIDs(ctx context.Context, f *cmdutil.Factory) ([]string, error) {
+func getOrganizations(ctx context.Context, f *cmdutil.Factory) ([]*axiom.Organization, error) {
 	client, err := f.Client(ctx)
 	if err != nil {
 		return nil, err
@@ -110,13 +128,11 @@ func getOrganizationIDs(ctx context.Context, f *cmdutil.Factory) ([]string, erro
 		return nil, err
 	}
 
+	sort.Slice(organizations, func(i, j int) bool {
+		return strings.ToLower(organizations[i].Name) < strings.ToLower(organizations[j].Name)
+	})
+
 	stop()
 
-	organizationIDs := make([]string, len(organizations))
-	for i, organization := range organizations {
-		organizationIDs[i] = organization.ID
-	}
-	sort.Strings(organizationIDs)
-
-	return organizationIDs, nil
+	return organizations, nil
 }

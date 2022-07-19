@@ -61,6 +61,7 @@ func newInfoCmd(f *cmdutil.Factory) *cobra.Command {
 	return cmd
 }
 
+//nolint:dupl // TODO(lukasmalkmus): Refactor this!
 func completeInfo(ctx context.Context, opts *infoOptions) error {
 	// A requirement for this command to execute is the presence of an active
 	// deployment, so no need to check for existence.
@@ -73,18 +74,38 @@ func completeInfo(ctx context.Context, opts *infoOptions) error {
 		return nil
 	}
 
-	organizationIDs, err := getOrganizationIDs(ctx, opts.Factory)
+	organizations, err := getOrganizations(ctx, opts.Factory)
 	if err != nil {
 		return err
-	} else if len(organizationIDs) == 1 {
-		opts.ID = organizationIDs[0]
+	} else if len(organizations) == 1 {
+		opts.ID = organizations[0].ID
 		return nil
 	}
 
-	return survey.AskOne(&survey.Select{
+	organizationNames := make([]string, len(organizations))
+	for i, organization := range organizations {
+		organizationNames[i] = organization.Name
+	}
+
+	var organizationName string
+	if err := survey.AskOne(&survey.Select{
 		Message: "Which organization to get info for?",
-		Options: organizationIDs,
-	}, &opts.ID, opts.IO.SurveyIO())
+		Options: organizationNames,
+		Description: func(_ string, idx int) string {
+			return organizations[idx].ID
+		},
+	}, &organizationName, opts.IO.SurveyIO()); err != nil {
+		return err
+	}
+
+	for i, organization := range organizations {
+		if organization.Name == organizationName {
+			opts.ID = organizations[i].ID
+			break
+		}
+	}
+
+	return nil
 }
 
 func runInfo(ctx context.Context, opts *infoOptions) error {
@@ -117,7 +138,7 @@ func runInfo(ctx context.Context, opts *infoOptions) error {
 
 	var header iofmt.HeaderBuilderFunc
 	if opts.IO.IsStdoutTTY() {
-		header = func(w io.Writer, trb iofmt.TableRowBuilder) {
+		header = func(_ io.Writer, trb iofmt.TableRowBuilder) {
 			fmt.Fprintf(opts.IO.Out(), "Showing info of organization %s:\n\n", cs.Bold(organization.Name))
 			trb.AddField("ID", cs.Bold)
 			trb.AddField("Plan", cs.Bold)

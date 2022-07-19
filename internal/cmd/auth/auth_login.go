@@ -90,7 +90,7 @@ func NewLoginCmd(f *cmdutil.Factory) *cobra.Command {
 			return completeLogin(cmd.Context(), opts)
 		},
 
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			if opts.IO.IsStdinTTY() && opts.AutoLogin {
 				return autoLogin(cmd.Context(), opts)
 			}
@@ -196,23 +196,29 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 		} else if len(organizations) == 1 {
 			opts.OrganizationID = organizations[0].ID
 		} else {
+			sort.Slice(organizations, func(i, j int) bool {
+				return strings.ToLower(organizations[i].Name) < strings.ToLower(organizations[j].Name)
+			})
+
 			organizationNames := make([]string, len(organizations))
-			for k, organization := range organizations {
-				organizationNames[k] = organization.Name
+			for i, organization := range organizations {
+				organizationNames[i] = organization.Name
 			}
-			sort.Strings(organizationNames)
 
 			var organizationName string
 			if err := survey.AskOne(&survey.Select{
 				Message: "Which organization to use?",
 				Options: organizationNames,
+				Description: func(_ string, idx int) string {
+					return organizations[idx].ID
+				},
 			}, &organizationName, opts.IO.SurveyIO()); err != nil {
 				return err
 			}
 
-			for _, organization := range organizations {
+			for i, organization := range organizations {
 				if organization.Name == organizationName {
-					opts.OrganizationID = organization.ID
+					opts.OrganizationID = organizations[i].ID
 					break
 				}
 			}

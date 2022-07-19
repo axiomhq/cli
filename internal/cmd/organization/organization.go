@@ -3,8 +3,10 @@ package organization
 import (
 	"context"
 	"sort"
+	"strings"
 
 	"github.com/MakeNowJust/heredoc"
+	"github.com/axiomhq/axiom-go/axiom"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmdutil"
@@ -52,7 +54,7 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	return cmd
 }
 
-func getOrganizationIDs(ctx context.Context, f *cmdutil.Factory) ([]string, error) {
+func getOrganizations(ctx context.Context, f *cmdutil.Factory) ([]*axiom.Organization, error) {
 	client, err := f.Client(ctx)
 	if err != nil {
 		return nil, err
@@ -66,15 +68,13 @@ func getOrganizationIDs(ctx context.Context, f *cmdutil.Factory) ([]string, erro
 		return nil, err
 	}
 
+	sort.Slice(organizations, func(i, j int) bool {
+		return strings.ToLower(organizations[i].Name) < strings.ToLower(organizations[j].Name)
+	})
+
 	stop()
 
-	organizationIDs := make([]string, len(organizations))
-	for i, organization := range organizations {
-		organizationIDs[i] = organization.ID
-	}
-	sort.Strings(organizationIDs)
-
-	return organizationIDs, nil
+	return organizations, nil
 }
 
 func boolToStr(cs *terminal.ColorScheme, b bool) string {
