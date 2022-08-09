@@ -49,7 +49,7 @@ var (
 		{{ warningIcon }} Skipped setup. Most functionality will be limited.
 
 		To login to Axiom, run:
-		$ {{ bold "axiom login" }}
+		$ {{ bold "axiom auth login" }}
 	`)
 
 	noDatasetsMsgTmpl = heredoc.Doc(`
