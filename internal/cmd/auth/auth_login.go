@@ -22,6 +22,8 @@ import (
 )
 
 const (
+	oAuth2ClientID = "13c885a8-f46a-4424-82d2-883cf7ccfe49"
+
 	typeCloud    = "Cloud"
 	typeSelfhost = "Selfhost"
 )
@@ -191,7 +193,7 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 			return err
 		}
 
-		if organizations, err := axiomClient.Organizations.Selfhost.List(ctx); err != nil {
+		if organizations, err := axiomClient.Organizations.List(ctx); err != nil {
 			return err
 		} else if len(organizations) == 1 {
 			opts.OrganizationID = organizations[0].ID
@@ -304,7 +306,7 @@ func autoLogin(ctx context.Context, opts *loginOptions) error {
 	defer authCancel()
 
 	var err error
-	if opts.Token, err = auth.Login(authContext, opts.URL, loginFunc); err != nil {
+	if opts.Token, err = auth.Login(authContext, oAuth2ClientID, opts.URL, loginFunc); err != nil {
 		return err
 	}
 
@@ -317,7 +319,7 @@ func autoLogin(ctx context.Context, opts *loginOptions) error {
 			return err
 		}
 
-		organizations, err := axiomClient.Organizations.Selfhost.List(ctx)
+		organizations, err := axiomClient.Organizations.List(ctx)
 		if err != nil {
 			return err
 		}
@@ -406,7 +408,7 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 
 		if user != nil {
 			if (client.IsCloudURL(opts.URL) || opts.Config.ForceCloud) && axiom.IsPersonalToken(opts.Token) {
-				organization, err := axiomClient.Organizations.Selfhost.Get(ctx, opts.OrganizationID)
+				organization, err := axiomClient.Organizations.Get(ctx, opts.OrganizationID)
 				if err != nil {
 					return err
 				}

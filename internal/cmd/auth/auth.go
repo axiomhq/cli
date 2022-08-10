@@ -2,7 +2,6 @@ package auth
 
 import (
 	"io"
-	"io/ioutil"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
@@ -65,7 +64,7 @@ func readTokenFromStdIn(r io.Reader) (string, error) {
 	// The token won't be longer.
 	r = io.LimitReader(r, 256)
 
-	contents, err := ioutil.ReadAll(r)
+	contents, err := io.ReadAll(r)
 	if err != nil {
 		return "", err
 	}

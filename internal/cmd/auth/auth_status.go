@@ -95,7 +95,7 @@ func runStatus(ctx context.Context, opts *statusOptions) error {
 						cs.Bold(user.Name))
 				} else {
 					var organization *axiom.Organization
-					if organization, err = client.Organizations.Selfhost.Get(ctx, deployment.OrganizationID); err != nil {
+					if organization, err = client.Organizations.Get(ctx, deployment.OrganizationID); err != nil {
 						info = fmt.Sprintf("%s %s", cs.ErrorIcon(), err)
 						failed = true
 					} else {

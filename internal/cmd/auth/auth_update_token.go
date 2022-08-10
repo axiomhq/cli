@@ -124,7 +124,7 @@ func runUpdateToken(ctx context.Context, opts *updateTokenOptions) error {
 
 		if user != nil {
 			if client.IsCloudURL(activeDeployment.URL) || opts.Config.ForceCloud {
-				organization, err := axiomClient.Organizations.Selfhost.Get(ctx, activeDeployment.OrganizationID)
+				organization, err := axiomClient.Organizations.Get(ctx, activeDeployment.OrganizationID)
 				if err != nil {
 					return err
 				}

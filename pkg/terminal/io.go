@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strconv"
@@ -266,14 +265,14 @@ func isTerminal(f *os.File) bool {
 // TestIO returns an IO which does not read or write to any real outputs.
 func TestIO() *IO {
 	return &IO{
-		in:      ioutil.NopCloser(strings.NewReader("")),
-		out:     ioutil.Discard,
-		errOut:  ioutil.Discard,
-		origOut: ioutil.Discard,
+		in:      io.NopCloser(strings.NewReader("")),
+		out:     io.Discard,
+		errOut:  io.Discard,
+		origOut: io.Discard,
 	}
 }
 
-// pagerWriter implements an `io.WriteCloser`` that wraps all EPIPE errors in an
+// pagerWriter implements an `io.WriteCloser` that wraps all EPIPE errors in an
 // `ErrClosedPagerPipe` type.
 type pagerWriter struct {
 	io.WriteCloser
