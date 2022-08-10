@@ -3,7 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -38,7 +38,7 @@ func newEditCmd(f *cmdutil.Factory) *cobra.Command {
 			}
 			defer f.Close()
 
-			b, err := ioutil.ReadAll(f)
+			b, err := io.ReadAll(f)
 			if err != nil {
 				return err
 			}

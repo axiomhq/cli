@@ -88,7 +88,7 @@ func newSwitchOrgCmd(f *cmdutil.Factory) *cobra.Command {
 				return err
 			}
 
-			organization, err := client.Organizations.Selfhost.Get(cmd.Context(), orgID)
+			organization, err := client.Organizations.Get(cmd.Context(), orgID)
 			if err != nil {
 				return err
 			}
@@ -123,7 +123,7 @@ func getOrganizations(ctx context.Context, f *cmdutil.Factory) ([]*axiom.Organiz
 	stop := f.IO.StartActivityIndicator()
 	defer stop()
 
-	organizations, err := client.Organizations.Selfhost.List(ctx)
+	organizations, err := client.Organizations.List(ctx)
 	if err != nil {
 		return nil, err
 	}
