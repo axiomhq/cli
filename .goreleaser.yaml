@@ -108,11 +108,7 @@ snapshot:
   name_template: "{{ .Tag }}-next"
 
 changelog:
-  sort: asc
-  filters:
-    exclude:
-      - "^docs:"
-      - "^test:"
+  use: github-native
 
 milestones:
   - repo:
