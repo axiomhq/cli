@@ -126,7 +126,6 @@ jobs:
           axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.csv.gz -t=csv -e=gzip
           gunzip testdata/logs.*.gz
           axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.json -f=testdata/logs.ndjson -f=testdata/logs.csv
-          axiom dataset info ${{ env.AXIOM_DATASET }}
           axiom dataset list
           axiom query "['${{ env.AXIOM_DATASET }}']"
       - name: Test (Windows)
@@ -140,7 +139,6 @@ jobs:
           axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.json
           axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.ndjson
           axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.csv
-          axiom dataset info ${{ env.AXIOM_DATASET }}
           axiom dataset list
           axiom query "['${{ env.AXIOM_DATASET }}']"
       - name: Cleanup
