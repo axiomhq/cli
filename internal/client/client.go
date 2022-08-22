@@ -29,7 +29,7 @@ func New(ctx context.Context, baseURL, accessToken, orgID string, insecure bool)
 	}
 
 	if insecure {
-		httpTransport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true} //nolint:gosec
+		httpTransport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true} //nolint:gosec // This is intended behaviour.
 	}
 
 	httpClient := &http.Client{

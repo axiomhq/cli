@@ -37,7 +37,7 @@ func FormatCompletion(_ *cobra.Command, _ []string, toComplete string) ([]string
 // DatasetCompletionFunc returns a completion function which completes the
 // datasets from the configured deployment.
 //
-//nolint:dupl
+//nolint:dupl // This is about datasets and not organizations.
 func DatasetCompletionFunc(f *Factory) CompletionFunc {
 	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		// Just complete the first argument.
@@ -73,7 +73,7 @@ func DatasetCompletionFunc(f *Factory) CompletionFunc {
 // OrganizationCompletionFunc returns a completion function which completes the
 // organization IDs for the active deployment.
 //
-//nolint:dupl
+//nolint:dupl // This is about organizations and not datasets.
 func OrganizationCompletionFunc(f *Factory) CompletionFunc {
 	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		// Just complete the first argument.
