@@ -27,12 +27,12 @@ straightforward tool for interacting with [Axiom](https://axiom.co).**
 ## Introduction
 
 The official command line client for [Axiom](https://www.axiom.co/). Axiom CLI
-brings the power of Axiom to the command-line. 
+brings the power of Axiom to the command-line.
 
 ## Goal
 
 The Goal of the Axiom CLI is to create, manage, build and test your Axiom
-projects. 
+projects.
 
 ## Installation
 
@@ -128,34 +128,23 @@ For full command reference, see the list below, or visit
 
 **Management Commands**
 
-| Commands                       | Description                                  |
-| ------------------------------ | -------------------------------------------- |
-| axiom auth login               | Login to Axiom                               |
-| axiom auth logout              | Logout of Axiom                              |
-| axiom auth select              | Select an Axiom configuration                |
-| axiom auth status              | View authentication status                   |
-| axiom auth switch-org          | Switch the organization                      |
-| axiom auth update-token        | Update the token used to authenticate        |
-| axiom config edit              | Edit the configuration file                  |
-| axiom config get               | Get a configuration value                    |
-| axiom config set               | Set a configuration value                    |
-| axiom config export            | Export the configuration values              |
-| axiom dataset create           | Create a dataset                             |
-| axiom dataset delete           | Delete a dataset                             |
-| axiom dataset info             | Get info about a dataset                     |
-| axiom dataset list             | List all datasets                            |
-| axiom dataset stats            | Get statistics about all datasets            |
-| axiom dataset trim             | Trim a dataset to a given size               |
-| axiom dataset update           | Update a dataset                             |
-| axiom organization info        | Get info about an organization               |
-| axiom organization license     | Get an organizations license                 |
-| axiom organization list        | List all organizations                       |
-| axiom organization keys get    | Get shared access keys of an organization    |
-| axiom organization keys rotate | Rotate shared access keys of an organization |
-| axiom token api create         | Create an api token                          |
-| axiom token api delete         | Delete an api token                          |
-| axiom token personal create    | Create a personal token                      |
-| axiom token personal delete    | Delete a personal token                      |
+| Commands                | Description                           |
+| ----------------------- | ------------------------------------- |
+| axiom auth login        | Login to Axiom                        |
+| axiom auth logout       | Logout of Axiom                       |
+| axiom auth select       | Select an Axiom configuration         |
+| axiom auth status       | View authentication status            |
+| axiom auth switch-org   | Switch the organization               |
+| axiom auth update-token | Update the token used to authenticate |
+| axiom config edit       | Edit the configuration file           |
+| axiom config get        | Get a configuration value             |
+| axiom config set        | Set a configuration value             |
+| axiom config export     | Export the configuration values       |
+| axiom dataset create    | Create a dataset                      |
+| axiom dataset delete    | Delete a dataset                      |
+| axiom dataset list      | List all datasets                     |
+| axiom dataset trim      | Trim a dataset to a given size        |
+| axiom dataset update    | Update a dataset                      |
 
 **Additional Commands**
 
@@ -183,7 +172,7 @@ Read the manual at https://www.axiom.co/docs/reference/cli
 
 ## Contributing
 
-Feel free to submit PRs or to fill issues. Every kind of help is appreciated. 
+Feel free to submit PRs or to fill issues. Every kind of help is appreciated.
 
 Before committing, `make` should run without any issues.
 
