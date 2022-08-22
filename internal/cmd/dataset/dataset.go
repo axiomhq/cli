@@ -21,7 +21,6 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 		Example: heredoc.Doc(`
 			$ axiom dataset create --name=nginx-logs --description="All Nginx logs"
 			$ axiom dataset list
-			$ axiom dataset info nginx-logs
 			$ axiom dataset update nginx-logs --description="Some Nginx logs"
 			$ axiom dataset delete nginx-logs
 		`),
