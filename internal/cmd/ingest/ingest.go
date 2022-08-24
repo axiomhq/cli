@@ -294,12 +294,14 @@ func run(ctx context.Context, opts *options, flushEverySet bool) error {
 
 	if opts.IO.IsStderrTTY() {
 		cs := opts.IO.ColorScheme()
+		fmt.Fprintf(opts.IO.ErrOut(), "%s processed\n",
+			humanize.Bytes(res.ProcessedBytes),
+		)
 
 		if res.Ingested > 0 {
-			fmt.Fprintf(opts.IO.ErrOut(), "%s Ingested %s (%s)\n",
+			fmt.Fprintf(opts.IO.ErrOut(), "%s Ingested %s\n",
 				cs.SuccessIcon(),
 				utils.Pluralize(cs, "event", int(res.Ingested)),
-				humanize.Bytes(res.ProcessedBytes),
 			)
 		}
 
@@ -310,7 +312,7 @@ func run(ctx context.Context, opts *options, flushEverySet bool) error {
 			)
 			for _, fail := range res.Failures {
 				fmt.Fprintf(opts.IO.ErrOut(), "%s: %s\n",
-					cs.Gray(fail.Timestamp.Format(time.RFC1123)), err,
+					cs.Gray(fail.Timestamp.Format(time.RFC1123)), fail.Error,
 				)
 			}
 		}
