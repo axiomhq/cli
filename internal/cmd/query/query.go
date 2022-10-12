@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -75,8 +76,12 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 			$ axiom query "['nginx-logs'] | where response == 304"
 			
 			# Query all logs of the "http" dataset and save the query in the
-			# history. The histories entry ID is returned with the result:
+			# history. The histories entry ID is returned with the result. The
+			# history query can also be viewed in the web UI.
 			$ axiom query -s "['http']"
+			
+			# Count all events in the "http" dataset with a 404 status code:
+			$ axiom query "['http'] | where response == 404 | count"
 		`),
 
 		Annotations: map[string]string{
@@ -160,16 +165,8 @@ func run(ctx context.Context, opts *options) error {
 		return err
 	}
 
-	cs := opts.IO.ColorScheme()
-
-	var enc interface {
-		Encode(any) error
-	}
-	if opts.IO.ColorEnabled() {
-		enc = jsoncolor.NewEncoder(opts.IO.Out())
-	} else {
-		enc = json.NewEncoder(opts.IO.Out())
-	}
+	progStop := opts.IO.StartActivityIndicator()
+	defer progStop()
 
 	res, err := client.Datasets.APLQuery(ctx, apl.Query(opts.Query), apl.Options{
 		StartTime: opts.startTime,
@@ -179,29 +176,118 @@ func run(ctx context.Context, opts *options) error {
 	})
 	if err != nil {
 		return err
-	} else if res == nil || len(res.Matches) == 0 {
+	} else if len(res.Matches) == 0 && len(res.Buckets.Totals) == 0 {
 		return errors.New("query returned no results")
 	}
 
-	if opts.IO.IsStdoutTTY() {
-		s := cs.Bold(opts.Query)
-		if res.SavedQueryID != "" {
-			s += fmt.Sprintf(" (saved as %s)", cs.Bold(res.SavedQueryID))
+	progStop()
+
+	pagerStop, err := opts.IO.StartPager(ctx)
+	if err != nil {
+		return err
+	}
+	defer pagerStop()
+
+	// Deal with JSON output format.
+	if opts.Format == iofmt.JSON.String() {
+		var data any
+		if len(res.Matches) > 0 {
+			data = res.Matches
+		} else if len(res.Buckets.Totals) > 0 {
+			// For ungrouped buckets we just return the aggregated total.
+			if len(res.Buckets.Totals[0].Group) == 0 {
+				data = res.Buckets.Totals[0].Aggregations[0].Value
+			} else {
+				data = res.Buckets.Totals
+			}
 		}
-		fmt.Fprintf(opts.IO.Out(), "Result of query %s:\n\n", s)
+		return iofmt.FormatToJSON(opts.IO.Out(), data, opts.IO.ColorEnabled())
 	}
 
-	for _, entry := range res.Matches {
-		switch opts.Format {
-		case iofmt.JSON.String():
-			_ = enc.Encode(entry)
-		default:
-			fmt.Fprintf(opts.IO.Out(), "%s\t",
-				cs.Gray(entry.Time.Format(time.RFC1123)))
-			_ = enc.Encode(entry.Data)
+	cs := opts.IO.ColorScheme()
+
+	headerText := cs.Bold(opts.Query)
+	if res.SavedQueryID != "" {
+		headerText += fmt.Sprintf(" (saved as %s)", cs.Bold(res.SavedQueryID))
+	}
+	headerText += cs.Gray(fmt.Sprintf(" processed in %s", res.Status.ElapsedTime))
+	headerText = fmt.Sprintf("Result of query %s:\n\n", headerText)
+
+	// Deal with table output format for matches.
+	if len(res.Matches) > 0 {
+		if opts.IO.IsStdoutTTY() {
+			fmt.Fprint(opts.IO.Out(), headerText)
 		}
+
+		var enc interface {
+			Encode(any) error
+		}
+		if opts.IO.ColorEnabled() {
+			enc = jsoncolor.NewEncoder(opts.IO.Out())
+		} else {
+			enc = json.NewEncoder(opts.IO.Out())
+		}
+
+		var data any
+		for _, entry := range res.Matches {
+			switch opts.Format {
+			case iofmt.JSON.String():
+				data = entry
+			default:
+				fmt.Fprintf(opts.IO.Out(), "%s\t", cs.Gray(entry.Time.Format(time.RFC1123)))
+				data = entry.Data
+			}
+			if err = enc.Encode(data); err != nil {
+				return err
+			}
+			fmt.Fprintln(opts.IO.Out())
+		}
+
+		return nil
+	}
+
+	// Deal with table output format for grouped results.
+
+	// If we have no groups, we just print the aggregated total.
+	if len(res.Buckets.Totals[0].Group) == 0 {
+		if opts.IO.IsStdoutTTY() {
+			fmt.Fprint(opts.IO.Out(), headerText)
+		}
+
+		if err = iofmt.FormatToJSON(opts.IO.Out(),
+			res.Buckets.Totals[0].Aggregations[0].Value, opts.IO.ColorEnabled()); err != nil {
+			return err
+		}
+
 		fmt.Fprintln(opts.IO.Out())
+		return nil
 	}
 
-	return nil
+	// If we have groups, we print a table with the groups as columns and the
+	// aggregated totals as rows.
+	var (
+		header      iofmt.HeaderBuilderFunc
+		columnNames = res.Request.GroupBy
+	)
+	if opts.IO.IsStdoutTTY() {
+		header = func(w io.Writer, trb iofmt.TableRowBuilder) {
+			fmt.Fprint(opts.IO.Out(), headerText)
+			for _, name := range columnNames {
+				trb.AddField(name, cs.Bold)
+			}
+			trb.AddField(res.Buckets.Totals[0].Aggregations[0].Alias, cs.Bold)
+		}
+	}
+
+	contentRow := func(trb iofmt.TableRowBuilder, k int) {
+		total := res.Buckets.Totals[k]
+		aggValue, _ := json.Marshal(total.Aggregations[0].Value)
+
+		for _, name := range columnNames {
+			trb.AddField(total.Group[name].(string), nil)
+		}
+		trb.AddField(string(aggValue), nil)
+	}
+
+	return iofmt.FormatToTable(opts.IO, len(res.Buckets.Totals), header, nil, contentRow)
 }
