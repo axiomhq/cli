@@ -23,6 +23,7 @@ import (
 	authCmd "github.com/axiomhq/cli/internal/cmd/auth"
 	completionCmd "github.com/axiomhq/cli/internal/cmd/completion"
 	versionCmd "github.com/axiomhq/cli/internal/cmd/version"
+	webCmd "github.com/axiomhq/cli/internal/cmd/web"
 )
 
 // NewCmd creates and returns the root command.
@@ -123,6 +124,7 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.AddCommand(authCmd.NewCmd(f))
 	cmd.AddCommand(completionCmd.NewCmd(f))
 	cmd.AddCommand(versionCmd.NewCmd(f, version.Print("Axiom CLI")))
+	cmd.AddCommand(webCmd.NewCmd(f))
 
 	// Help topics
 	cmd.AddCommand(newHelpTopic(f.IO, "credentials"))

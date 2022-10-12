@@ -156,6 +156,7 @@ For full command reference, see the list below, or visit
 | axiom completion zsh        | Generate shell completion script for zsh        |
 | axiom help                  | Help about any command                          |
 | axiom version               | Print version                                   |
+| axiom web                   | Open Axiom in the browser                       |
 
 ### Learn more
 
