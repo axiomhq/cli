@@ -80,6 +80,7 @@ func completeDelete(ctx context.Context, opts *deleteOptions) error {
 
 	return survey.AskOne(&survey.Select{
 		Message: "Which dataset to delete?",
+		Default: datasetNames[0],
 		Options: datasetNames,
 	}, &opts.Name, opts.IO.SurveyIO())
 }

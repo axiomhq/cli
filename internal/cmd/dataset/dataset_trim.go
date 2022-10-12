@@ -91,6 +91,7 @@ func completeTrim(ctx context.Context, opts *trimOptions) error {
 			Name: "name",
 			Prompt: &survey.Select{
 				Message: "Which dataset to trim?",
+				Default: datasetNames[0],
 				Options: datasetNames,
 			},
 		})

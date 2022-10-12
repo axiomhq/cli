@@ -128,6 +128,7 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 	if opts.Type == "" {
 		if err := survey.AskOne(&survey.Select{
 			Message: "Which kind of Axiom deployment are you using?",
+			Default: validDeploymentTypes[0],
 			Options: validDeploymentTypes,
 		}, &opts.Type, opts.IO.SurveyIO()); err != nil {
 			return err
@@ -211,6 +212,7 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 			if err := survey.AskOne(&survey.Select{
 				Message: "Which organization to use?",
 				Options: organizationNames,
+				Default: organizationNames[0],
 				Description: func(_ string, idx int) string {
 					return organizations[idx].ID
 				},
@@ -296,10 +298,10 @@ func autoLogin(ctx context.Context, opts *loginOptions) error {
 		fmt.Fprintln(opts.IO.ErrOut(), "Waiting for authentication...")
 
 		stop = opts.IO.StartActivityIndicator()
-		defer stop()
 
 		return nil
 	}
+	defer stop()
 
 	// Wait five minutes before timing out.
 	authContext, authCancel := context.WithTimeout(ctx, time.Minute*5)

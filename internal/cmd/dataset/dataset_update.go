@@ -79,6 +79,7 @@ func completeUpdate(ctx context.Context, opts *updateOptions) error {
 			Name: "name",
 			Prompt: &survey.Select{
 				Message: "Which dataset to update?",
+				Default: datasetNames[0],
 				Options: datasetNames,
 			},
 		})

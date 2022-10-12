@@ -151,9 +151,11 @@ func NeedsActiveDeployment(f *Factory) RunFunc {
 			return NewFlagErrorf("--deployment or -D required when not running interactively")
 		}
 
+		options := f.Config.DeploymentAliases()
 		return survey.AskOne(&survey.Select{
 			Message: "Which deployment to use?",
-			Options: f.Config.DeploymentAliases(),
+			Default: options[0],
+			Options: options,
 		}, &f.Config.ActiveDeployment, f.IO.SurveyIO())
 	}
 }

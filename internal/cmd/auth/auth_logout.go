@@ -51,9 +51,11 @@ func newLogoutCmd(f *cmdutil.Factory) *cobra.Command {
 
 		RunE: func(_ *cobra.Command, _ []string) error {
 			if opts.Alias == "" {
+				options := opts.Config.DeploymentAliases()
 				if err := survey.AskOne(&survey.Select{
 					Message: "Which deployment to log out off?",
-					Options: opts.Config.DeploymentAliases(),
+					Default: options[0],
+					Options: options,
 				}, &opts.Alias, opts.IO.SurveyIO()); err != nil {
 					return err
 				}

@@ -63,6 +63,7 @@ func newSwitchOrgCmd(f *cmdutil.Factory) *cobra.Command {
 				var organizationName string
 				if err := survey.AskOne(&survey.Select{
 					Message: "Which organization to use?",
+					Default: organizationNames[0],
 					Options: organizationNames,
 					Description: func(_ string, idx int) string {
 						return organizations[idx].ID
