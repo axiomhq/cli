@@ -42,9 +42,11 @@ func newSelectCmd(f *cmdutil.Factory) *cobra.Command {
 
 		RunE: func(*cobra.Command, []string) error {
 			if activeDeployment == "" {
+				options := f.Config.DeploymentAliases()
 				if err := survey.AskOne(&survey.Select{
 					Message: "Which deployment to select?",
-					Options: f.Config.DeploymentAliases(),
+					Default: options[0],
+					Options: options,
 				}, &f.Config.ActiveDeployment, f.IO.SurveyIO()); err != nil {
 					return err
 				}

@@ -219,6 +219,7 @@ func complete(ctx context.Context, opts *options) error {
 
 	return survey.AskOne(&survey.Select{
 		Message: "Which dataset to ingest into?",
+		Default: datasetNames[0],
 		Options: datasetNames,
 	}, &opts.Dataset, opts.IO.SurveyIO())
 }
