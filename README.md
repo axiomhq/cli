@@ -82,10 +82,27 @@ docker run axiomhq/cli
 ### Validate installation
 
 In all cases the installation can be validated by running `axiom -v` in the
-terminal:
+terminal which will return the CLI version number. Example:
 
 ```shell
+$ axiom -v
 Axiom CLI version 1.0.0
+```
+
+### Install using [Snap](https://snapcraft.io)
+
+```shell
+sudo snap install axiom
+```
+
+To send all system logs to Axiom:
+
+```shell
+# Allow Axiom to access system logs
+sudo snap connect axiom:log-observe
+
+# Configure the background service
+sudo snap set axiom journald-dataset=DATASET journald-url=URL journald-token=TOKEN
 ```
 
 ## Usage

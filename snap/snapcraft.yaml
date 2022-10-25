@@ -1,0 +1,40 @@
+name: axiom
+base: core20
+adopt-info: axiom-cli
+summary: The power of Axiom on the command line.
+description: |
+  Axiom is a Next-Generation Data Platform
+  .
+  Axiom's coordination-free ingest, object-store based storage, and serverless querying mean that your organization's log management can be supercharged in the most efficient and affordable way.
+
+grade: stable
+confinement: strict
+compression: lzo
+
+parts:
+  axiom-cli:
+    plugin: go
+    go-channel: 1.17/stable
+    source: .
+    prime:
+      - -bin/gen-cli-docs
+    override-build: |
+      GOPATH=$SNAPCRAFT_PART_INSTALL/bin make install
+      snapcraftctl set-version `$SNAPCRAFT_PART_INSTALL/bin/axiom --version | cut -d " " -f 4`
+    override-prime: |
+      snapcraftctl prime
+      mkdir -p $SNAPCRAFT_PRIME/share/
+      $SNAPCRAFT_PRIME/bin/axiom completion bash > $SNAPCRAFT_PRIME/share/bash_completion
+  snap-helpers:
+    plugin: dump
+    source: snap/local
+
+apps:
+  axiom:
+    plugs: [ "network" ]
+    command: bin/axiom
+    completer: share/bash_completion
+  journald-ingester:
+    plugs: [ "network", "log-observe" ]
+    command: bin/journald-ingester
+    daemon: simple
