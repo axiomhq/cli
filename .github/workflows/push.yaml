@@ -122,8 +122,9 @@ jobs:
           # goos: windows
     runs-on: ${{ matrix.os }}
     env:
-      AXIOM_URL: ${{ secrets.TESTING_AZURE_1_STAGING_DEPLOYMENT_URL }}
-      AXIOM_TOKEN: ${{ secrets.TESTING_AZURE_1_STAGING_ACCESS_TOKEN }}
+      AXIOM_TOKEN: ${{ secrets.TESTING_CLOUD_DEV_ACCESS_TOKEN }}
+      AXIOM_URL: ${{ secrets.TESTING_CLOUD_DEV_DEPLOYMENT_URL }}
+      AXIOM_ORG_ID: ${{ secrets.TESTING_CLOUD_DEV_ORG_ID }}
       AXIOM_DATASET: cli-test-${{ github.run_id }}-${{ matrix.goos }}
     steps:
       - uses: actions/checkout@v3
