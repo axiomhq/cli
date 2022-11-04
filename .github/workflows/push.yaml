@@ -65,14 +65,6 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: ${{ runner.os }}-go-
       - run: make test
-      - name: Update Coverage
-        if: matrix.update-coverage
-        uses: codecov/codecov-action@v1
-        with:
-          fail_ci_if_error: true
-      - name: Update Go Report Card
-        if: matrix.update-goreportcard
-        uses: creekorful/goreportcard-action@v1.0
 
   build:
     name: Build
