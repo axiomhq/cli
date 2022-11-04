@@ -47,10 +47,6 @@ jobs:
           - macos-latest
           - ubuntu-latest
           - windows-latest
-        include:
-          - os: ubuntu-latest
-            update-coverage: true
-            update-goreportcard: true
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
