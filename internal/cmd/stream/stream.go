@@ -9,11 +9,11 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
-	"github.com/axiomhq/axiom-go/axiom"
-	"github.com/axiomhq/axiom-go/axiom/query"
+	"github.com/axiomhq/axiom-go/axiom/querylegacy"
 	"github.com/nwidger/jsoncolor"
 	"github.com/spf13/cobra"
 
+	"github.com/axiomhq/cli/internal/client"
 	"github.com/axiomhq/cli/internal/cmd/auth"
 	"github.com/axiomhq/cli/internal/cmdutil"
 	"github.com/axiomhq/cli/pkg/iofmt"
@@ -88,7 +88,7 @@ func complete(ctx context.Context, opts *options) error {
 	// Just fetch a list of available datasets if a Personal Access Token is
 	// used.
 	var datasetNames []string
-	if dep, ok := opts.Config.GetActiveDeployment(); ok && axiom.IsPersonalToken(dep.Token) {
+	if dep, ok := opts.Config.GetActiveDeployment(); ok && client.IsPersonalToken(dep.Token) {
 		client, err := opts.Client(ctx)
 		if err != nil {
 			return err
@@ -149,10 +149,10 @@ func run(ctx context.Context, opts *options) error {
 	for {
 		queryCtx, queryCancel := context.WithTimeout(ctx, streamingDuration)
 
-		res, err := client.Datasets.Query(queryCtx, opts.Dataset, query.Query{
+		res, err := client.Datasets.QueryLegacy(queryCtx, opts.Dataset, querylegacy.Query{
 			StartTime: lastRequest,
 			EndTime:   time.Now(),
-		}, query.Options{
+		}, querylegacy.Options{
 			StreamingDuration: streamingDuration,
 		})
 		if err != nil && !errors.Is(err, context.DeadlineExceeded) && !errors.Is(err, context.Canceled) {

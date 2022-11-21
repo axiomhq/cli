@@ -7,8 +7,9 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/axiomhq/cli/internal/client"
+
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/axiomhq/axiom-go/axiom"
 )
 
 // ValidateURL validates that the given input is a valid url.
@@ -34,7 +35,7 @@ func ValidateURL(val any) error {
 func ValidateToken(val any) error {
 	if token, ok := val.(string); !ok {
 		return fmt.Errorf("token cannot be of type %v", reflect.TypeOf(val).Name())
-	} else if !axiom.IsPersonalToken(token) {
+	} else if !client.IsPersonalToken(token) {
 		return errors.New("token is not a personal access token (missing 'xapt-' prefix)")
 	}
 	return nil
