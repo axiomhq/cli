@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/muesli/reflow/dedent"
 	"github.com/muesli/reflow/indent"
 	"github.com/muesli/reflow/padding"
 	"github.com/spf13/cobra"
@@ -15,6 +14,7 @@ import (
 
 	"github.com/axiomhq/cli/internal/cmdutil"
 	"github.com/axiomhq/cli/pkg/terminal"
+	"github.com/axiomhq/cli/pkg/utils"
 )
 
 func rootUsageFunc(cmd *cobra.Command) error {
@@ -35,7 +35,7 @@ func rootUsageFunc(cmd *cobra.Command) error {
 	flagUsages := cmd.LocalFlags().FlagUsages()
 	if flagUsages != "" {
 		cmd.Println("\n\nFlags:")
-		cmd.Print(indent.String(dedent.String(flagUsages), 2))
+		cmd.Print(indent.String(utils.Dedent(flagUsages), 2))
 	}
 
 	return nil
@@ -145,11 +145,11 @@ func rootHelpFunc(io *terminal.IO) func(*cobra.Command, []string) {
 
 		flagUsages := cmd.LocalFlags().FlagUsages()
 		if flagUsages != "" {
-			helpEntries = append(helpEntries, helpEntry{"FLAGS", dedent.String(flagUsages)})
+			helpEntries = append(helpEntries, helpEntry{"FLAGS", utils.Dedent(flagUsages)})
 		}
 		inheritedFlagUsages := cmd.InheritedFlags().FlagUsages()
 		if inheritedFlagUsages != "" {
-			helpEntries = append(helpEntries, helpEntry{"INHERITED FLAGS", dedent.String(inheritedFlagUsages)})
+			helpEntries = append(helpEntries, helpEntry{"INHERITED FLAGS", utils.Dedent(inheritedFlagUsages)})
 		}
 		if _, ok := cmd.Annotations["help:arguments"]; ok {
 			helpEntries = append(helpEntries, helpEntry{"ARGUMENTS", cmd.Annotations["help:arguments"]})

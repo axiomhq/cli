@@ -3,9 +3,10 @@ package client
 import (
 	"net/url"
 	"strings"
-
-	"github.com/axiomhq/axiom-go/axiom"
 )
+
+// CloudURL is the Axiom Cloud URL.
+const CloudURL = "https://cloud.axiom.co"
 
 // IsCloudURL returns true if the given URL is an Axiom Cloud URL.
 func IsCloudURL(s string) bool {
@@ -18,10 +19,15 @@ func IsCloudURL(s string) bool {
 		return false
 	}
 
-	cu, err := url.ParseRequestURI(axiom.CloudURL)
+	cu, err := url.ParseRequestURI(CloudURL)
 	if err != nil {
 		return false
 	}
 
 	return u.Host == cu.Host
+}
+
+// IsPersonalToken returns true if the given token is a personal token.
+func IsPersonalToken(token string) bool {
+	return strings.HasPrefix(token, "xapt-")
 }

@@ -5,7 +5,6 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
-	"github.com/axiomhq/axiom-go/axiom"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/client"
@@ -189,7 +188,7 @@ func NeedsValidDeployment(f *Factory, alias *string) RunFunc {
 func NeedsDatasets(f *Factory) RunFunc {
 	return func(cmd *cobra.Command, _ []string) error {
 		// Skip if token is not a Personal Access Token.
-		if dep, ok := f.Config.GetActiveDeployment(); ok && !axiom.IsPersonalToken(dep.Token) {
+		if dep, ok := f.Config.GetActiveDeployment(); ok && !client.IsPersonalToken(dep.Token) {
 			return nil
 		}
 
@@ -223,7 +222,7 @@ func NeedsPersonalAccessToken(f *Factory) RunFunc {
 			return nil
 		}
 
-		if axiom.IsPersonalToken(dep.Token) {
+		if client.IsPersonalToken(dep.Token) {
 			return nil
 		}
 

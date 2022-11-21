@@ -10,7 +10,6 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
-	"github.com/axiomhq/axiom-go/axiom"
 	"github.com/axiomhq/axiom-go/axiom/auth"
 	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
@@ -102,7 +101,7 @@ func NewLoginCmd(f *cmdutil.Factory) *cobra.Command {
 
 	cmd.Flags().BoolVar(&opts.AutoLogin, "auto-login", true, "Login through the Axiom UI")
 	cmd.Flags().StringVarP(&opts.Type, "type", "t", strings.ToLower(typeCloud), "Type of the deployment")
-	cmd.Flags().StringVarP(&opts.URL, "url", "u", axiom.CloudURL, "Url of the deployment")
+	cmd.Flags().StringVarP(&opts.URL, "url", "u", client.CloudURL, "Url of the deployment")
 	cmd.Flags().StringVarP(&opts.Alias, "alias", "a", "", "Alias of the deployment")
 	cmd.Flags().StringVarP(&opts.OrganizationID, "org-id", "o", "", "Organization ID")
 	cmd.Flags().BoolVarP(&opts.Force, "force", "f", false, "Skip the confirmation prompt")
@@ -140,7 +139,7 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 	// 2. If Cloud mode but no URL, set the correct URL instead of asking the
 	// user for it.
 	if opts.Type == strings.ToLower(typeCloud) && opts.URL == "" {
-		opts.URL = axiom.CloudURL
+		opts.URL = client.CloudURL
 	} else if opts.URL == "" {
 		if err := survey.AskOne(&survey.Input{
 			Message: "What is the url of the deployment?",
@@ -266,7 +265,7 @@ func autoLogin(ctx context.Context, opts *loginOptions) error {
 	// 1. If Cloud mode but no URL, set the correct URL instead of asking the
 	// user for it.
 	if opts.Type == strings.ToLower(typeCloud) && opts.URL == "" {
-		opts.URL = axiom.CloudURL
+		opts.URL = client.CloudURL
 	} else if opts.URL == "" {
 		if err := survey.AskOne(&survey.Input{
 			Message: "What is the url of the deployment?",
@@ -409,7 +408,7 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 		cs := opts.IO.ColorScheme()
 
 		if user != nil {
-			if (client.IsCloudURL(opts.URL) || opts.Config.ForceCloud) && axiom.IsPersonalToken(opts.Token) {
+			if (client.IsCloudURL(opts.URL) || opts.Config.ForceCloud) && client.IsPersonalToken(opts.Token) {
 				organization, err := axiomClient.Organizations.Get(ctx, opts.OrganizationID)
 				if err != nil {
 					return err

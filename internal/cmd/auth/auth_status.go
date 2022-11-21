@@ -8,11 +8,11 @@ import (
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/axiomhq/axiom-go/axiom"
-	"github.com/muesli/reflow/dedent"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/client"
 	"github.com/axiomhq/cli/internal/cmdutil"
+	"github.com/axiomhq/cli/pkg/utils"
 )
 
 type statusOptions struct {
@@ -123,7 +123,7 @@ func runStatus(ctx context.Context, opts *statusOptions) error {
 				fmt.Fprintf(&buf, "    %s\n", line)
 			}
 		}
-		fmt.Fprint(opts.IO.ErrOut(), dedent.String(buf.String()))
+		fmt.Fprint(opts.IO.ErrOut(), utils.Dedent(buf.String()))
 	}
 
 	if failed {

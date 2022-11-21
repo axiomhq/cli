@@ -14,9 +14,11 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
 	"github.com/axiomhq/axiom-go/axiom"
+	"github.com/axiomhq/axiom-go/axiom/ingest"
 	"github.com/dustin/go-humanize"
 	"github.com/spf13/cobra"
 
+	"github.com/axiomhq/cli/internal/client"
 	"github.com/axiomhq/cli/internal/cmd/auth"
 	"github.com/axiomhq/cli/internal/cmdutil"
 	"github.com/axiomhq/cli/pkg/utils"
@@ -191,7 +193,7 @@ func complete(ctx context.Context, opts *options) error {
 	// Just fetch a list of available datasets if a Personal Access Token is
 	// used.
 	var datasetNames []string
-	if dep, ok := opts.Config.GetActiveDeployment(); ok && axiom.IsPersonalToken(dep.Token) {
+	if dep, ok := opts.Config.GetActiveDeployment(); ok && client.IsPersonalToken(dep.Token) {
 		client, err := opts.Client(ctx)
 		if err != nil {
 			return err
@@ -234,7 +236,7 @@ func run(ctx context.Context, opts *options, flushEverySet bool) error {
 	defer stop()
 
 	var (
-		res     = new(axiom.IngestStatus)
+		res     = new(ingest.Status)
 		lastErr error
 	)
 	for _, filename := range opts.Filenames {
@@ -271,13 +273,13 @@ func run(ctx context.Context, opts *options, flushEverySet bool) error {
 			return cmdutil.NewFlagErrorf("--delimier/-d not valid when content type is not CSV")
 		}
 
-		var ingestRes *axiom.IngestStatus
+		var ingestRes *ingest.Status
 		if filename == "stdin" && typ == axiom.NDJSON {
 			ingestRes, err = ingestEvery(ctx, client, r, opts)
 		} else {
-			ingestRes, err = ingest(ctx, client, r, typ, opts)
+			ingestRes, err = ingestReader(ctx, client, r, typ, opts)
 		}
-		mergeIngestStatuses(res, ingestRes)
+		res.Add(ingestRes)
 
 		if err != nil && !errors.Is(err, context.Canceled) {
 			_ = rc.Close()
@@ -322,7 +324,7 @@ func run(ctx context.Context, opts *options, flushEverySet bool) error {
 	return lastErr
 }
 
-func ingestEvery(ctx context.Context, client *axiom.Client, r io.Reader, opts *options) (*axiom.IngestStatus, error) {
+func ingestEvery(ctx context.Context, client *axiom.Client, r io.Reader, opts *options) (*ingest.Status, error) {
 	t := time.NewTicker(opts.FlushEvery)
 	defer t.Stop()
 
@@ -335,8 +337,8 @@ func ingestEvery(ctx context.Context, client *axiom.Client, r io.Reader, opts *o
 		pr, pw := io.Pipe()
 		readers <- pr
 
-		scanner := bufio.NewScanner(r)
 		// Start with a 64 byte buffer, check up until 1 MB per line.
+		scanner := bufio.NewScanner(r)
 		scanner.Buffer(make([]byte, 64), 1024*1024)
 		scanner.Split(splitLinesMulti)
 
@@ -389,24 +391,24 @@ func ingestEvery(ctx context.Context, client *axiom.Client, r io.Reader, opts *o
 		}
 	}()
 
-	res := new(axiom.IngestStatus)
+	var res ingest.Status
 	for r := range readers {
-		ingestRes, err := ingest(ctx, client, r, axiom.NDJSON, opts)
+		ingestRes, err := ingestReader(ctx, client, r, axiom.NDJSON, opts)
 		if err != nil {
-			return res, err
+			return &res, err
 		}
-		mergeIngestStatuses(res, ingestRes)
+		res.Add(ingestRes)
 	}
 
-	return res, nil
+	return &res, nil
 }
 
-func ingest(ctx context.Context, client *axiom.Client, r io.Reader, typ axiom.ContentType, opts *options) (*axiom.IngestStatus, error) {
+func ingestReader(ctx context.Context, client *axiom.Client, r io.Reader, typ axiom.ContentType, opts *options) (*ingest.Status, error) {
 	// If the data to ingest is not compressed, it gets zstd compressed.
 	enc := opts.ContentEncoding
 	if enc == axiom.Identity {
 		var err error
-		if r, err = axiom.ZstdEncoder(r); err != nil {
+		if r, err = axiom.ZstdEncoder()(r); err != nil {
 			return nil, err
 		}
 		enc = axiom.Zstd
@@ -414,29 +416,16 @@ func ingest(ctx context.Context, client *axiom.Client, r io.Reader, typ axiom.Co
 		r = io.NopCloser(r)
 	}
 
-	res, err := client.Datasets.Ingest(ctx, opts.Dataset, r, typ, enc, axiom.IngestOptions{
-		TimestampField:  opts.TimestampField,
-		TimestampFormat: opts.TimestampFormat,
-		CSVDelimiter:    opts.Delimiter,
-	})
+	res, err := client.Datasets.Ingest(ctx, opts.Dataset, r, typ, enc,
+		ingest.SetTimestampField(opts.TimestampField),
+		ingest.SetTimestampFormat(opts.TimestampFormat),
+		ingest.SetCSVDelimiter(opts.Delimiter),
+	)
 	if err != nil {
 		return nil, err
 	}
 
 	return res, nil
-}
-
-func mergeIngestStatuses(base, add *axiom.IngestStatus) {
-	if base == nil || add == nil {
-		return
-	}
-
-	base.Ingested += add.Ingested
-	base.Failed += add.Failed
-	base.Failures = append(base.Failures, add.Failures...)
-	base.ProcessedBytes += add.ProcessedBytes
-	base.BlocksCreated += add.BlocksCreated
-	base.WALLength += add.WALLength
 }
 
 // splitLinesMulti is like bufio.SplitLines, but returns multiple lines

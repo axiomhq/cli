@@ -46,10 +46,10 @@ func New(ctx context.Context, baseURL, accessToken, orgID string, insecure bool)
 		options = append(options, axiom.SetURL(baseURL))
 	}
 	if accessToken != "" {
-		options = append(options, axiom.SetAccessToken(accessToken))
+		options = append(options, axiom.SetToken(accessToken))
 	}
 	if orgID != "" {
-		options = append(options, axiom.SetOrgID(orgID))
+		options = append(options, axiom.SetOrganizationID(orgID))
 	}
 
 	client, err := axiom.NewClient(options...)

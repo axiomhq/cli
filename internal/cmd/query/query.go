@@ -11,7 +11,7 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
 	"github.com/araddon/dateparse"
-	"github.com/axiomhq/axiom-go/axiom/apl"
+	"github.com/axiomhq/axiom-go/axiom/query"
 	"github.com/nwidger/jsoncolor"
 	"github.com/spf13/cobra"
 
@@ -34,10 +34,6 @@ type options struct {
 	TimestampFormat string
 	// Format to output data in. Defaults to tabular output.
 	Format string
-	// NoCache disables cache usage for the query.
-	NoCache bool
-	// Save the query on the server.
-	Save bool
 
 	startTime time.Time
 	endTime   time.Time
@@ -50,7 +46,7 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "query [<apl-query>] [(-f|--format)=json|table] [--start-time <start-time>] [--end-time <end-time>] [--timestamp-format <timestamp-format>] [-c|--no-cache] [-s|--save]",
+		Use:   "query [<apl-query>] [(-f|--format)=json|table] [--start-time <start-time>] [--end-time <end-time>] [--timestamp-format <timestamp-format>]",
 		Short: "Query data using APL",
 		Long: heredoc.Doc(`
 			Query data from an Axiom dataset using APL, the Axiom Processing
@@ -75,13 +71,8 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 			# Query the "nginx-logs" dataset for logs with a 304 status code:
 			$ axiom query "['nginx-logs'] | where response == 304"
 			
-			# Query all logs of the "http" dataset and save the query in the
-			# history. The histories entry ID is returned with the result. The
-			# history query can also be viewed in the web UI.
-			$ axiom query -s "['http']"
-			
-			# Count all events in the "http" dataset with a 404 status code:
-			$ axiom query "['http'] | where response == 404 | count"
+			# Count all events in the "nginx-logs" dataset with a 404 status code:
+			$ axiom query "['nginx-logs'] | where response == 404 | count"
 		`),
 
 		Annotations: map[string]string{
@@ -106,15 +97,11 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.Flags().StringVar(&opts.StartTime, "start-time", "", "Start time of the query - may also be a relative time eg: -24h, -20m")
 	cmd.Flags().StringVar(&opts.EndTime, "end-time", "", "End time of the query - may also be a relative time eg: -24h, -20m")
 	cmd.Flags().StringVar(&opts.TimestampFormat, "timestamp-format", "", "Format used in the the timestamp field. Default uses a heuristic parser. Must be expressed using the reference time 'Mon Jan 2 15:04:05 -0700 MST 2006'")
-	cmd.Flags().BoolVarP(&opts.NoCache, "no-cache", "c", false, "Disable cache usage")
-	cmd.Flags().BoolVarP(&opts.Save, "save", "s", false, "Save query on the server side")
 
 	_ = cmd.RegisterFlagCompletionFunc("format", cmdutil.FormatCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("start-time", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("end-time", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("timestamp-format", cmdutil.NoCompletion)
-	_ = cmd.RegisterFlagCompletionFunc("no-cache", cmdutil.NoCompletion)
-	_ = cmd.RegisterFlagCompletionFunc("save", cmdutil.NoCompletion)
 
 	return cmd
 }
@@ -168,12 +155,10 @@ func run(ctx context.Context, opts *options) error {
 	progStop := opts.IO.StartActivityIndicator()
 	defer progStop()
 
-	res, err := client.Datasets.APLQuery(ctx, apl.Query(opts.Query), apl.Options{
-		StartTime: opts.startTime,
-		EndTime:   opts.endTime,
-		NoCache:   opts.NoCache,
-		Save:      opts.Save,
-	})
+	res, err := client.Datasets.Query(ctx, opts.Query,
+		query.SetStartTime(opts.startTime),
+		query.SetEndTime(opts.endTime),
+	)
 	if err != nil {
 		return err
 	} else if len(res.Matches) == 0 && len(res.Buckets.Totals) == 0 {
@@ -210,7 +195,7 @@ func run(ctx context.Context, opts *options) error {
 	if res.SavedQueryID != "" {
 		headerText += fmt.Sprintf(" (saved as %s)", cs.Bold(res.SavedQueryID))
 	}
-	headerText += cs.Gray(fmt.Sprintf(" processed in %s", res.Status.ElapsedTime))
+	headerText += fmt.Sprintf(" processed in %s", cs.Gray(res.Status.ElapsedTime.String()))
 	headerText = fmt.Sprintf("Result of query %s:\n\n", headerText)
 
 	// Deal with table output format for matches.
@@ -267,7 +252,7 @@ func run(ctx context.Context, opts *options) error {
 	// aggregated totals as rows.
 	var (
 		header      iofmt.HeaderBuilderFunc
-		columnNames = res.Request.GroupBy
+		columnNames = res.GroupBy
 	)
 	if opts.IO.IsStdoutTTY() {
 		header = func(w io.Writer, trb iofmt.TableRowBuilder) {
@@ -284,7 +269,7 @@ func run(ctx context.Context, opts *options) error {
 		aggValue, _ := json.Marshal(total.Aggregations[0].Value)
 
 		for _, name := range columnNames {
-			trb.AddField(total.Group[name].(string), nil)
+			trb.AddField(fmt.Sprint(total.Group[name]), nil)
 		}
 		trb.AddField(string(aggValue), nil)
 	}
