@@ -34,7 +34,6 @@ type Config struct {
 	URLOverride            string `toml:"-" envconfig:"url"`
 	TokenOverride          string `toml:"-" envconfig:"token"`
 	OrganizationIDOverride string `toml:"-" envconfig:"org_id"`
-	ForceCloud             bool   `toml:"-" envconfig:"force_cloud"`
 
 	ConfigFilePath string `toml:"-"`
 
@@ -210,5 +209,5 @@ func (c *Config) Write() error {
 func (c *Config) IsEmpty() bool {
 	return c.ActiveDeployment == "" && len(c.Deployments) == 0 && !c.Insecure &&
 		c.URLOverride == "" && c.TokenOverride == "" &&
-		c.OrganizationIDOverride == "" && !c.ForceCloud
+		c.OrganizationIDOverride == ""
 }

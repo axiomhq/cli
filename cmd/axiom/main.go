@@ -112,7 +112,10 @@ func printError(w io.Writer, err error, cmd *cobra.Command) {
 	// Print some nicer output for Axiom API errors.
 	if errors.Is(err, axiom.ErrNotFound) || errors.Is(err, axiom.ErrExists) ||
 		errors.Is(err, axiom.ErrUnauthorized) || errors.Is(err, axiom.ErrUnauthenticated) {
-		fmt.Fprintf(w, "Error: %s\n", errors.Unwrap(err))
+		if unwrappedErr := errors.Unwrap(err); unwrappedErr != nil {
+			err = unwrappedErr
+		}
+		fmt.Fprintf(w, "Error: %s\n", err)
 		return
 	}
 

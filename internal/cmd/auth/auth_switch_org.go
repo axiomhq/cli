@@ -44,7 +44,6 @@ func newSwitchOrgCmd(f *cmdutil.Factory) *cobra.Command {
 			cmdutil.AsksForSetup(f, NewLoginCmd(f)),
 			cmdutil.NeedsDeployments(f),
 			cmdutil.NeedsActiveDeployment(f),
-			cmdutil.NeedsCloudDeployment(f),
 			cmdutil.NeedsPersonalAccessToken(f),
 		),
 
