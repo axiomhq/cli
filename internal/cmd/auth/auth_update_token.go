@@ -40,7 +40,7 @@ func newUpdateTokenCmd(f *cmdutil.Factory) *cobra.Command {
 			$ axiom auth update-token
 			
 			# Provide parameters on the command-line:
-			$ echo $AXIOM_PERSONAL_ACCESS_TOKEN | axiom auth update-token
+			$ echo $AXIOM_TOKEN | axiom auth update-token
 		`),
 
 		PersistentPreRunE: cmdutil.ChainRunFuncs(
@@ -122,27 +122,17 @@ func runUpdateToken(ctx context.Context, opts *updateTokenOptions) error {
 	if opts.IO.IsStderrTTY() {
 		cs := opts.IO.ColorScheme()
 
-		if user != nil {
-			if client.IsCloudURL(activeDeployment.URL) || opts.Config.ForceCloud {
-				organization, err := axiomClient.Organizations.Get(ctx, activeDeployment.OrganizationID)
-				if err != nil {
-					return err
-				}
+		if client.IsPersonalToken(opts.Token) {
+			organization, err := axiomClient.Organizations.Get(ctx, activeDeployment.OrganizationID)
+			if err != nil {
+				return err
+			}
 
-				fmt.Fprintf(opts.IO.ErrOut(), "%s Logged in to organization %s as %s\n",
-					cs.SuccessIcon(), cs.Bold(organization.Name), cs.Bold(user.Name))
-			} else {
-				fmt.Fprintf(opts.IO.ErrOut(), "%s Logged in to deployment %s as %s\n",
-					cs.SuccessIcon(), cs.Bold(opts.Config.ActiveDeployment), cs.Bold(user.Name))
-			}
+			fmt.Fprintf(opts.IO.ErrOut(), "%s Logged in to organization %s as %s\n",
+				cs.SuccessIcon(), cs.Bold(organization.Name), cs.Bold(user.Name))
 		} else {
-			if client.IsCloudURL(activeDeployment.URL) || opts.Config.ForceCloud {
-				fmt.Fprintf(opts.IO.ErrOut(), "%s Logged in to organization %s %s\n",
-					cs.SuccessIcon(), cs.Bold(activeDeployment.OrganizationID), cs.Red(cs.Bold("(ingestion only!)")))
-			} else {
-				fmt.Fprintf(opts.IO.ErrOut(), "%s Logged in to deployment %s %s\n",
-					cs.SuccessIcon(), cs.Bold(opts.Config.ActiveDeployment), cs.Red(cs.Bold("(ingestion only!)")))
-			}
+			fmt.Fprintf(opts.IO.ErrOut(), "%s Logged in to organization %s %s\n",
+				cs.SuccessIcon(), cs.Bold(activeDeployment.OrganizationID), cs.Red(cs.Bold("(ingestion/query only!)")))
 		}
 	}
 

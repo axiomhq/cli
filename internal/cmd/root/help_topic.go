@@ -25,7 +25,7 @@ var topics = map[string]string{
 		from the configuration file.
 
 		AXIOM_ORG_ID: The organization id of the organization the access token
-		is valid for. Only valid for Axiom Cloud.
+		is valid for.
 		
 		AXIOM_PAGER, PAGER (in order of precedence): A terminal paging program
 		to send standard output to, e.g. "less".

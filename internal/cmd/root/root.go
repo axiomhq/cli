@@ -1,6 +1,7 @@
 package root
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/MakeNowJust/heredoc"
@@ -72,8 +73,22 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 			}
 
 			f.Config.Insecure = cmd.Flag("insecure").Changed
-			f.Config.ForceCloud = cmd.Flag("force-cloud").Changed
 			f.IO.EnableActivityIndicator(!cmd.Flag("no-spinner").Changed)
+
+			// Warn users about auto-picked up environment variables.
+			if f.IO.IsStderrTTY() {
+				cs := f.IO.ColorScheme()
+
+				if os.Getenv("AXIOM_ORG_ID") != "" {
+					fmt.Fprintf(f.IO.ErrOut(), "%s Organization ID is set using %q!\n", cs.WarningIcon(), "AXIOM_ORG_ID")
+				}
+				if os.Getenv("AXIOM_TOKEN") != "" {
+					fmt.Fprintf(f.IO.ErrOut(), "%s Token is set using %q!\n", cs.WarningIcon(), "AXIOM_TOKEN")
+				}
+				if os.Getenv("AXIOM_URL") != "" {
+					fmt.Fprintf(f.IO.ErrOut(), "%s URL is set using %q!\n", cs.WarningIcon(), "AXIOM_URL")
+				}
+			}
 
 			return nil
 		},
@@ -108,7 +123,6 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.PersistentFlags().StringP("auth-token", "T", os.Getenv("AXIOM_TOKEN"), "Token to use")
 	cmd.PersistentFlags().StringP("auth-url", "U", os.Getenv("AXIOM_URL"), "Url to use")
 	cmd.PersistentFlags().BoolP("insecure", "I", false, "Bypass certificate validation")
-	cmd.PersistentFlags().BoolP("force-cloud", "F", false, "Treat deployment as Axiom Cloud")
 	cmd.PersistentFlags().Bool("no-spinner", false, "Disable the activity indicator")
 
 	// Core commands
@@ -131,7 +145,8 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.AddCommand(newHelpTopic(f.IO, "environment"))
 
 	// Hidden flags
-	_ = cmd.PersistentFlags().MarkHidden("force-cloud")
+	_ = cmd.PersistentFlags().MarkHidden("auth-url")
+	_ = cmd.PersistentFlags().MarkHidden("insecure")
 
 	return cmd
 }
