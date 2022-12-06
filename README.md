@@ -12,11 +12,21 @@
 
 [Axiom](https://axiom.co) unlocks observability at any scale.
 
-- **Ingest with ease, store without limits:** Axiom’s next-generation datastore enables ingesting petabytes of data with ultimate efficiency. Ship logs from Kubernetes, AWS, Azure, Google Cloud, DigitalOcean, Nomad, and others.
-- **Query everything, all the time:** Whether DevOps, SecOps, or EverythingOps, query all your data no matter its age. No provisioning, no moving data from cold/archive to “hot”, and no worrying about slow queries. All your data, all. the. time.
-- **Powerful dashboards, for continuous observability:** Build dashboards to collect related queries and present information that’s quick and easy to digest for you and your team. Dashboards can be kept private or shared with others, and are the perfect way to bring together data from different sources
+- **Ingest with ease, store without limits:** Axiom’s next-generation datastore
+  enables ingesting petabytes of data with ultimate efficiency. Ship logs from
+  Kubernetes, AWS, Azure, Google Cloud, DigitalOcean, Nomad, and others.
+- **Query everything, all the time:** Whether DevOps, SecOps, or EverythingOps,
+  query all your data no matter its age. No provisioning, no moving data from
+  cold/archive to “hot”, and no worrying about slow queries. All your data, all.
+  the. time.
+- **Powerful dashboards, for continuous observability:** Build dashboards to
+  collect related queries and present information that’s quick and easy to
+  digest for you and your team. Dashboards can be kept private or shared with
+  others, and are the perfect way to bring together data from different sources.
 
-For more information check out the [official documentation](https://axiom.co/docs).
+For more information check out the
+[official documentation](https://axiom.co/docs) and our
+[community Slack](https://axiomfm.slack.com/join/shared_invite/zt-w7d1vepe-L0upiOL6n6MXfjr33sCBUQ).
 
 ## Usage
 
@@ -37,7 +47,7 @@ USAGE
   axiom <command> <subcommand> [flags]
 
 CORE COMMANDS
-  ingest:      Ingest data
+  ingest:      Ingest structured data
   query:       Query data using APL
   stream:      Livestream data
 
@@ -55,18 +65,16 @@ ADDITIONAL COMMANDS
 FLAGS
   -O, --auth-org-id string   Organization ID to use
   -T, --auth-token string    Token to use
-  -U, --auth-url string      Url to use
   -C, --config string        Path to configuration file to use
   -D, --deployment string    Deployment to use
   -h, --help                 Show help for command
-  -I, --insecure             Bypass certificate validation
       --no-spinner           Disable the activity indicator
   -v, --version              Show axiom version
 
 EXAMPLES
   $ axiom auth login
   $ axiom version
-  $ cat /var/log/nginx/*.log | axiom ingest nginx-logs
+  $ cat http-logs.json | axiom ingest http-logs
 
 AUTHENTICATION
   See 'axiom help credentials' for help and guidance on authentication.

@@ -41,11 +41,11 @@ func newUpdateCmd(f *cmdutil.Factory) *cobra.Command {
 			# Interactively update a dataset:
 			$ axiom dataset update
 
-			# Interactively update dataset "nginx-logs":
-			$ axiom dataset update nginx-logs
+			# Interactively update dataset "http-logs":
+			$ axiom dataset update http-logs
 			
 			# Update a dataset and provide the parameters on the command-line:
-			$ axiom dataset update nginx-logs --description="All Nginx logs"
+			$ axiom dataset update http-logs --description="All of my logs"
 		`),
 
 		RunE: func(cmd *cobra.Command, _ []string) error {

@@ -73,9 +73,9 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "ingest <dataset-name> [(-f|--file) <filename> [ ...]] [--timestamp-field <timestamp-field>] [--timestamp-format <timestamp-format>] [--flush-every <duration>] [(-t|--content-type <content-type>] [(-e|--content-encoding <content-encoding>]",
-		Short: "Ingest data",
+		Short: "Ingest structured data",
 		Long: heredoc.Doc(`
-			Ingest data into an Axiom dataset.
+			Ingest structured data into an Axiom dataset.
 
 			Supported formats are: Newline delimited JSON (NDJSON), an array of
 			JSON objects (JSON) and a newline delimited list of comma separated
@@ -107,8 +107,8 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 
 		Example: heredoc.Doc(`
 			# Ingest the contents of a JSON logfile into a dataset named
-			# "nginx-logs":
-			$ axiom ingest nginx-logs -f nginx-logs.json
+			# "http-logs":
+			$ axiom ingest http-logs -f http-logs.json
 
 			# Pipe the contents of a log generator into a dataset named
 			# "gen-logs". If the length of the data stream is unknown, the
@@ -117,13 +117,13 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 			# newline delimited JSON.
 			$ ./loggen -ndjson | axiom ingest gen-logs
 
-			# Send a set of gzip compressed logs to a dataset called
-			# "my-logs". The content type is automatically detected. 
-			$ zcat log*.gz | axiom ingest my-logs
+			# Send a set of gzip compressed JSON logs to a dataset called
+			# "http-logs". The content type is automatically detected. 
+			$ zcat log*.json.gz | axiom ingest http-logs
 			
 			# Send a set of gzip compressed JSON logs to a dataset called
-			# "my-logs":
-			$ cat log*.json.gz | axiom ingest my-logs -t=json -e=gzip
+			# "http-logs":
+			$ cat log*.json.gz | axiom ingest http-logs -t=json -e=gzip
 		`),
 
 		Annotations: map[string]string{

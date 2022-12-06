@@ -51,8 +51,8 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 			# Interactively stream a dataset:
 			$ axiom stream
 			
-			# Stream the "nginx-logs" dataset:
-			$ axiom stream nginx-logs
+			# Stream the "http-logs" dataset:
+			$ axiom stream http-logs
 		`),
 
 		Annotations: map[string]string{

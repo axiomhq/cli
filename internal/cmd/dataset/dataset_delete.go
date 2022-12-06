@@ -41,7 +41,7 @@ func newDeleteCmd(f *cmdutil.Factory) *cobra.Command {
 			$ axiom dataset delete
 			
 			# Delete a dataset and provide the dataset name as an argument:
-			$ axiom dataset delete nginx-logs
+			$ axiom dataset delete http-logs
 		`),
 
 		PreRunE: cmdutil.NeedsDatasets(f),
