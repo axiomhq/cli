@@ -45,12 +45,12 @@ func newTrimCmd(f *cmdutil.Factory) *cobra.Command {
 			# Interactively trim a dataset:
 			$ axiom dataset trim
 
-			# Interactively trim dataset "nginx-logs":
-			$ axiom dataset trim nginx-logs
+			# Interactively trim dataset "my-logs":
+			$ axiom dataset trim my-logs
 			
 			# Trim a dataset and provide the parameters on the command-line.
 			# This trims the dataset down to the last 12 hours:
-			$ axiom dataset trim nginx-logs --duration="12h"
+			$ axiom dataset trim my-logs --duration="12h"
 		`),
 
 		RunE: func(cmd *cobra.Command, _ []string) error {

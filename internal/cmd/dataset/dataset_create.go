@@ -42,7 +42,7 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 			$ axiom dataset create
 			
 			# Create a dataset and provide the parameters on the command-line:
-			$ axiom dataset create --name=nginx-logs --description="All Nginx logs"
+			$ axiom dataset create --name=my-logs --description="All of my logs"
 		`),
 
 		RunE: func(cmd *cobra.Command, _ []string) error {
