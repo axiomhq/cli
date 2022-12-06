@@ -19,10 +19,10 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 		Long:  "Manage datasets.",
 
 		Example: heredoc.Doc(`
-			$ axiom dataset create --name=my-logs --description="All of my logs"
+			$ axiom dataset create --name=http-logs --description="All of my logs"
 			$ axiom dataset list
-			$ axiom dataset update my-logs --description="Some of my logs"
-			$ axiom dataset delete my-logs
+			$ axiom dataset update http-logs --description="Some of my logs"
+			$ axiom dataset delete http-logs
 		`),
 
 		Annotations: map[string]string{

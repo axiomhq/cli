@@ -40,7 +40,7 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 		Example: heredoc.Doc(`
 			$ axiom auth login
 			$ axiom version
-			$ cat logs.json | axiom ingest my-logs
+			$ cat http-logs.json | axiom ingest http-logs
 		`),
 
 		Annotations: map[string]string{
