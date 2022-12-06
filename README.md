@@ -74,7 +74,7 @@ FLAGS
 EXAMPLES
   $ axiom auth login
   $ axiom version
-  $ cat logs.json | axiom ingest my-logs
+  $ cat http-logs.json | axiom ingest http-logs
 
 AUTHENTICATION
   See 'axiom help credentials' for help and guidance on authentication.

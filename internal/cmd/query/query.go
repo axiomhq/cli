@@ -68,11 +68,11 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 		Args: cmdutil.PopulateFromArgs(f, &opts.Query),
 
 		Example: heredoc.Doc(`
-			# Query the "my-logs" dataset for logs with a 304 status code:
-			$ axiom query "['my-logs'] | where response == 304"
+			# Query the "http-logs" dataset for logs with a 304 status code:
+			$ axiom query "['http-logs'] | where response == 304"
 			
-			# Count all events in the "my-logs" dataset with a 404 status code:
-			$ axiom query "['my-logs'] | where response == 404 | count"
+			# Count all events in the "http-logs" dataset with a 404 status code:
+			$ axiom query "['http-logs'] | where response == 404 | count"
 		`),
 
 		Annotations: map[string]string{
