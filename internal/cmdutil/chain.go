@@ -56,7 +56,7 @@ var (
 
 		  Explicitly create a dataset on the configured deployment:
 		  $ {{ bold "axiom dataset create" }}
-		  $ {{ bold "axiom dataset create nginx-logs" }}
+		  $ {{ bold "axiom dataset create my-logs" }}
 	`)
 
 	noPersonalAccessTokenGiven = heredoc.Doc(`

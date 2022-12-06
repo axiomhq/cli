@@ -37,7 +37,7 @@ USAGE
   axiom <command> <subcommand> [flags]
 
 CORE COMMANDS
-  ingest:      Ingest data
+  ingest:      Ingest structured data
   query:       Query data using APL
   stream:      Livestream data
 
@@ -66,7 +66,7 @@ FLAGS
 EXAMPLES
   $ axiom auth login
   $ axiom version
-  $ cat /var/log/nginx/*.log | axiom ingest nginx-logs
+  $ cat logs.json | axiom ingest my-logs
 
 AUTHENTICATION
   See 'axiom help credentials' for help and guidance on authentication.
