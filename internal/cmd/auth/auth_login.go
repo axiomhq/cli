@@ -10,11 +10,11 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
-	"github.com/axiomhq/axiom-go/axiom/auth"
 	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/client"
+	"github.com/axiomhq/cli/internal/client/auth"
 	"github.com/axiomhq/cli/internal/cmdutil"
 	"github.com/axiomhq/cli/internal/config"
 	"github.com/axiomhq/cli/pkg/surveyext"
@@ -43,9 +43,14 @@ type loginOptions struct {
 
 	// Alternate deployment support:
 
-	// URL of the deployment to authenticate with. Default to the Axiom Cloud
+	// Base URL of the deployment to authenticate with. Defaults to the Axiom
 	// URL. Can be overwritten by a hidden flag.
 	URL string
+
+	// Parsed from the URL.
+	appURL   string
+	apiURL   string
+	loginURL string
 }
 
 // NewLoginCmd creates ans returns the login command.
@@ -65,10 +70,19 @@ func NewLoginCmd(f *cmdutil.Factory) *cobra.Command {
 			$ axiom auth login
 			
 			# Provide parameters on the command-line:
-			$ echo $AXIOM_TOKEN | axiom auth login --alias="axiom-cloud" --org-id="fancy-horse-1234" -f
+			$ echo $AXIOM_TOKEN | axiom auth login --alias="axiom-mycompany" --org-id="fancy-horse-1234" -f
 		`),
 
-		PreRunE: func(cmd *cobra.Command, _ []string) error {
+		PreRunE: func(cmd *cobra.Command, _ []string) (err error) {
+			// Get specific URLs.
+			if opts.appURL, err = client.GetAppURL(opts.URL); err != nil {
+				return err
+			} else if opts.apiURL, err = client.GetAPIURL(opts.URL); err != nil {
+				return err
+			} else if opts.loginURL, err = client.GetLoginURL(opts.URL); err != nil {
+				return err
+			}
+
 			if !opts.IO.IsStdinTTY() || opts.AutoLogin {
 				return nil
 			}
@@ -87,7 +101,7 @@ func NewLoginCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.Flags().StringVarP(&opts.Alias, "alias", "a", "", "Alias of the deployment")
 	cmd.Flags().StringVarP(&opts.OrganizationID, "org-id", "o", "", "Organization ID")
 	cmd.Flags().BoolVarP(&opts.Force, "force", "f", false, "Skip the confirmation prompt")
-	cmd.Flags().StringVarP(&opts.URL, "url", "u", client.CloudURL, "Url of the deployment")
+	cmd.Flags().StringVarP(&opts.URL, "url", "u", client.BaseURL, "Url of the deployment")
 
 	_ = cmd.RegisterFlagCompletionFunc("auto-login", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("alias", cmdutil.NoCompletion)
@@ -106,13 +120,8 @@ func NewLoginCmd(f *cmdutil.Factory) *cobra.Command {
 }
 
 func completeLogin(ctx context.Context, opts *loginOptions) error {
-	// Make sure to accept urls without a scheme.
-	if !strings.HasPrefix(opts.URL, "http://") && !strings.HasPrefix(opts.URL, "https://") {
-		opts.URL = "https://" + opts.URL
-	}
-
 	// Suggest this URL to the user for creating a personal token.
-	u, err := url.ParseRequestURI(opts.URL)
+	u, err := url.ParseRequestURI(opts.appURL)
 	if err != nil {
 		return err
 	}
@@ -143,7 +152,7 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 	// If only one organization is available, that one is selected by default,
 	// without asking the user for it.
 	if opts.OrganizationID == "" {
-		axiomClient, err := client.New(ctx, opts.URL, opts.Token, "axiom", opts.Config.Insecure)
+		axiomClient, err := client.New(ctx, opts.apiURL, opts.Token, "axiom", opts.Config.Insecure)
 		if err != nil {
 			return err
 		}
@@ -191,9 +200,9 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 		hostRef = ""
 	}
 
-	// Just use "cloud" as the alias if this is their first deployment and they
-	// are authenticating against Axiom Cloud.
-	if hostRef == "cloud" {
+	// Just use "axiom" as the alias if this is their first deployment and they
+	// are authenticating against Axiom App.
+	if hostRef == "axiom" {
 		opts.Alias = hostRef
 	}
 
@@ -215,11 +224,6 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 }
 
 func autoLogin(ctx context.Context, opts *loginOptions) error {
-	// Make sure to accept urls without a scheme.
-	if !strings.HasPrefix(opts.URL, "http://") && !strings.HasPrefix(opts.URL, "https://") {
-		opts.URL = "https://" + opts.URL
-	}
-
 	// 1. Wheather to open the browser or not. But the URL to open and have the
 	// user login is presented nonetheless.
 	stop := func() {}
@@ -246,7 +250,7 @@ func autoLogin(ctx context.Context, opts *loginOptions) error {
 	defer authCancel()
 
 	var err error
-	if opts.Token, err = auth.Login(authContext, oAuth2ClientID, opts.URL, loginFunc); err != nil {
+	if opts.Token, err = auth.Login(authContext, oAuth2ClientID, opts.loginURL, loginFunc); err != nil {
 		return err
 	}
 
@@ -254,7 +258,7 @@ func autoLogin(ctx context.Context, opts *loginOptions) error {
 	// If only one organization is available, that one is selected by default,
 	// without asking the user for it.
 	if opts.OrganizationID == "" {
-		axiomClient, err := client.New(ctx, opts.URL, opts.Token, "axiom", opts.Config.Insecure)
+		axiomClient, err := client.New(ctx, opts.apiURL, opts.Token, "axiom", opts.Config.Insecure)
 		if err != nil {
 			return err
 		}
@@ -306,9 +310,9 @@ func autoLogin(ctx context.Context, opts *loginOptions) error {
 		hostRef = ""
 	}
 
-	// Just use "cloud" as the alias if this is their first deployment and they
-	// are authenticating against Axiom Cloud.
-	if hostRef == "cloud" {
+	// Just use "axiom" as the alias if this is their first deployment and they
+	// are authenticating against Axiom App.
+	if hostRef == "axiom" {
 		opts.Alias = hostRef
 	}
 
@@ -355,7 +359,7 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 		}
 	}
 
-	axiomClient, err := client.New(ctx, opts.URL, opts.Token, opts.OrganizationID, opts.Config.Insecure)
+	axiomClient, err := client.New(ctx, opts.apiURL, opts.Token, opts.OrganizationID, opts.Config.Insecure)
 	if err != nil {
 		return err
 	}
@@ -389,7 +393,7 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 
 	opts.Config.ActiveDeployment = opts.Alias
 	opts.Config.Deployments[opts.Alias] = config.Deployment{
-		URL:            opts.URL,
+		URL:            opts.apiURL,
 		Token:          opts.Token,
 		OrganizationID: opts.OrganizationID,
 	}

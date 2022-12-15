@@ -16,7 +16,7 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 		Long:  `Open Axiom in the systems default web browser.`,
 
 		RunE: func(_ *cobra.Command, _ []string) error {
-			return browser.OpenURL(client.CloudURL)
+			return browser.OpenURL(client.AppURL)
 		},
 	}
 }
