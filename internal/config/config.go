@@ -134,6 +134,14 @@ func LoadFromReader(r io.Reader) (config *Config, err error) {
 		}
 	}
 
+	// HINT(lukasmalkmus): Support old config files that were talking to
+	// cloud.axiom.co or similar deployments.
+	for k, deployment := range config.Deployments {
+		newURL := strings.ReplaceAll(deployment.URL, "cloud.", "api.")
+		deployment.URL = newURL
+		config.Deployments[k] = deployment
+	}
+
 	return config, nil
 }
 
@@ -196,6 +204,14 @@ func (c *Config) Write() error {
 		return err
 	}
 	defer f.Close()
+
+	// HINT(lukasmalkmus): Rewrite old config files that were talking to
+	// cloud.axiom.co or similar deployments.
+	for k, deployment := range c.Deployments {
+		newURL := strings.ReplaceAll(deployment.URL, "cloud.", "api.")
+		deployment.URL = newURL
+		c.Deployments[k] = deployment
+	}
 
 	if err = toml.NewEncoder(f).Order(toml.OrderPreserve).Encode(c); err != nil {
 		return err

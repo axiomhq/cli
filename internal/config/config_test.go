@@ -15,8 +15,8 @@ active_deployment = "axiom-eu-west-1"
 
 [deployments]
 
-[deployments.cloud]
-url = "axiom-cloud.aws.com"
+[deployments.app]
+url = "axiom-app.aws.com"
 token = "this-is-obviously-stupid"
 org_id = "axiomers-dh71"
 
