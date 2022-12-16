@@ -68,17 +68,9 @@ func TestLogin(t *testing.T) {
 		}`))
 	}
 
-	successCh := make(chan struct{})
-
 	r := http.NewServeMux()
 	r.Handle("/oauth/authorize", http.HandlerFunc(authHf))
 	r.Handle("/oauth/token", http.HandlerFunc(tokenHf))
-	r.Handle("/oauth/success", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		close(successCh)
-	}))
-	r.Handle("/oauth/error", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		t.Error("should not be called")
-	}))
 
 	srv := httptest.NewServer(r)
 	defer srv.Close()
@@ -97,8 +89,6 @@ func TestLogin(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, "test-token", token)
-
-	<-successCh
 }
 
 func TestLogin_AuthorizationError(t *testing.T) {
@@ -115,18 +105,10 @@ func TestLogin_AuthorizationError(t *testing.T) {
 		http.Redirect(w, r, redirectURI.String(), http.StatusFound)
 	}
 
-	errCh := make(chan struct{})
-
 	r := http.NewServeMux()
 	r.Handle("/oauth/authorize", http.HandlerFunc(authHf))
 	r.Handle("/oauth/token", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		t.Error("should not be called")
-	}))
-	r.Handle("/oauth/success", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		t.Error("should not be called")
-	}))
-	r.Handle("/oauth/error", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		close(errCh)
 	}))
 
 	srv := httptest.NewServer(r)
@@ -145,8 +127,6 @@ func TestLogin_AuthorizationError(t *testing.T) {
 	token, err := auth.Login(context.Background(), "123", srv.URL, loginFunc)
 	assert.EqualError(t, err, "oauth2 authorization error \"access_denied\": user denied access")
 	assert.Empty(t, token)
-
-	<-errCh
 }
 
 func TestLogin_ExchangeError(t *testing.T) {
@@ -167,17 +147,9 @@ func TestLogin_ExchangeError(t *testing.T) {
 		http.Error(w, http.StatusText(code), code)
 	}
 
-	errCh := make(chan struct{})
-
 	r := http.NewServeMux()
 	r.Handle("/oauth/authorize", http.HandlerFunc(authHf))
 	r.Handle("/oauth/token", http.HandlerFunc(tokenHf))
-	r.Handle("/oauth/success", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		t.Error("should not be called")
-	}))
-	r.Handle("/oauth/error", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		close(errCh)
-	}))
 
 	srv := httptest.NewServer(r)
 	defer srv.Close()
@@ -195,6 +167,4 @@ func TestLogin_ExchangeError(t *testing.T) {
 	token, err := auth.Login(context.Background(), "123", srv.URL, loginFunc)
 	assert.EqualError(t, err, "oauth2: cannot fetch token: 500 Internal Server Error\nResponse: Internal Server Error\n")
 	assert.Empty(t, token)
-
-	<-errCh
 }
