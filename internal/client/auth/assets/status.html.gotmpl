@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Axiom</title>
+    <link rel="icon" href="https://app.axiom.co/static/favicon.ico">
+
+    <meta name="description" content="Axiom CLI">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <style>
+        html,
+        body,
+        .root {
+            width: 100%;
+            height: 100%;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            color: #334155;
+            font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
+            font-size: 14px;
+            font-weight: 500;
+            font-variant: tabular-nums;
+            line-height: 1.5;
+            background-color: #fff;
+            font-feature-settings: "tnum";
+            margin: 0;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            margin-top: 0;
+            margin-bottom: .5em;
+            font-weight: 500;
+        }
+
+        p {
+            margin-top: 0;
+            margin-bottom: 1em;
+        }
+
+        h2 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .root {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo {
+            width: 92px;
+            float: left;
+            position: absolute;
+            top: 16px;
+            left: 16px;
+        }
+
+        .center p {
+            padding: 8px 0;
+        }
+
+        .error .center {
+            color: #bf0e08;
+        }
+    </style>
+</head>
+
+<body {{- if .error }} class="error"{{ end }}>
+    <div class="root">
+        <a class="" target="_blank" rel="noopener noreferrer" href="https://axiom.co">
+            <img src="https://app.axiom.co/static/media/axiom-black.svg" alt="Axiom logo" class="logo">
+        </a>
+        <div class="center">
+            {{- if .error }}
+            <h2 id="msg">Login failed</h2>
+            <p id="details">{{ .error }}</p>
+            {{- else }}
+            <h2 id="msg">Login successful</h2>
+            <p id="details">You can close this page and return to your CLI.</p>
+            {{- end }}
+        </div>
+    </div>
+    <script>
+        window.history.replaceState({}, '', `${window.location.pathname}`);
+    </script>
+</body>
+
+</html>

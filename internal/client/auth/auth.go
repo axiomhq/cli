@@ -9,18 +9,19 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"sync"
 	"time"
 
 	"golang.org/x/oauth2"
 
+	"github.com/axiomhq/cli/internal/client/auth/assets"
 	"github.com/axiomhq/cli/internal/client/auth/pkce"
 )
 
 const (
-	authPath    = "/oauth/authorize"
-	tokenPath   = "/oauth/token" //nolint:gosec // Sigh, this is not a hardcoded credential...
-	successPath = "/oauth/success"
-	errorPath   = "/oauth/error"
+	// Endpoints served on the authorization server.
+	authPath  = "/oauth/authorize"
+	tokenPath = "/oauth/token" //nolint:gosec // Sigh, this is not a hardcoded credential...
 )
 
 // LoginFunc is a function that is called with the URL the user has to visit in
@@ -42,16 +43,6 @@ func Login(ctx context.Context, clientID, baseURL string, loginFunc LoginFunc) (
 	}
 
 	tokenURL, err := u.Parse(tokenPath)
-	if err != nil {
-		return "", err
-	}
-
-	successURL, err := u.Parse(successPath)
-	if err != nil {
-		return "", err
-	}
-
-	errorURL, err := u.Parse(errorPath)
 	if err != nil {
 		return "", err
 	}
@@ -87,67 +78,68 @@ func Login(ctx context.Context, clientID, baseURL string, loginFunc LoginFunc) (
 		return "", err
 	}
 
+	// Generate a random state to prevent CSRF. It is hex-encoded to make it
+	// URL-safe.
 	stateBytes := make([]byte, 16)
 	if _, err = rand.Read(stateBytes); err != nil {
 		return "", err
 	}
 	state := hex.EncodeToString(stateBytes)
 
-	loginURL := config.AuthCodeURL(state,
-		codeVerifier.Challenge(method).AuthCodeOption(),
-		method.AuthCodeOption(),
-	)
-
-	if err = loginFunc(ctx, loginURL); err != nil {
-		return "", err
-	}
-
+	// Setup the callback handler.
 	var (
-		token         *oauth2.Token
-		callbackErrCh = make(chan error)
+		token         *oauth2.Token      // Populated by callbackHandlerHf
+		callbackErrCh = make(chan error) // Closed by callbackHandlerHf
+		callbackOnce  sync.Once          // Ensures callbackHandlerHf is only called once
 	)
 	callbackHandlerHf := func(w http.ResponseWriter, r *http.Request) {
-		defer close(callbackErrCh)
+		callbackOnce.Do(func() {
+			defer close(callbackErrCh)
 
-		if r.Method != http.MethodGet {
-			callbackErrCh <- errors.New("invalid method")
-			http.Redirect(w, r, errorURL.String(), http.StatusFound)
-			return
-		}
+			writeResponse := func(err error) {
+				if err == nil {
+					callbackErrCh <- assets.WriteStatusPage(w)
+				} else {
+					_ = assets.WriteStatusPageWithError(w, err)
+					callbackErrCh <- err
+				}
+			}
 
-		// Make sure state matches.
-		if r.FormValue("state") != state {
-			callbackErrCh <- errors.New("invalid state")
-			http.Redirect(w, r, errorURL.String(), http.StatusFound)
-			return
-		}
+			if r.Method != http.MethodGet {
+				writeResponse(errors.New("invalid method"))
+				return
+			}
 
-		// In case we have an error from the authorization server, return it and
-		// redirect to the error page.
-		if r.Form.Has("error") {
-			serverErr := fmt.Errorf("oauth2 authorization error %q: %s", r.FormValue("error"), r.FormValue("error_description"))
-			callbackErrCh <- serverErr
-			http.Redirect(w, r, errorURL.String(), http.StatusFound)
-			return
-		}
+			// Make sure state matches.
+			if r.FormValue("state") != state {
+				writeResponse(errors.New("invalid state"))
+				return
+			}
 
-		code := r.FormValue("code")
-		if code == "" {
-			callbackErrCh <- errors.New("missing authorization code")
-			http.Redirect(w, r, errorURL.String(), http.StatusFound)
-			return
-		}
+			// Check if we have an error from the authorization server.
+			if r.Form.Has("error") {
+				serverErr := fmt.Errorf("oauth2 authorization error %q: %s", r.FormValue("error"), r.FormValue("error_description"))
+				writeResponse(serverErr)
+				return
+			}
 
-		var exchangeErr error
-		if token, exchangeErr = config.Exchange(r.Context(), code, codeVerifier.AuthCodeOption()); exchangeErr != nil {
-			callbackErrCh <- exchangeErr
-			http.Redirect(w, r, errorURL.String(), http.StatusFound)
-			return
-		}
+			code := r.FormValue("code")
+			if code == "" {
+				writeResponse(errors.New("missing authorization code"))
+				return
+			}
 
-		http.Redirect(w, r, successURL.String(), http.StatusFound)
+			var exchangeErr error
+			if token, exchangeErr = config.Exchange(r.Context(), code, codeVerifier.AuthCodeOption()); exchangeErr != nil {
+				writeResponse(exchangeErr)
+				return
+			}
+
+			writeResponse(nil)
+		})
 	}
 
+	// Start the HTTP server that listens for the callback.
 	srv := http.Server{
 		Addr:              lis.Addr().String(),
 		Handler:           http.HandlerFunc(callbackHandlerHf),
@@ -163,6 +155,17 @@ func Login(ctx context.Context, clientID, baseURL string, loginFunc LoginFunc) (
 		}
 		close(srvErrCh)
 	}()
+
+	// Construct the login URL and call the login function provided by the
+	// caller.
+	loginURL := config.AuthCodeURL(state,
+		codeVerifier.Challenge(method).AuthCodeOption(),
+		method.AuthCodeOption(),
+	)
+
+	if err = loginFunc(ctx, loginURL); err != nil {
+		return "", err
+	}
 
 	select {
 	case <-ctx.Done():
