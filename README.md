@@ -103,7 +103,7 @@ Distributed under the [MIT License](./LICENSE).
 [docs]: https://docs.axiom.co
 [docs_badge]: https://img.shields.io/badge/docs-reference-blue.svg
 [workflow]: https://github.com/axiomhq/cli/actions/workflows/push.yaml
-[workflow_badge]: https://img.shields.io/github/workflow/status/axiomhq/cli/Push
+[workflow_badge]: https://img.shields.io/github/actions/workflow/status/axiomhq/cli/push.yaml?branch=main&ghcache=unused
 [release]: https://github.com/axiomhq/cli/releases/latest
 [release_badge]: https://img.shields.io/github/release/axiomhq/cli.svg
 [license]: https://opensource.org/licenses/MIT
