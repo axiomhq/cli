@@ -2,13 +2,12 @@ package auth
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc"
-	"github.com/axiomhq/axiom-go/axiom"
 	"github.com/spf13/cobra"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/axiomhq/cli/internal/client"
 	"github.com/axiomhq/cli/internal/cmdutil"
@@ -69,44 +68,58 @@ func runStatus(ctx context.Context, opts *statusOptions) error {
 
 	var (
 		cs         = opts.IO.ColorScheme()
-		failed     bool
 		statusInfo = map[string][]string{}
+		// We don't care about the context here. If an errors occurs, still try
+		// to get the status of the other deployments.
+		eg, _ = errgroup.WithContext(ctx)
 	)
-	for _, v := range deploymentAliases {
-		deployment, ok := opts.Config.Deployments[v]
+	for _, deploymentAlias := range deploymentAliases {
+		deploymentAlias := deploymentAlias
+		deployment, ok := opts.Config.Deployments[deploymentAlias]
 		if !ok {
 			continue
 		}
 
-		var info string
-		client, err := client.New(ctx, deployment.URL, deployment.Token, deployment.OrganizationID, opts.Config.Insecure)
-		if err != nil {
-			info = fmt.Sprintf("%s %s", cs.ErrorIcon(), errors.Unwrap(err))
-		} else {
-			if user, err := client.Users.Current(ctx); errors.Is(err, axiom.ErrUnauthenticated) {
-				info = fmt.Sprintf("%s %s", cs.ErrorIcon(), "Invalid credentials")
-				failed = true
-			} else if err != nil {
-				info = fmt.Sprintf("%s %s", cs.ErrorIcon(), err)
-				failed = true
-			} else {
-				if deployment.OrganizationID == "" {
-					info = fmt.Sprintf("%s Logged in as %s", cs.SuccessIcon(),
-						cs.Bold(user.Name))
-				} else {
-					var organization *axiom.Organization
-					if organization, err = client.Organizations.Get(ctx, deployment.OrganizationID); err != nil {
-						info = fmt.Sprintf("%s %s", cs.ErrorIcon(), err)
-						failed = true
-					} else {
-						info = fmt.Sprintf("%s Logged in to %s as %s", cs.SuccessIcon(),
-							cs.Bold(organization.Name), cs.Bold(user.Name))
-					}
-				}
-			}
-		}
+		eg.Go(func() error {
+			var info string
+			defer func() {
+				statusInfo[deploymentAlias] = append(statusInfo[deploymentAlias], info)
+			}()
 
-		statusInfo[v] = append(statusInfo[v], info)
+			client, err := client.New(ctx, deployment.URL, deployment.Token, deployment.OrganizationID, opts.Config.Insecure)
+			if err != nil {
+				info = fmt.Sprintf("%s %s", cs.ErrorIcon(), err)
+				return err
+			}
+
+			user, err := client.Users.Current(ctx)
+			if err != nil {
+				info = fmt.Sprintf("%s %s", cs.ErrorIcon(), err)
+				return err
+			}
+
+			if deployment.OrganizationID == "" {
+				info = fmt.Sprintf("%s Logged in as %s", cs.SuccessIcon(),
+					cs.Bold(user.Name))
+				return nil
+			}
+
+			organization, err := client.Organizations.Get(ctx, deployment.OrganizationID)
+			if err != nil {
+				info = fmt.Sprintf("%s %s", cs.ErrorIcon(), err)
+				return err
+			}
+
+			info = fmt.Sprintf("%s Logged in to %s as %s", cs.SuccessIcon(),
+				cs.Bold(organization.Name), cs.Bold(user.Name))
+
+			return nil
+		})
+	}
+
+	failed := false
+	if err := eg.Wait(); err != nil {
+		failed = true
 	}
 
 	stop()
