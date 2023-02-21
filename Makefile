@@ -38,7 +38,7 @@ GO_LD_FLAGS += -X github.com/axiomhq/pkg/version.buildUser=$(USER)
 # FLAGS
 GO_FLAGS 			:= -buildvcs=false -buildmode=pie -installsuffix=cgo -trimpath -tags='$(GO_TAGS)' -ldflags='$(GO_LD_FLAGS)'
 GO_TEST_FLAGS		:= -race -coverprofile=$(COVERPROFILE)
-GORELEASER_FLAGS	:= --snapshot --rm-dist
+GORELEASER_FLAGS	:= --snapshot --clean
 
 # DEPENDENCIES
 GOMODDEPS = go.mod go.sum
