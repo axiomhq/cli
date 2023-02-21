@@ -6,7 +6,7 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.3.6
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
-	github.com/axiomhq/axiom-go v0.14.1
+	github.com/axiomhq/axiom-go v0.14.2
 	github.com/axiomhq/pkg v0.3.0
 	github.com/briandowns/spinner v1.21.0
 	github.com/cli/cli v1.14.0

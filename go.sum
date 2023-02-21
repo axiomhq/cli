@@ -850,8 +850,8 @@ github.com/aws/smithy-go v1.13.4/go.mod h1:Tg+OJXh4MB2R/uN61Ko2f6hTZwB/ZYGOtib8J
 github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20220228164355-396b2034c795/go.mod h1:8vJsEZ4iRqG+Vx6pKhWK6U00qcj0KC37IsfszMkY6UE=
 github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20220517224237-e6f29200ae04 h1:p2I85zYI9z5/c/3Q0LiO3RtNXcmXHTtJfml/hV16zNg=
 github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.0.0-20220517224237-e6f29200ae04/go.mod h1:Z+bXnIbhKJYSvxNwsNnwde7pDKxuqlEZCbUBoTwAqf0=
-github.com/axiomhq/axiom-go v0.14.1 h1:ywMPasjEH6d/iw7YrlTBnvaXpoqym5aHox5cuiU0x50=
-github.com/axiomhq/axiom-go v0.14.1/go.mod h1:UbZ4FlznNlb89uMC1oezd6MUe7sL+VzWQq9ujc0Li9I=
+github.com/axiomhq/axiom-go v0.14.2 h1:gOYvaVliVef62VbDERXsoX4k3m5mV2RgB0z+9N5KdJg=
+github.com/axiomhq/axiom-go v0.14.2/go.mod h1:lFd/xsx3c+xMGsaF83IjgB7maGXL+FvFhbdG00puAao=
 github.com/axiomhq/pkg v0.3.0 h1:v4scDFPmXB+Wayb8AapIXQcFrBLwr5ERAcevPaIW5GI=
 github.com/axiomhq/pkg v0.3.0/go.mod h1:OjLkiHiN2mO6apKe0RP4vSuhsqhXC4hQGPMt8cTaCmQ=
 github.com/aybabtme/rgbterm v0.0.0-20170906152045-cc83f3b3ce59/go.mod h1:q/89r3U2H7sSsE2t6Kca0lfwTK8JdoNGS/yzM/4iH5I=
