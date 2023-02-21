@@ -17,7 +17,7 @@
   Kubernetes, AWS, Azure, Google Cloud, DigitalOcean, Nomad, and others.
 - **Query everything, all the time:** Whether DevOps, SecOps, or EverythingOps,
   query all your data no matter its age. No provisioning, no moving data from
-  cold/archive to “hot”, and no worrying about slow queries. All your data, all.
+  cold/archive to "hot", and no worrying about slow queries. All your data, all.
   the. time.
 - **Powerful dashboards, for continuous observability:** Build dashboards to
   collect related queries and present information that’s quick and easy to
