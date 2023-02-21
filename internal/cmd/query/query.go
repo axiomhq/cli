@@ -192,9 +192,6 @@ func run(ctx context.Context, opts *options) error {
 	cs := opts.IO.ColorScheme()
 
 	headerText := cs.Bold(opts.Query)
-	if res.SavedQueryID != "" {
-		headerText += fmt.Sprintf(" (saved as %s)", cs.Bold(res.SavedQueryID))
-	}
 	headerText += fmt.Sprintf(" processed in %s", cs.Gray(res.Status.ElapsedTime.String()))
 	headerText = fmt.Sprintf("Result of query %s:\n\n", headerText)
 
