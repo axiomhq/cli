@@ -4,14 +4,14 @@ GO_BIN_IN_PATH  := CGO_ENABLED=0 go
 GOFMT			:= $(GO)fmt
 
 # ENVIRONMENT
-VERBOSE		=
-GOPATH		:= $(GOPATH)
+VERBOSE	=
+GOPATH	:= $(GOPATH)
 
 # APPLICATION INFORMATION
-BUILD_DATE      := $(shell date -u '+%Y-%m-%dT%H:%M:%SZ')
-REVISION        := $(shell git rev-parse --short HEAD)
-RELEASE         := $(shell git describe --tags 2>/dev/null || git rev-parse --short HEAD)-dev
-USER            := $(shell whoami)
+BUILD_DATE	:= $(shell date -u '+%Y-%m-%dT%H:%M:%SZ')
+REVISION	:= $(shell git rev-parse --short HEAD)
+RELEASE		:= $(shell git describe --tags 2>/dev/null || git rev-parse --short HEAD)-dev
+USER		:= $(shell whoami)
 
 # TOOLS
 GEN_CLI_DOCS	:= bin/gen-cli-docs
