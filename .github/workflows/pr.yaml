@@ -57,7 +57,7 @@ jobs:
           check-latest: true
           cache: true
           go-version-file: go.mod
-      - uses: goreleaser/goreleaser-action@v3
+      - uses: goreleaser/goreleaser-action@v4
         with:
           args: build --snapshot
       - uses: actions/upload-artifact@v3
