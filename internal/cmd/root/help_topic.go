@@ -79,7 +79,7 @@ func newHelpTopic(io *terminal.IO, topic string) *cobra.Command {
 	return cmd
 }
 
-func helpTopicHelpFunc(cmd *cobra.Command, args []string) {
+func helpTopicHelpFunc(cmd *cobra.Command, _ []string) {
 	cmd.Print(cmd.Long)
 }
 

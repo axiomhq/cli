@@ -41,7 +41,7 @@ func rootUsageFunc(cmd *cobra.Command) error {
 	return nil
 }
 
-func rootFlagErrrorFunc(cmd *cobra.Command, err error) error {
+func rootFlagErrrorFunc(_ *cobra.Command, err error) error {
 	if errors.Is(err, pflag.ErrHelp) {
 		return err
 	}

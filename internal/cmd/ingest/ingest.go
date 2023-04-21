@@ -60,9 +60,12 @@ type options struct {
 	ContentType axiom.ContentType
 	// ContentEncoding of the data to ingest.
 	ContentEncoding axiom.ContentEncoding
+	// Labels attached to every event, server-side.
+	Labels []ingest.Option
 
 	contentType     string
 	contentEncoding string
+	labels          []string
 }
 
 // NewCmd creates and returns the ingest command.
@@ -72,7 +75,7 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "ingest <dataset-name> [(-f|--file) <filename> [ ...]] [--timestamp-field <timestamp-field>] [--timestamp-format <timestamp-format>] [--flush-every <duration>] [(-t|--content-type <content-type>] [(-e|--content-encoding <content-encoding>]",
+		Use:   "ingest <dataset-name> [(-f|--file) <filename> [ ...]] [--timestamp-field <timestamp-field>] [--timestamp-format <timestamp-format>] [--flush-every <duration>] [(-t|--content-type <content-type>] [(-e|--content-encoding <content-encoding>] [(-l|--label) <key>:<value> [ ...]]",
 		Short: "Ingest structured data",
 		Long: heredoc.Doc(`
 			Ingest structured data into an Axiom dataset.
@@ -124,6 +127,12 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 			# Send a set of gzip compressed JSON logs to a dataset called
 			# "http-logs":
 			$ cat log*.json.gz | axiom ingest http-logs -t=json -e=gzip
+			
+			# Send a set of gzip compressed JSON logs to a dataset called
+			# "http-logs" and attach some labels. Labels are added server-side
+			# to every events, so there is no need to add them to the data,
+			# locally:
+			$ cat log*.json.gz | axiom ingest http-logs -t=json -e=gzip -l=env:prod -l=app:webserver
 		`),
 
 		Annotations: map[string]string{
@@ -156,6 +165,15 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 				return fmt.Errorf("content encoding set but content type not set")
 			}
 
+			// Sanity check the labels.
+			for _, label := range opts.labels {
+				splits := strings.Split(label, ":")
+				if len(splits) != 2 {
+					return fmt.Errorf("malformed label: %q", label)
+				}
+				opts.Labels = append(opts.Labels, ingest.SetEventLabel(splits[0], splits[1]))
+			}
+
 			if err := complete(cmd.Context(), opts); err != nil {
 				return err
 			}
@@ -170,6 +188,7 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.Flags().DurationVar(&opts.FlushEvery, "flush-every", time.Second, "Buffer flush interval for newline delimited JSON streams of unknown length")
 	cmd.Flags().StringVarP(&opts.contentType, "content-type", "t", "", "Content type of the data to ingest (will auto-detect if not set, must be set if content encoding is set and content type is not identity)")
 	cmd.Flags().StringVarP(&opts.contentEncoding, "content-encoding", "e", axiom.Identity.String(), "Content encoding of the data to ingest")
+	cmd.Flags().StringSliceVarP(&opts.labels, "label", "l", nil, "Labels to attach to the ingested events, server side")
 
 	_ = cmd.RegisterFlagCompletionFunc("timestamp-field", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("timestamp-format", cmdutil.NoCompletion)
@@ -177,6 +196,7 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	_ = cmd.RegisterFlagCompletionFunc("flush-every", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("content-type", contentTypeCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("content-encoding", contentEncodingCompletion)
+	_ = cmd.RegisterFlagCompletionFunc("label", cmdutil.NoCompletion)
 
 	if opts.IO.IsStdinTTY() {
 		_ = cmd.MarkFlagRequired("file")
@@ -416,11 +436,19 @@ func ingestReader(ctx context.Context, client *axiom.Client, r io.Reader, typ ax
 		r = io.NopCloser(r)
 	}
 
-	res, err := client.Datasets.Ingest(ctx, opts.Dataset, r, typ, enc,
-		ingest.SetTimestampField(opts.TimestampField),
-		ingest.SetTimestampFormat(opts.TimestampFormat),
-		ingest.SetCSVDelimiter(opts.Delimiter),
-	)
+	ingestOptions := make([]ingest.Option, 0)
+	if v := opts.TimestampField; v != "" {
+		ingest.SetTimestampField(v)
+	}
+	if v := opts.TimestampFormat; v != "" {
+		ingest.SetTimestampFormat(v)
+	}
+	if v := opts.Delimiter; v != "" {
+		ingest.SetCSVDelimiter(v)
+	}
+	ingestOptions = append(ingestOptions, opts.Labels...)
+
+	res, err := client.Datasets.Ingest(ctx, opts.Dataset, r, typ, enc, ingestOptions...)
 	if err != nil {
 		return nil, err
 	}

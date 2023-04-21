@@ -7,7 +7,7 @@ import (
 )
 
 // NewCmd creates and returns the version command.
-func NewCmd(f *cmdutil.Factory, version string) *cobra.Command {
+func NewCmd(_ *cmdutil.Factory, version string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "version",
 		Short: "Print version",

@@ -9,7 +9,7 @@ import (
 )
 
 // NewCmd creates and returns the web command.
-func NewCmd(f *cmdutil.Factory) *cobra.Command {
+func NewCmd(_ *cmdutil.Factory) *cobra.Command {
 	return &cobra.Command{
 		Use:   "web",
 		Short: "Open Axiom in the browser",
