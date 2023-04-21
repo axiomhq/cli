@@ -17,7 +17,7 @@ import (
 type CompletionFunc func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective)
 
 // NoCompletion disables completion.
-func NoCompletion(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func NoCompletion(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {
 	return nil, cobra.ShellCompDirectiveNoFileComp
 }
 

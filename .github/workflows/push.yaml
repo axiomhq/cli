@@ -107,11 +107,11 @@ jobs:
           mv artifact/${{ matrix.goos }}_${{ matrix.goos }}_amd64_v1/axiom /usr/local/bin/axiom
           axiom version -I
           axiom dataset create -n=${{ env.AXIOM_DATASET }} -d="CLI Integration test"
-          axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.json.gz -t=json -e=gzip
-          axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.ndjson.gz -t=ndjson -e=gzip
-          axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.csv.gz -t=csv -e=gzip
+          axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.json.gz -t=json -e=gzip -l=workflow:push
+          axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.ndjson.gz -t=ndjson -e=gzip -l=workflow:push
+          axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.csv.gz -t=csv -e=gzip -l=workflow:push
           gunzip testdata/logs.*.gz
-          axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.json -f=testdata/logs.ndjson -f=testdata/logs.csv
+          axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.json -f=testdata/logs.ndjson -f=testdata/logs.csv -l=workflow:push
           axiom dataset list
           axiom query "['${{ env.AXIOM_DATASET }}']"
       - name: Test (Windows)
@@ -122,9 +122,9 @@ jobs:
           axiom version -I
           gunzip testdata/logs.*.gz
           axiom dataset create -n=${{ env.AXIOM_DATASET }} -d="CLI Integration test"
-          axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.json
-          axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.ndjson
-          axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.csv
+          axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.json -l=workflow:push
+          axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.ndjson -l=workflow:push
+          axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.csv -l=workflow:push
           axiom dataset list
           axiom query "['${{ env.AXIOM_DATASET }}']"
       - name: Cleanup
