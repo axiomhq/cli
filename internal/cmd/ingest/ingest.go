@@ -299,7 +299,11 @@ func run(ctx context.Context, opts *options, flushEverySet bool) error {
 		} else {
 			ingestRes, err = ingestReader(ctx, client, r, typ, opts)
 		}
-		res.Add(ingestRes)
+
+		// Error handling below, so we need to check for nil.
+		if ingestRes != nil {
+			res.Add(ingestRes)
+		}
 
 		if err != nil && !errors.Is(err, context.Canceled) {
 			_ = rc.Close()
