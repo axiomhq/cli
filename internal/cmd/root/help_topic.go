@@ -46,6 +46,15 @@ var topics = map[string]string{
 
 		CLICOLOR_FORCE: Set to a value other than "0" to keep ANSI colors in
 		output even when the output is piped.
+
+		HTTP_PROXY, HTTPS_PROXY (in order of precedence): The URL of the proxy
+		server to use for HTTP or HTTPS requests respectively. The values may be
+		either a complete URL or a "host[:port]", with the "http" scheme assumed.
+		Supported schemes are "http", "https", and "socks5".
+
+		NO_PROXY: A comma-separated list of hostnames, domains, IP addresses, or CIDR
+		notations that should bypass the proxy specified by HTTP_PROXY or HTTPS_PROXY.
+		Entries may optionally include a port number, formatted as 'domain:port' or 'IP:port'.
 	`,
 
 	"exit-codes": `

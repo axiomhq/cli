@@ -21,6 +21,7 @@ func New(ctx context.Context, baseURL, accessToken, orgID string, insecure bool)
 	}
 
 	httpTransport := &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
 		DialContext: (&net.Dialer{
 			Timeout: 5 * time.Second,
 		}).DialContext,
