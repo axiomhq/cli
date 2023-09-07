@@ -52,9 +52,12 @@ var topics = map[string]string{
 		either a complete URL or a "host[:port]", with the "http" scheme assumed.
 		Supported schemes are "http", "https", and "socks5".
 
-		NO_PROXY: A comma-separated list of domain extensions that should bypass
-		the proxy specified by HTTP_PROXY or HTTPS_PROXY. Requests to these domains
-		will not use a proxy.
+		NO_PROXY: A comma-separated list of hostnames, domains, IP addresses, or
+		CIDR notations that should bypass the proxy specified by HTTP_PROXY or
+		HTTPS_PROXY. Entries may optionally include a port number, formatted as
+		'domain:port' or 'IP:port'. Wildcards (*) can be used for specifying
+		subdomains. For example, "*.example.com" will bypass the proxy for all
+		subdomains of example.com. Requests to these addresses will not use a proxy.
 	`,
 
 	"exit-codes": `
