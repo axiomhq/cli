@@ -17,11 +17,11 @@ func String(s string) string {
 	return unwrap(r)
 }
 
-// Wrap is like Doc() but word wraps at the given width but at max 120
+// Wrap is like Doc() but word wraps at the given width but at max 80
 // characters.
 func Wrap(s string, wrap int) string {
-	if wrap > 120 {
-		wrap = 120
+	if wrap > 80 {
+		wrap = 80
 	}
 	s = String(s)
 	return wordwrap.String(s, wrap)
