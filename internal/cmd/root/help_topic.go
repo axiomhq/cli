@@ -21,7 +21,7 @@ var topics = map[string]string{
 	`,
 
 	"environment": `
-		AXIOM_DEPLOYMENT: The deployment to use. Overwrittes the choice loaded
+		AXIOM_DEPLOYMENT: The deployment to use. Overwrites the choice loaded
 		from the configuration file.
 
 		AXIOM_ORG_ID: The organization id of the organization the access token
@@ -30,10 +30,10 @@ var topics = map[string]string{
 		AXIOM_PAGER, PAGER (in order of precedence): A terminal paging program
 		to send standard output to, e.g. "less".
 
-		AXIOM_TOKEN: Token The access token to use. Overwrittes the choice
-		loaded from the configuration file.
+		AXIOM_TOKEN: Token The access token to use. Overwrites the choice loaded
+		from the configuration file.
 
-		AXIOM_URL: The deployment url to use. Overwrittes the choice loaded from
+		AXIOM_URL: The deployment url to use. Overwrites the choice loaded from
 		the configuration file.
 
 		VISUAL, EDITOR (in order of precedence): The editor to use for authoring
