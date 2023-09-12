@@ -442,13 +442,13 @@ func ingestReader(ctx context.Context, client *axiom.Client, r io.Reader, typ ax
 
 	ingestOptions := make([]ingest.Option, 0)
 	if v := opts.TimestampField; v != "" {
-		ingest.SetTimestampField(v)
+		ingestOptions = append(ingestOptions, ingest.SetTimestampField(v))
 	}
 	if v := opts.TimestampFormat; v != "" {
-		ingest.SetTimestampFormat(v)
+		ingestOptions = append(ingestOptions, ingest.SetTimestampFormat(v))
 	}
 	if v := opts.Delimiter; v != "" {
-		ingest.SetCSVDelimiter(v)
+		ingestOptions = append(ingestOptions, ingest.SetCSVDelimiter(v))
 	}
 	ingestOptions = append(ingestOptions, opts.Labels...)
 
