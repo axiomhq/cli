@@ -194,5 +194,5 @@ aurs:
       - axiom-bin
       - axiom-git
     commit_author:
-      name: axiom-automation
+      name: axiomautomation
       email: hello@axiom.co
