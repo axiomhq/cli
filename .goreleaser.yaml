@@ -130,7 +130,7 @@ brews:
     description: Powerful log analytics from the comfort of your command-line
     homepage: https://axiom.co
     license: MIT
-    tap:
+    repository:
       owner: axiomhq
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TOKEN }}"
