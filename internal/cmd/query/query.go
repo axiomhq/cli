@@ -108,7 +108,7 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 
 func timeStrToTime(timeStr string, timestampFormat string) (time.Time, error) {
 	if timestampFormat != "" {
-		// parse the timestamp as absoute because we have a definitive format
+		// parse the timestamp as absolute because we have a definitive format
 		return time.Parse(timestampFormat, timeStr)
 	}
 
