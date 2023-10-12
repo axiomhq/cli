@@ -34,3 +34,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           HOMEBREW_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
+          AUR_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
