@@ -172,3 +172,27 @@ dockers:
       - --label=org.opencontainers.image.revision={{ .FullCommit }}
       - --label=org.opencontainers.image.version={{ .Version }}
       - --label=org.opencontainers.image.vendor=Axiom, Inc.
+
+aurs:
+  -
+    name: axiom-bin
+    ids:
+      - nix
+    homepage: https://axiom.co
+    description: Powerful log analytics from the comfort of your command-line
+    maintainers:
+      - 'axiom <hello@axiom.co>'
+    contributors:
+      - 'axiom <hello@axiom.co>'
+    license: MIT
+    private_key: '{{ .Env.AUR_KEY }}'
+    git_url: ssh://aur@aur.archlinux.org/axiom-bin.git
+    skip_upload: auto
+    provides:
+      - axiom-bin
+    conflicts:
+      - axiom-bin
+      - axiom-git
+    commit_author:
+      name: axiom-automation
+      email: hello@axiom.co
