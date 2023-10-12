@@ -177,7 +177,7 @@ aurs:
   -
     name: axiom-bin
     ids:
-      - nix
+      - linux
     homepage: https://axiom.co
     description: Powerful log analytics from the comfort of your command-line
     maintainers:
