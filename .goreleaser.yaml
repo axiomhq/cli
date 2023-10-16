@@ -40,7 +40,7 @@ builds:
     goarch:
       - amd64
       - arm64
-    
+
   - <<: *build_defaults
     flags:
       - -buildvcs=false
@@ -148,8 +148,8 @@ brews:
       assert_match "Axiom CLI version #{version}", shell_output("#{bin}/{{ .ProjectName }} -v")
 
 dockers:
-  - ids: 
-     - docker
+  - ids:
+      - docker
     image_templates:
       - "docker.io/axiomhq/cli:{{ .Major }}"
       - "docker.io/axiomhq/cli:{{ .Major }}.{{ .Minor }}"
@@ -174,18 +174,17 @@ dockers:
       - --label=org.opencontainers.image.vendor=Axiom, Inc.
 
 aurs:
-  -
-    name: axiom-bin
+  - name: axiom-bin
     ids:
-      - linux
+      - nix
     homepage: https://axiom.co
     description: Powerful log analytics from the comfort of your command-line
     maintainers:
-      - 'axiom <hello@axiom.co>'
+      - "axiom <hello@axiom.co>"
     contributors:
-      - 'axiom <hello@axiom.co>'
+      - "axiom <hello@axiom.co>"
     license: MIT
-    private_key: '{{ .Env.AUR_KEY }}'
+    private_key: "{{ .Env.AUR_KEY }}"
     git_url: ssh://aur@aur.archlinux.org/axiom-bin.git
     skip_upload: auto
     provides:
