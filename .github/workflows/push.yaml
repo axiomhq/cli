@@ -10,11 +10,9 @@ jobs:
     name: Codegen Diff
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
         with:
-          check-latest: true
-          cache: true
           go-version-file: go.mod
       - run: make generate man
       - run: git diff --exit-code
@@ -24,12 +22,15 @@ jobs:
     needs: gen-diff
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
         with:
-          check-latest: true
-          go-version-file: go.mod
+          go-version: ${{ matrix.go }}
+          cache: false
+      - run: echo "GOLANGCI_LINT_VERSION=$(go list -m -f '{{.Version}}' github.com/golangci/golangci-lint)" >> $GITHUB_ENV
       - uses: golangci/golangci-lint-action@v3
+        with:
+          version: ${{ env.GOLANGCI_LINT_VERSION }}
 
   test:
     name: Test
@@ -42,11 +43,9 @@ jobs:
           - windows-latest
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
         with:
-          check-latest: true
-          cache: true
           go-version-file: go.mod
       - run: make test
 
@@ -55,13 +54,11 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
-          check-latest: true
-          cache: true
           go-version-file: go.mod
       - uses: goreleaser/goreleaser-action@v4
         with:
@@ -98,7 +95,7 @@ jobs:
       AXIOM_ORG_ID: ${{ secrets.TESTING_DEV_ORG_ID }}
       AXIOM_DATASET: cli-test-${{ github.run_id }}-${{ matrix.goos }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v3
       - name: Test (Unix)
         if: matrix.goos == 'darwin' || matrix.goos == 'linux'
