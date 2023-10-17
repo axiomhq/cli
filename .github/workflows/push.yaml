@@ -60,7 +60,7 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
-      - uses: goreleaser/goreleaser-action@v4
+      - uses: goreleaser/goreleaser-action@v5
         with:
           args: build --snapshot
       - uses: actions/upload-artifact@v3
