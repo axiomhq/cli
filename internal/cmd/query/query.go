@@ -12,7 +12,6 @@ import (
 	"github.com/MakeNowJust/heredoc"
 	"github.com/araddon/dateparse"
 	"github.com/axiomhq/axiom-go/axiom/query"
-	"github.com/nwidger/jsoncolor"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/cmd/auth"
@@ -201,17 +200,8 @@ func run(ctx context.Context, opts *options) error {
 			fmt.Fprint(opts.IO.Out(), headerText)
 		}
 
-		var enc interface {
-			Encode(any) error
-		}
-		if opts.IO.ColorEnabled() {
-			enc = jsoncolor.NewEncoder(opts.IO.Out())
-		} else {
-			enc = json.NewEncoder(opts.IO.Out())
-		}
-
-		var data any
 		for _, entry := range res.Matches {
+			var data any
 			switch opts.Format {
 			case iofmt.JSON.String():
 				data = entry
@@ -219,10 +209,9 @@ func run(ctx context.Context, opts *options) error {
 				fmt.Fprintf(opts.IO.Out(), "%s\t", cs.Gray(entry.Time.Format(time.RFC1123)))
 				data = entry.Data
 			}
-			if err = enc.Encode(data); err != nil {
+			if err = iofmt.FormatToJSON(opts.IO.Out(), data, opts.IO.ColorEnabled()); err != nil {
 				return err
 			}
-			fmt.Fprintln(opts.IO.Out())
 		}
 
 		return nil
@@ -236,13 +225,8 @@ func run(ctx context.Context, opts *options) error {
 			fmt.Fprint(opts.IO.Out(), headerText)
 		}
 
-		if err = iofmt.FormatToJSON(opts.IO.Out(),
-			res.Buckets.Totals[0].Aggregations[0].Value, opts.IO.ColorEnabled()); err != nil {
-			return err
-		}
-
-		fmt.Fprintln(opts.IO.Out())
-		return nil
+		return iofmt.FormatToJSON(opts.IO.Out(),
+			res.Buckets.Totals[0].Aggregations[0].Value, opts.IO.ColorEnabled())
 	}
 
 	// If we have groups, we print a table with the groups as columns and the
