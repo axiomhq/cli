@@ -2,7 +2,6 @@ package stream
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -10,7 +9,6 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
 	"github.com/axiomhq/axiom-go/axiom/querylegacy"
-	"github.com/nwidger/jsoncolor"
 	"github.com/spf13/cobra"
 
 	"github.com/axiomhq/cli/internal/client"
@@ -133,15 +131,6 @@ func run(ctx context.Context, opts *options) error {
 		fmt.Fprintf(opts.IO.Out(), "Streaming events from dataset %s:\n\n", cs.Bold(opts.Dataset))
 	}
 
-	var enc interface {
-		Encode(any) error
-	}
-	if opts.IO.ColorEnabled() {
-		enc = jsoncolor.NewEncoder(opts.IO.Out())
-	} else {
-		enc = json.NewEncoder(opts.IO.Out())
-	}
-
 	t := time.NewTicker(streamingDuration)
 	defer t.Stop()
 
@@ -166,15 +155,17 @@ func run(ctx context.Context, opts *options) error {
 			lastRequest = res.Matches[len(res.Matches)-1].Time.Add(time.Nanosecond)
 
 			for _, entry := range res.Matches {
+				var data any
 				switch opts.Format {
 				case iofmt.JSON.String():
-					_ = enc.Encode(entry)
+					data = entry
 				default:
-					fmt.Fprintf(opts.IO.Out(), "%s\t",
-						cs.Gray(entry.Time.Format(time.RFC1123)))
-					_ = enc.Encode(entry.Data)
+					fmt.Fprintf(opts.IO.Out(), "%s\t", cs.Gray(entry.Time.Format(time.RFC1123)))
+					data = entry.Data
 				}
-				fmt.Fprintln(opts.IO.Out())
+				if err = iofmt.FormatToJSON(opts.IO.Out(), data, opts.IO.ColorEnabled()); err != nil {
+					return err
+				}
 			}
 		}
 
