@@ -58,14 +58,16 @@ type options struct {
 	FlushEvery time.Duration
 	// ContentType of the data to ingest.
 	ContentType axiom.ContentType
+	contentType string // for the flag value
 	// ContentEncoding of the data to ingest.
 	ContentEncoding axiom.ContentEncoding
+	contentEncoding string // for the flag value
 	// Labels attached to every event, server-side.
 	Labels []ingest.Option
-
-	contentType     string
-	contentEncoding string
-	labels          []string
+	labels []string // for the flag value
+	// ContinueOnError will continue ingesting, even if an error is returned
+	// from the server.
+	ContinueOnError bool
 }
 
 // NewCmd creates and returns the ingest command.
@@ -189,6 +191,7 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.Flags().StringVarP(&opts.contentType, "content-type", "t", "", "Content type of the data to ingest (will auto-detect if not set, must be set if content encoding is set and content type is not identity)")
 	cmd.Flags().StringVarP(&opts.contentEncoding, "content-encoding", "e", axiom.Identity.String(), "Content encoding of the data to ingest")
 	cmd.Flags().StringSliceVarP(&opts.labels, "label", "l", nil, "Labels to attach to the ingested events, server side")
+	cmd.Flags().BoolVar(&opts.ContinueOnError, "continue-on-error", false, "Don't fail on ingest errors (use with care!)")
 
 	_ = cmd.RegisterFlagCompletionFunc("timestamp-field", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("timestamp-format", cmdutil.NoCompletion)
@@ -197,6 +200,7 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	_ = cmd.RegisterFlagCompletionFunc("content-type", contentTypeCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("content-encoding", contentEncodingCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("label", cmdutil.NoCompletion)
+	_ = cmd.RegisterFlagCompletionFunc("continue-on-error", cmdutil.NoCompletion)
 
 	if opts.IO.IsStdinTTY() {
 		_ = cmd.MarkFlagRequired("file")
@@ -419,6 +423,11 @@ func ingestEvery(ctx context.Context, client *axiom.Client, r io.Reader, opts *o
 	for r := range readers {
 		ingestRes, err := ingestReader(ctx, client, r, axiom.NDJSON, opts)
 		if err != nil {
+			if opts.ContinueOnError {
+				fmt.Fprintf(opts.IO.ErrOut(), "%s Failed to ingest: %v, continuing...\n",
+					opts.IO.ColorScheme().WarningIcon(), err)
+				continue
+			}
 			return &res, err
 		}
 		res.Add(ingestRes)
