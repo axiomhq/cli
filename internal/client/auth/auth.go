@@ -15,7 +15,6 @@ import (
 	"golang.org/x/oauth2"
 
 	"github.com/axiomhq/cli/internal/client/auth/assets"
-	"github.com/axiomhq/cli/internal/client/auth/pkce"
 )
 
 const (
@@ -71,12 +70,8 @@ func Login(ctx context.Context, clientID, baseURL string, loginFunc LoginFunc) (
 		Scopes:      []string{"*"},
 	}
 
-	// Create the PKCE Code Verifier and S256 Code Challenge.
-	method := pkce.MethodS256
-	codeVerifier, err := pkce.New()
-	if err != nil {
-		return "", err
-	}
+	// Create the PKCE Code Verifier for the S256 Code Challenge.
+	codeVerifier := oauth2.GenerateVerifier()
 
 	// Generate a random state to prevent CSRF. It is hex-encoded to make it
 	// URL-safe.
@@ -130,7 +125,7 @@ func Login(ctx context.Context, clientID, baseURL string, loginFunc LoginFunc) (
 			}
 
 			var exchangeErr error
-			if token, exchangeErr = config.Exchange(r.Context(), code, codeVerifier.AuthCodeOption()); exchangeErr != nil {
+			if token, exchangeErr = config.Exchange(r.Context(), code, oauth2.VerifierOption(codeVerifier)); exchangeErr != nil {
 				writeResponse(exchangeErr)
 				return
 			}
@@ -158,10 +153,7 @@ func Login(ctx context.Context, clientID, baseURL string, loginFunc LoginFunc) (
 
 	// Construct the login URL and call the login function provided by the
 	// caller.
-	loginURL := config.AuthCodeURL(state,
-		codeVerifier.Challenge(method).AuthCodeOption(),
-		method.AuthCodeOption(),
-	)
+	loginURL := config.AuthCodeURL(state, oauth2.S256ChallengeOption(codeVerifier))
 
 	if err = loginFunc(ctx, loginURL); err != nil {
 		return "", err
