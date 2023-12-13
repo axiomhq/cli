@@ -9,9 +9,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/oauth2"
 
 	"github.com/axiomhq/cli/internal/client/auth"
-	"github.com/axiomhq/cli/internal/client/auth/pkce"
 )
 
 func TestLogin(t *testing.T) {
@@ -53,10 +53,8 @@ func TestLogin(t *testing.T) {
 		assert.Contains(t, r.Form, "code_verifier")
 
 		// Server side PKCE verification.
-		codeVerifier := pkce.VerifierFromString(r.FormValue("code_verifier"))
-		codeChallenge := pkce.ChallengeFromString(globalCodeChallenge)
-
-		assert.True(t, codeChallenge.Verify(codeVerifier, pkce.MethodS256))
+		codeChallenge := oauth2.S256ChallengeFromVerifier(r.FormValue("code_verifier"))
+		assert.Equal(t, globalCodeChallenge, codeChallenge)
 
 		w.Header().Set("Cache-Control", "no-store")
 		w.Header().Set("Pragma", "no-cache")
