@@ -59,7 +59,7 @@ jobs:
         with:
           version: ${{ env.GORELEASER_VERSION }}
           args: build --snapshot
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: |
             dist/darwin_darwin_amd64_v1/axiom
