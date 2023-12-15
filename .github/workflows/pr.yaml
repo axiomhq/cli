@@ -59,7 +59,7 @@ jobs:
         with:
           version: ${{ env.GORELEASER_VERSION }}
           args: build --snapshot
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: |
             dist/darwin_darwin_amd64_v1/axiom
@@ -93,7 +93,7 @@ jobs:
       AXIOM_DATASET: cli-test-${{ github.run_id }}-${{ matrix.goos }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
       - name: Test (Unix)
         if: matrix.goos == 'darwin' || matrix.goos == 'linux'
         run: |
