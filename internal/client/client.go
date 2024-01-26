@@ -23,10 +23,14 @@ func New(ctx context.Context, baseURL, accessToken, orgID string, insecure bool)
 	httpTransport := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		DialContext: (&net.Dialer{
-			Timeout: 5 * time.Second,
+			Timeout:   time.Second * 30,
+			KeepAlive: time.Second * 30,
 		}).DialContext,
-		TLSHandshakeTimeout: 5 * time.Second,
-		ForceAttemptHTTP2:   true,
+		IdleConnTimeout:       time.Second * 90,
+		ResponseHeaderTimeout: time.Second * 10,
+		TLSHandshakeTimeout:   time.Second * 10,
+		ExpectContinueTimeout: time.Second * 1,
+		ForceAttemptHTTP2:     true,
 	}
 
 	if insecure {
