@@ -105,7 +105,7 @@ func TestLogin_AuthorizationError(t *testing.T) {
 
 	r := http.NewServeMux()
 	r.Handle("/oauth/authorize", http.HandlerFunc(authHf))
-	r.Handle("/oauth/token", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	r.Handle("/oauth/token", http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 		t.Error("should not be called")
 	}))
 
@@ -140,7 +140,7 @@ func TestLogin_ExchangeError(t *testing.T) {
 		http.Redirect(w, r, redirectURI.String(), http.StatusFound)
 	}
 
-	tokenHf := func(w http.ResponseWriter, r *http.Request) {
+	tokenHf := func(w http.ResponseWriter, _ *http.Request) {
 		code := http.StatusInternalServerError
 		http.Error(w, http.StatusText(code), code)
 	}

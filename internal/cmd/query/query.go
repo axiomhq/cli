@@ -84,7 +84,7 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 			cmdutil.NeedsDatasets(f),
 		),
 
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			if err := complete(opts); err != nil {
 				return err
 			}
@@ -236,7 +236,7 @@ func run(ctx context.Context, opts *options) error {
 		columnNames = res.GroupBy
 	)
 	if opts.IO.IsStdoutTTY() {
-		header = func(w io.Writer, trb iofmt.TableRowBuilder) {
+		header = func(_ io.Writer, trb iofmt.TableRowBuilder) {
 			fmt.Fprint(opts.IO.Out(), headerText)
 			for _, name := range columnNames {
 				trb.AddField(name, cs.Bold)

@@ -63,7 +63,7 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 			cmdutil.NeedsDatasets(f),
 		),
 
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			if err := complete(cmd.Context(), opts); err != nil {
 				return err
 			}
