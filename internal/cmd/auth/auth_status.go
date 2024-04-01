@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
@@ -67,14 +68,14 @@ func runStatus(ctx context.Context, opts *statusOptions) error {
 	defer stop()
 
 	var (
-		cs         = opts.IO.ColorScheme()
-		statusInfo = map[string][]string{}
+		cs           = opts.IO.ColorScheme()
+		statusInfo   = map[string][]string{}
+		statusInfoMu = new(sync.Mutex)
 		// We don't care about the context here. If an errors occurs, still try
 		// to get the status of the other deployments.
 		eg, _ = errgroup.WithContext(ctx)
 	)
 	for _, deploymentAlias := range deploymentAliases {
-		deploymentAlias := deploymentAlias
 		deployment, ok := opts.Config.Deployments[deploymentAlias]
 		if !ok {
 			continue
@@ -83,6 +84,9 @@ func runStatus(ctx context.Context, opts *statusOptions) error {
 		eg.Go(func() error {
 			var info string
 			defer func() {
+				statusInfoMu.Lock()
+				defer statusInfoMu.Unlock()
+
 				statusInfo[deploymentAlias] = append(statusInfo[deploymentAlias], info)
 			}()
 
