@@ -39,7 +39,7 @@ func newListCmd(f *cmdutil.Factory) *cobra.Command {
 
 		PreRunE: cmdutil.NeedsDatasets(f),
 
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			return runList(cmd.Context(), opts)
 		},
 	}
@@ -81,7 +81,7 @@ func runList(ctx context.Context, opts *listOptions) error {
 
 	var header iofmt.HeaderBuilderFunc
 	if opts.IO.IsStdoutTTY() {
-		header = func(w io.Writer, trb iofmt.TableRowBuilder) {
+		header = func(_ io.Writer, trb iofmt.TableRowBuilder) {
 			fmt.Fprintf(opts.IO.Out(), "Showing %s:\n\n", utils.Pluralize(cs, "dataset", len(datasets)))
 			trb.AddField("Name", cs.Bold)
 			trb.AddField("Description", cs.Bold)

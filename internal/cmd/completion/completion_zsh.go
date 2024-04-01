@@ -25,7 +25,7 @@ func newZshCmd(f *cmdutil.Factory) *cobra.Command {
 			$ axiom completion zsh > "${fpath[1]}/_axiom"
 		`),
 
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			if completionNoDesc {
 				return cmd.Root().GenZshCompletionNoDesc(f.IO.Out())
 			}

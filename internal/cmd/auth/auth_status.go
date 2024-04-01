@@ -50,7 +50,7 @@ func newStatusCmd(f *cmdutil.Factory) *cobra.Command {
 			cmdutil.NeedsValidDeployment(f, &opts.Alias),
 		),
 
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			return runStatus(cmd.Context(), opts)
 		},
 	}

@@ -158,7 +158,7 @@ func NeedsActiveDeployment(f *Factory) RunFunc {
 // NeedsDeployments prints an error message and errors silently if no
 // deployments are configured.
 func NeedsDeployments(f *Factory) RunFunc {
-	return func(cmd *cobra.Command, _ []string) error {
+	return func(_ *cobra.Command, _ []string) error {
 		if len(f.Config.Deployments) == 0 {
 			return execTemplateSilent(f.IO, noDeploymentsMsgTmpl, nil)
 		}
@@ -169,7 +169,7 @@ func NeedsDeployments(f *Factory) RunFunc {
 // NeedsValidDeployment prints an error message and errors silently if the given
 // deployment is not configured. An empty alias is not evaluated.
 func NeedsValidDeployment(f *Factory, alias *string) RunFunc {
-	return func(cmd *cobra.Command, _ []string) error {
+	return func(_ *cobra.Command, _ []string) error {
 		if _, ok := f.Config.Deployments[*alias]; !ok && *alias != "" {
 			return execTemplateSilent(f.IO, badDeploymentMsgTmpl, map[string]string{
 				"Deployment": *alias,

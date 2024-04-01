@@ -10,7 +10,7 @@ import (
 // It applies cobra.MaximumNArgs() with n being the amount of values to
 // populate.
 func PopulateFromArgs(f *Factory, ss ...*string) cobra.PositionalArgs {
-	populate := func(cmd *cobra.Command, args []string) error {
+	populate := func(_ *cobra.Command, args []string) error {
 		if !f.IO.IsStdinTTY() && len(args) < len(ss) {
 			return ErrNoPromptArgRequired
 		}

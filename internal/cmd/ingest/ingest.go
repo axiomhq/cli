@@ -147,7 +147,7 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 			cmdutil.NeedsDatasets(f),
 		),
 
-		RunE: func(cmd *cobra.Command, args []string) (err error) {
+		RunE: func(cmd *cobra.Command, _ []string) (err error) {
 			// When no files are specified, stdin is the file to use.
 			if len(opts.Filenames) == 0 {
 				opts.Filenames = []string{"-"}

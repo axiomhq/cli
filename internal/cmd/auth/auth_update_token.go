@@ -55,7 +55,7 @@ func newUpdateTokenCmd(f *cmdutil.Factory) *cobra.Command {
 			return completeUpdateToken(opts)
 		},
 
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			return runUpdateToken(cmd.Context(), opts)
 		},
 	}

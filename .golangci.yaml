@@ -1,13 +1,5 @@
 run:
   modules-download-mode: readonly
-  skip-dirs:
-    - .git
-    - .github
-    - .vscode
-    - bin
-    - dist
-    - man
-    - testdata
 
 linters:
   disable-all: true
@@ -42,7 +34,7 @@ linters-settings:
   goimports:
     local-prefixes: github.com/axiomhq/cli
   govet:
-    check-shadowing: true
+    shadow: true
   nolintlint:
     allow-unused: false
     allow-leading-space: false
@@ -50,6 +42,14 @@ linters-settings:
     require-specific: true
 
 issues:
+  exclude-dirs:
+    - .git
+    - .github
+    - .vscode
+    - bin
+    - dist
+    - man
+    - testdata
   exclude-rules:
     - linters:
         - staticcheck

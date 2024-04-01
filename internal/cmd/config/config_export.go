@@ -53,7 +53,7 @@ func newExportCommand(f *cmdutil.Factory) *cobra.Command {
 			$ eval $(axiom config export --force)
 		`),
 
-		RunE: func(_ *cobra.Command, args []string) error {
+		RunE: func(*cobra.Command, []string) error {
 			// check that the force flag was used
 			if !opts.Force {
 				fmt.Fprintf(opts.IO.ErrOut(), "%s %s\n", opts.IO.ColorScheme().ErrorIcon(), forceMessage)

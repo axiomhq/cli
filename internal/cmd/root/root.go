@@ -52,7 +52,7 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 			`),
 		},
 
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) (err error) {
+		PersistentPreRunE: func(cmd *cobra.Command, _ []string) (err error) {
 			if fl := cmd.Flag("config"); fl.Changed {
 				if f.Config, err = config.Load(fl.Value.String()); err != nil {
 					return err
@@ -95,7 +95,7 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 
 		PreRunE: cmdutil.AsksForSetup(f, authCmd.NewLoginCmd(f)),
 
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			return cmd.Help()
 		},
 	}
