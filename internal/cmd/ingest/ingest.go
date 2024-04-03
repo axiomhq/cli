@@ -65,6 +65,10 @@ type options struct {
 	// Labels attached to every event, server-side.
 	Labels []ingest.Option
 	labels []string // for the flag value
+	// CSVFields are the field names for the CSV data. This is handy if the data
+	// to ingest does not have a header row.
+	CSVFields []ingest.Option
+	csvFields []string
 	// ContinueOnError will continue ingesting, even if an error is returned
 	// from the server.
 	ContinueOnError bool
@@ -135,6 +139,11 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 			# to every events, so there is no need to add them to the data,
 			# locally:
 			$ cat log*.json.gz | axiom ingest http-logs -t=json -e=gzip -l=env:prod -l=app:webserver
+
+			# Send a CSV file to a dataset called "sec-logs". The CSV file does
+			# not have a header row, so the field names are set manually. This
+			# also comes in handy as the file is now automatically batched.
+			$ axiom ingest sec-logs -f sec-logs.csv -t=csv --csv-fields=timestamp,source,severity,message
 		`),
 
 		Annotations: map[string]string{
@@ -176,10 +185,15 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 				opts.Labels = append(opts.Labels, ingest.SetEventLabel(splits[0], splits[1]))
 			}
 
+			// Populate the CSV fields.
+			for _, field := range opts.csvFields {
+				opts.CSVFields = append(opts.CSVFields, ingest.AddCSVField(field))
+			}
+
 			if err := complete(cmd.Context(), opts); err != nil {
 				return err
 			}
-			return run(cmd.Context(), opts, cmd.Flag("flush-every").Changed)
+			return run(cmd.Context(), opts, cmd.Flag("flush-every").Changed, cmd.Flag("csv-fields").Changed)
 		},
 	}
 
@@ -191,6 +205,7 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.Flags().StringVarP(&opts.contentType, "content-type", "t", "", "Content type of the data to ingest (will auto-detect if not set, must be set if content encoding is set and content type is not identity)")
 	cmd.Flags().StringVarP(&opts.contentEncoding, "content-encoding", "e", axiom.Identity.String(), "Content encoding of the data to ingest")
 	cmd.Flags().StringSliceVarP(&opts.labels, "label", "l", nil, "Labels to attach to the ingested events, server side")
+	cmd.Flags().StringSliceVar(&opts.csvFields, "csv-fields", nil, "CSV header fields to use as event field names, server side (e.g. if there is no header row)")
 	cmd.Flags().BoolVar(&opts.ContinueOnError, "continue-on-error", false, "Don't fail on ingest errors (use with care!)")
 
 	_ = cmd.RegisterFlagCompletionFunc("timestamp-field", cmdutil.NoCompletion)
@@ -250,7 +265,7 @@ func complete(ctx context.Context, opts *options) error {
 	}, &opts.Dataset, opts.IO.SurveyIO())
 }
 
-func run(ctx context.Context, opts *options, flushEverySet bool) error {
+func run(ctx context.Context, opts *options, flushEverySet, csvFieldsSet bool) error {
 	client, err := opts.Client(ctx)
 	if err != nil {
 		return err
@@ -297,9 +312,12 @@ func run(ctx context.Context, opts *options, flushEverySet bool) error {
 			return cmdutil.NewFlagErrorf("--delimier/-d not valid when content type is not CSV")
 		}
 
-		var ingestRes *ingest.Status
-		if filename == "stdin" && typ == axiom.NDJSON && opts.ContentEncoding == axiom.Identity {
-			ingestRes, err = ingestEvery(ctx, client, r, opts)
+		var (
+			batchable = typ == axiom.NDJSON || (typ == axiom.CSV && csvFieldsSet)
+			ingestRes *ingest.Status
+		)
+		if filename == "stdin" && batchable && opts.ContentEncoding == axiom.Identity {
+			ingestRes, err = ingestEvery(ctx, client, r, typ, opts)
 		} else {
 			ingestRes, err = ingestReader(ctx, client, r, typ, opts)
 		}
@@ -352,7 +370,7 @@ func run(ctx context.Context, opts *options, flushEverySet bool) error {
 	return lastErr
 }
 
-func ingestEvery(ctx context.Context, client *axiom.Client, r io.Reader, opts *options) (*ingest.Status, error) {
+func ingestEvery(ctx context.Context, client *axiom.Client, r io.Reader, typ axiom.ContentType, opts *options) (*ingest.Status, error) {
 	t := time.NewTicker(opts.FlushEvery)
 	defer t.Stop()
 
@@ -424,7 +442,7 @@ func ingestEvery(ctx context.Context, client *axiom.Client, r io.Reader, opts *o
 
 	var res ingest.Status
 	for r := range readers {
-		ingestRes, err := ingestReader(ctx, client, r, axiom.NDJSON, opts)
+		ingestRes, err := ingestReader(ctx, client, r, typ, opts)
 		if err != nil {
 			if opts.ContinueOnError {
 				fmt.Fprintf(opts.IO.ErrOut(), "%s Failed to ingest: %v, continuing...\n",
@@ -463,6 +481,7 @@ func ingestReader(ctx context.Context, client *axiom.Client, r io.Reader, typ ax
 		ingestOptions = append(ingestOptions, ingest.SetCSVDelimiter(v))
 	}
 	ingestOptions = append(ingestOptions, opts.Labels...)
+	ingestOptions = append(ingestOptions, opts.CSVFields...)
 
 	res, err := client.Datasets.Ingest(ctx, opts.Dataset, r, typ, enc, ingestOptions...)
 	if err != nil {
