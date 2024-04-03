@@ -298,7 +298,7 @@ func run(ctx context.Context, opts *options, flushEverySet bool) error {
 		}
 
 		var ingestRes *ingest.Status
-		if filename == "stdin" && typ == axiom.NDJSON {
+		if filename == "stdin" && typ == axiom.NDJSON && opts.ContentEncoding == axiom.Identity {
 			ingestRes, err = ingestEvery(ctx, client, r, opts)
 		} else {
 			ingestRes, err = ingestReader(ctx, client, r, typ, opts)
