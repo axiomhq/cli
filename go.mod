@@ -15,7 +15,7 @@ require (
 	github.com/dustin/go-humanize v1.0.1
 	github.com/golangci/golangci-lint v1.57.2
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
-	github.com/goreleaser/goreleaser v1.25.0
+	github.com/goreleaser/goreleaser v1.25.1
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/klauspost/compress v1.17.7
 	github.com/mattn/go-colorable v0.1.13
