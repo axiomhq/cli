@@ -154,7 +154,7 @@ func run(ctx context.Context, opts *options) error {
 	progStop := opts.IO.StartActivityIndicator()
 	defer progStop()
 
-	res, err := client.Datasets.Query(ctx, opts.Query,
+	res, err := client.Query(ctx, opts.Query,
 		query.SetStartTime(opts.startTime),
 		query.SetEndTime(opts.endTime),
 	)

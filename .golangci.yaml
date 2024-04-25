@@ -59,4 +59,7 @@ issues:
       text: "SA1019: client.Datasets.QueryLegacy"
     - linters:
         - staticcheck
+      text: "SA1019: client.QueryLegacy"
+    - linters:
+        - staticcheck
       text: 'SA1019: "github.com/axiomhq/axiom-go/axiom/querylegacy"'
