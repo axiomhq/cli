@@ -152,7 +152,7 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 	// If only one organization is available, that one is selected by default,
 	// without asking the user for it.
 	if opts.OrganizationID == "" {
-		axiomClient, err := client.New(ctx, opts.apiURL, opts.Token, "axiom", opts.Config.Insecure)
+		axiomClient, err := client.New(ctx, opts.apiURL, opts.Token, "", opts.Config.Insecure)
 		if err != nil {
 			return err
 		}
@@ -258,7 +258,7 @@ func autoLogin(ctx context.Context, opts *loginOptions) error {
 	// If only one organization is available, that one is selected by default,
 	// without asking the user for it.
 	if opts.OrganizationID == "" {
-		axiomClient, err := client.New(ctx, opts.apiURL, opts.Token, "axiom", opts.Config.Insecure)
+		axiomClient, err := client.New(ctx, opts.apiURL, opts.Token, "", opts.Config.Insecure)
 		if err != nil {
 			return err
 		}
