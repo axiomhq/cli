@@ -1,3 +1,5 @@
+version: 2
+
 project_name: axiom
 
 before:
@@ -137,7 +139,7 @@ brews:
       name: axiom-automation
       email: hello@axiom.co
     skip_upload: auto
-    folder: Formula
+    directory: Formula
     install: |
       bin.install "{{ .ProjectName }}"
       man1.install Dir["man/{{ .ProjectName }}*.1"]

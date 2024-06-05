@@ -26,7 +26,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ github.token }}
-      - run: echo "GORELEASER_VERSION=$(go list -m -f '{{.Version}}' github.com/goreleaser/goreleaser)" >> $GITHUB_ENV
+      - run: echo "GORELEASER_VERSION=$(go list -m -f '{{.Version}}' github.com/goreleaser/goreleaser/v2)" >> $GITHUB_ENV
       - uses: goreleaser/goreleaser-action@v6
         with:
           version: ${{ env.GORELEASER_VERSION }}
