@@ -3,7 +3,6 @@ package dataset
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -132,7 +131,7 @@ func runTrim(ctx context.Context, opts *trimOptions) error {
 	stop := opts.IO.StartActivityIndicator()
 	defer stop()
 
-	res, err := client.Datasets.Trim(ctx, opts.Name, opts.Duration)
+	err = client.Datasets.Trim(ctx, opts.Name, opts.Duration)
 	if err != nil {
 		return err
 	}
@@ -141,8 +140,8 @@ func runTrim(ctx context.Context, opts *trimOptions) error {
 
 	if opts.IO.IsStderrTTY() {
 		cs := opts.IO.ColorScheme()
-		fmt.Fprintf(opts.IO.ErrOut(), "%s Trimmed dataset %s (dropped %s blocks)\n",
-			cs.SuccessIcon(), cs.Bold(opts.Name), cs.Bold(strconv.Itoa(res.BlocksDeleted)))
+		fmt.Fprintf(opts.IO.ErrOut(), "%s Trimmed dataset %s\n",
+			cs.SuccessIcon(), cs.Bold(opts.Name))
 	}
 
 	return nil
