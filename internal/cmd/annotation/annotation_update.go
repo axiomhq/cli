@@ -3,7 +3,6 @@ package annotation
 import (
 	"context"
 	"fmt"
-	"regexp"
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -14,16 +13,15 @@ import (
 	"github.com/axiomhq/cli/internal/cmdutil"
 )
 
-type createOptions struct {
+type updateOptions struct {
 	*cmdutil.Factory
 
-	// Type of the annotation to create. If not supplied as a flag, which is
-	// optional, the user will be asked for it.
+	// Type of the annotation to update.
+	ID string `survey:"id"`
+	// Type of the annotation to update.
 	Type string `survey:"type"`
-	// Datasets to attache the annotation to. If not supplied as a flag, which is
-	// optional, the user will be asked for it.
+	// Datasets to attach the updated annotation to.
 	Datasets []string `survey:"datasets"`
-
 	// Title of the annotation to create.
 	Title string `survey:"title"`
 	// Description of the annotation to create.
@@ -36,32 +34,33 @@ type createOptions struct {
 	EndTime string `survey:"end-time"`
 }
 
-func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
-	opts := &createOptions{
+func newUpdateCmd(f *cmdutil.Factory) *cobra.Command {
+	opts := &updateOptions{
 		Factory: f,
 	}
 
 	cmd := &cobra.Command{
-		Use:   "create (-t|--type) <type> (-d|--datasets) <datasets> [(-T|--title) <title>] [(-D|--description) <description>] [(-U|--url) <url>] [(--time) <time>] [(--end-time) <endTime>",
-		Short: "Create an annotation",
+		Use:   "update [<id>] [(-t|--type) <type>] [(-d|--datasets) <datasets>] [(-T|--title) <title>] [(-D|--description) <description>] [(-U|--url) <url>] [(--time) <time>] [(--end-time) <endTime>",
+		Short: "Update an annotation",
 
-		Aliases: []string{"new"},
+		Args:    cmdutil.PopulateFromArgs(f, &opts.ID),
+		Aliases: []string{"update"},
 
 		DisableFlagsInUseLine: true,
 
 		Example: heredoc.Doc(`
-			# Interactively create an annotation
-			$ axiom annotation create
+			# Interactively update an annotation
+			$ axiom annotation update
 			
-			# Create an annotation and provide the parameters on the command-line:
-			$ axiom annotation create --type=deploy --datasets=http-logs
+			# Update an annotation and provide the parameters on the command-line:
+			$ axiom annotation update --type=deploy --datasets=http-logs
 		`),
 
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			if err := completeCreate(cmd.Context(), opts); err != nil {
+			if err := completeUpdate(opts); err != nil {
 				return err
 			}
-			return runCreate(cmd.Context(), opts)
+			return runUpdate(cmd.Context(), opts)
 		},
 	}
 
@@ -89,34 +88,15 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 	return cmd
 }
 
-func completeCreate(ctx context.Context, opts *createOptions) error {
+func completeUpdate(opts *updateOptions) error {
 	questions := make([]*survey.Question, 0, 2)
 
-	datasetNames, err := getDatasetNames(ctx, opts.Factory)
-	if err != nil {
-		return err
-	}
-
-	if len(opts.Datasets) == 0 {
+	if opts.ID == "" {
 		questions = append(questions, &survey.Question{
-			Name: "datasets",
-			Prompt: &survey.MultiSelect{
-				Message: "Which datasets should this annotation be attached to?",
-				Options: datasetNames,
-			},
+			Name:   "id",
+			Prompt: &survey.Input{Message: "What is the ID of the annotation to update?"},
 			Validate: survey.ComposeValidators(
 				survey.Required,
-			),
-		})
-	}
-
-	if opts.Type == "" {
-		questions = append(questions, &survey.Question{
-			Name:   "type",
-			Prompt: &survey.Input{Message: "What is the type of the annotation?"},
-			Validate: survey.ComposeValidators(
-				survey.Required,
-				validateType,
 			),
 		})
 	}
@@ -124,22 +104,7 @@ func completeCreate(ctx context.Context, opts *createOptions) error {
 	return survey.Ask(questions, opts, opts.IO.SurveyIO())
 }
 
-var typeRegex = regexp.MustCompile(`^[a-z0-9-]+$`)
-
-func validateType(ans interface{}) error {
-	typ, ok := ans.(string)
-	if !ok {
-		return fmt.Errorf("expected a string, got %T", ans)
-	}
-
-	if !typeRegex.MatchString(typ) {
-		return fmt.Errorf("type can only be lowercase letters, numbers, and hyphens")
-	}
-
-	return nil
-}
-
-func runCreate(ctx context.Context, opts *createOptions) error {
+func runUpdate(ctx context.Context, opts *updateOptions) error {
 	client, err := opts.Client(ctx)
 	if err != nil {
 		return err
@@ -165,10 +130,14 @@ func runCreate(ctx context.Context, opts *createOptions) error {
 		}
 	}
 
+	if opts.Type == "" && opts.Datasets == nil && opts.Title == "" && opts.Description == "" && opts.URL == "" && startTime.IsZero() && endTime.IsZero() {
+		return nil // Nothing to update
+	}
+
 	stop := opts.IO.StartActivityIndicator()
 	defer stop()
 
-	annotation, err := client.Annotations.Create(ctx, &axiom.AnnotationCreateRequest{
+	annotation, err := client.Annotations.Update(ctx, opts.ID, &axiom.AnnotationUpdateRequest{
 		Type:        opts.Type,
 		Datasets:    opts.Datasets,
 		Title:       opts.Title,
@@ -185,7 +154,7 @@ func runCreate(ctx context.Context, opts *createOptions) error {
 
 	if opts.IO.IsStderrTTY() {
 		cs := opts.IO.ColorScheme()
-		fmt.Fprintf(opts.IO.ErrOut(), "%s Created annotation %s\n",
+		fmt.Fprintf(opts.IO.ErrOut(), "%s Updated annotation %s\n",
 			cs.SuccessIcon(), cs.Bold(annotation.ID))
 	}
 
