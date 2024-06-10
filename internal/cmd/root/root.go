@@ -17,6 +17,7 @@ import (
 	streamCmd "github.com/axiomhq/cli/internal/cmd/stream"
 
 	// Management commands
+	annotationCmd "github.com/axiomhq/cli/internal/cmd/annotation"
 	configCmd "github.com/axiomhq/cli/internal/cmd/config"
 	datasetCmd "github.com/axiomhq/cli/internal/cmd/dataset"
 
@@ -133,6 +134,7 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	// Management commands
 	cmd.AddCommand(configCmd.NewCmd(f))
 	cmd.AddCommand(datasetCmd.NewCmd(f))
+	cmd.AddCommand(annotationCmd.NewCmd(f))
 
 	// Additional commands
 	cmd.AddCommand(authCmd.NewCmd(f))
