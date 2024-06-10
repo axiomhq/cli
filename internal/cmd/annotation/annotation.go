@@ -37,7 +37,7 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd.AddCommand(newCreateCmd(f))
-	// cmd.AddCommand(newDeleteCmd(f))
+	cmd.AddCommand(newDeleteCmd(f))
 	// cmd.AddCommand(newListCmd(f))
 	// cmd.AddCommand(newUpdateCmd(f))
 
