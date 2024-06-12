@@ -72,27 +72,27 @@ func runList(ctx context.Context, opts *listOptions) error {
 		return err
 	}
 
-	var start, end *time.Time
+	var start, end time.Time
 	if opts.Start != "" {
-		startVal, err := time.Parse(time.RFC3339, opts.Start)
+		var err error
+		start, err = time.Parse(time.RFC3339, opts.Start)
 		if err != nil {
 			return fmt.Errorf("invalid start time: %w", err)
 		}
-		start = &startVal
 	}
 	if opts.End != "" {
-		endVal, err := time.Parse(time.RFC3339, opts.End)
+		var err error
+		end, err = time.Parse(time.RFC3339, opts.End)
 		if err != nil {
 			return fmt.Errorf("invalid start time: %w", err)
 		}
-		end = &endVal
 	}
 
 	progStop := opts.IO.StartActivityIndicator()
 	defer progStop()
 
 	var filter *axiom.AnnotationsFilter
-	if len(opts.Datasets) > 0 || start != nil || end != nil {
+	if len(opts.Datasets) > 0 || !start.IsZero() || !end.IsZero() {
 		filter = &axiom.AnnotationsFilter{
 			Datasets: opts.Datasets,
 			Start:    start,
