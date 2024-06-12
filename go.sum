@@ -257,6 +257,8 @@ github.com/axiomhq/axiom-go v0.18.2-0.20240610151530-4a24251a0e46 h1:dEV3TwgtXr/
 github.com/axiomhq/axiom-go v0.18.2-0.20240610151530-4a24251a0e46/go.mod h1:RjXKMe8Nib95qkaaPAR+7gIV60EdVitTfl40wIVdj/c=
 github.com/axiomhq/axiom-go v0.18.2-0.20240611074313-84aa786e2394 h1:92jnb6DMs20sep8QttOBOF0IStKzuEztn+5lMXFVC2U=
 github.com/axiomhq/axiom-go v0.18.2-0.20240611074313-84aa786e2394/go.mod h1:RjXKMe8Nib95qkaaPAR+7gIV60EdVitTfl40wIVdj/c=
+github.com/axiomhq/axiom-go v0.19.0 h1:OPn+ZuUOwTFP2GSLvFcMgl8IikNzqTR1/NmDJsUhtcY=
+github.com/axiomhq/axiom-go v0.19.0/go.mod h1:N04SZxbuYknU7PecU+cYMKRrBHvDksMACJ6stRgtIGw=
 github.com/axiomhq/pkg v0.6.0 h1:elslidLCtDB+GPOx+1VzXijf+BT28+HnPUir8vSaEkA=
 github.com/axiomhq/pkg v0.6.0/go.mod h1:0Vu7mQOXdsxpYYyGIm5QfHwafGboyyyoz8FIhSvA30M=
 github.com/aymanbagabas/go-osc52/v2 v2.0.1 h1:HwpRHbFMcZLEVr42D4p7XBqjyuxQH5SMiErDT4WkJ2k=
