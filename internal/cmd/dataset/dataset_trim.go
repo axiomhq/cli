@@ -139,7 +139,7 @@ func runTrim(ctx context.Context, opts *trimOptions) error {
 
 	if opts.IO.IsStderrTTY() {
 		cs := opts.IO.ColorScheme()
-		fmt.Fprintf(opts.IO.ErrOut(), "%s Trimmed dataset %s\n",
+		fmt.Fprintf(opts.IO.ErrOut(), "%s Dataset trimming requested %s\n",
 			cs.SuccessIcon(), cs.Bold(opts.Name))
 	}
 
