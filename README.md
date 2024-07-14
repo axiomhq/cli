@@ -1,14 +1,19 @@
-![cli: The power of Axiom on the command line](.github/images/banner-dark.svg#gh-dark-mode-only)
-![cli: The power of Axiom on the command line](.github/images/banner-light.svg#gh-light-mode-only)
+# cli
 
-<div align="center">
+<a href="https://axiom.co">
+<picture>
+  <source media="(prefers-color-scheme: dark) and (min-width: 600px)" srcset="https://axiom.co/assets/github/axiom-github-banner-light-vertical.svg">
+  <source media="(prefers-color-scheme: light) and (min-width: 600px)" srcset="https://axiom.co/assets/github/axiom-github-banner-dark-vertical.svg">
+  <source media="(prefers-color-scheme: dark) and (max-width: 599px)" srcset="https://axiom.co/assets/github/axiom-github-banner-light-horizontal.svg">
+  <img alt="Axiom.co banner" src="https://axiom.co/assets/github/axiom-github-banner-dark-horizontal.svg" align="right">
+</picture>
+</a>
+&nbsp;
 
 [![Documentation][docs_badge]][docs]
 [![Go Workflow][workflow_badge]][workflow]
 [![Latest Release][release_badge]][release]
 [![License][license_badge]][license]
-
-</div>
 
 [Axiom](https://axiom.co) unlocks observability at any scale.
 
