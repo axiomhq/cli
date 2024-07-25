@@ -138,7 +138,7 @@ func run(ctx context.Context, opts *options) error {
 	for {
 		queryCtx, queryCancel := context.WithTimeout(ctx, streamingDuration)
 
-		res, err := client.Datasets.QueryLegacy(queryCtx, opts.Dataset, querylegacy.Query{
+		res, err := client.QueryLegacy(queryCtx, opts.Dataset, querylegacy.Query{
 			StartTime: lastRequest,
 			EndTime:   time.Now(),
 		}, querylegacy.Options{
