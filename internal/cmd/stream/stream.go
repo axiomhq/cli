@@ -8,6 +8,7 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
+	"github.com/axiomhq/axiom-go/axiom/ingest"
 	"github.com/axiomhq/axiom-go/axiom/querylegacy"
 	"github.com/spf13/cobra"
 
@@ -16,8 +17,6 @@ import (
 	"github.com/axiomhq/cli/internal/cmdutil"
 	"github.com/axiomhq/cli/pkg/iofmt"
 )
-
-const streamingDuration = time.Second * 2
 
 type options struct {
 	*cmdutil.Factory
@@ -131,16 +130,27 @@ func run(ctx context.Context, opts *options) error {
 		fmt.Fprintf(opts.IO.Out(), "Streaming events from dataset %s:\n\n", cs.Bold(opts.Dataset))
 	}
 
+	const streamingDuration = time.Second * 2
+
 	t := time.NewTicker(streamingDuration)
 	defer t.Stop()
 
-	lastRequest := time.Now().Add(-time.Nanosecond)
+	var (
+		start      = time.Now()
+		lastCursor = ""
+	)
 	for {
-		queryCtx, queryCancel := context.WithTimeout(ctx, streamingDuration)
+		queryCtx, queryCancel := context.WithTimeout(ctx, streamingDuration-(streamingDuration/10))
 
 		res, err := client.Datasets.QueryLegacy(queryCtx, opts.Dataset, querylegacy.Query{
-			StartTime: lastRequest,
+			StartTime: start,
 			EndTime:   time.Now(),
+			Order: []querylegacy.Order{
+				{
+					Field: ingest.TimestampField,
+				},
+			},
+			Cursor: lastCursor,
 		}, querylegacy.Options{
 			StreamingDuration: streamingDuration,
 		})
@@ -152,7 +162,7 @@ func run(ctx context.Context, opts *options) error {
 		queryCancel()
 
 		if res != nil && len(res.Matches) > 0 {
-			lastRequest = res.Matches[len(res.Matches)-1].Time.Add(time.Nanosecond)
+			lastCursor = res.Matches[len(res.Matches)-1].RowID
 
 			for _, entry := range res.Matches {
 				var data any
@@ -173,6 +183,7 @@ func run(ctx context.Context, opts *options) error {
 		case <-ctx.Done():
 			return nil
 		case <-t.C:
+			t.Reset(streamingDuration)
 		}
 	}
 }
