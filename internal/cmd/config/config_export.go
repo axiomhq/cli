@@ -67,9 +67,9 @@ func newExportCommand(f *cmdutil.Factory) *cobra.Command {
 			}
 
 			// export environment variables
-			fmt.Fprintf(f.IO.Out(), `export AXIOM_URL="`+deployment.URL+`"`+"\n")
-			fmt.Fprintf(f.IO.Out(), `export AXIOM_TOKEN="`+deployment.Token+`"`+"\n")
-			fmt.Fprintf(f.IO.Out(), `export AXIOM_ORG_ID="`+deployment.OrganizationID+`"`+"\n")
+			fmt.Fprint(f.IO.Out(), `export AXIOM_URL="`+deployment.URL+`"`+"\n")
+			fmt.Fprint(f.IO.Out(), `export AXIOM_TOKEN="`+deployment.Token+`"`+"\n")
+			fmt.Fprint(f.IO.Out(), `export AXIOM_ORG_ID="`+deployment.OrganizationID+`"`+"\n")
 
 			fmt.Fprintf(opts.IO.ErrOut(), "%s %s\n", opts.IO.ColorScheme().SuccessIcon(), successMessage)
 
