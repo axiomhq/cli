@@ -154,9 +154,9 @@ $(GOLANGCI_LINT): dep.stamp $(call go-pkg-sourcefiles, github.com/golangci/golan
 	@echo ">> installing golangci-lint"
 	@$(GO) install github.com/golangci/golangci-lint/cmd/golangci-lint
 
-$(GORELEASER): dep.stamp $(call go-pkg-sourcefiles, github.com/goreleaser/goreleaser)
+$(GORELEASER): dep.stamp $(call go-pkg-sourcefiles, github.com/goreleaser/goreleaser/v2)
 	@echo ">> installing goreleaser"
-	@$(GO) install github.com/goreleaser/goreleaser
+	@$(GO) install github.com/goreleaser/goreleaser/v2
 
 $(GOTESTSUM): dep.stamp $(call go-pkg-sourcefiles, gotest.tools/gotestsum)
 	@echo ">> installing gotestsum"

@@ -10,6 +10,7 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/MakeNowJust/heredoc"
+	"github.com/axiomhq/axiom-go/axiom"
 	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
 
@@ -155,6 +156,8 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 		axiomClient, err := client.New(ctx, opts.apiURL, opts.Token, "axiom", opts.Config.Insecure)
 		if err != nil {
 			return err
+		} else if err = axiomClient.Options(axiom.SetOrganizationID("")); err != nil {
+			return err
 		}
 
 		if organizations, err := axiomClient.Organizations.List(ctx); err != nil {
@@ -260,6 +263,8 @@ func autoLogin(ctx context.Context, opts *loginOptions) error {
 	if opts.OrganizationID == "" {
 		axiomClient, err := client.New(ctx, opts.apiURL, opts.Token, "axiom", opts.Config.Insecure)
 		if err != nil {
+			return err
+		} else if err = axiomClient.Options(axiom.SetOrganizationID("")); err != nil {
 			return err
 		}
 
