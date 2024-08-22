@@ -63,3 +63,6 @@ issues:
     - linters:
         - staticcheck
       text: 'SA1019: "github.com/axiomhq/axiom-go/axiom/querylegacy"'
+    - linters:
+        - gosec
+      text: "G115: integer overflow conversion"

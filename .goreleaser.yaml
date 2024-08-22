@@ -6,6 +6,9 @@ before:
   hooks:
     - make man
 
+git:
+  prerelease_suffix: "-"
+
 builds:
   - <<: &build_defaults
       binary: axiom
