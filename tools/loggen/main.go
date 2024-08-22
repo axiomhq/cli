@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"log/slog"
-	"math/rand"
+	"math/rand/v2"
 	"os"
 	"os/signal"
 	"syscall"
@@ -46,7 +46,7 @@ func main() {
 	logger.InfoContext(ctx, "Starting log generator", attrs)
 
 	for {
-		r := rand.Intn(1000) + 1 //nolint:gosec // not used for security purposes
+		r := rand.IntN(1000) + 1 //nolint:gosec // not used for security purposes
 		select {
 		case <-ctx.Done():
 			return
