@@ -2,10 +2,10 @@ package query
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"slices"
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -160,7 +160,7 @@ func run(ctx context.Context, opts *options) error {
 	)
 	if err != nil {
 		return err
-	} else if len(res.Matches) == 0 && len(res.Buckets.Totals) == 0 {
+	} else if res.Status.RowsMatched == 0 || len(res.Tables) == 0 || len(res.Tables[0].Columns) == 0 {
 		return errors.New("query returned no results")
 	}
 
@@ -172,44 +172,33 @@ func run(ctx context.Context, opts *options) error {
 	}
 	defer pagerStop()
 
-	// Deal with JSON output format.
-	if opts.Format == iofmt.JSON.String() {
-		var data any
-		if len(res.Matches) > 0 {
-			data = res.Matches
-		} else if len(res.Buckets.Totals) > 0 {
-			// For ungrouped buckets we just return the aggregated total.
-			if len(res.Buckets.Totals[0].Group) == 0 {
-				data = res.Buckets.Totals[0].Aggregations[0].Value
-			} else {
-				data = res.Buckets.Totals
-			}
-		}
-		return iofmt.FormatToJSON(opts.IO.Out(), data, opts.IO.ColorEnabled())
-	}
-
 	cs := opts.IO.ColorScheme()
 
 	headerText := cs.Bold(opts.Query)
 	headerText += fmt.Sprintf(" processed in %s", cs.Gray(res.Status.ElapsedTime.String()))
 	headerText = fmt.Sprintf("Result of query %s:\n\n", headerText)
 
-	// Deal with table output format for matches.
-	if len(res.Matches) > 0 {
+	table := res.Tables[0]
+
+	// Deal with JSON output format. It only works for non-aggregated results OR
+	// an aggregated result which produces a single value (it has no groups).
+	if opts.Format == iofmt.JSON.String() {
+		if tableHasAggregation(table) {
+			if len(table.Groups) > 1 || (len(table.Columns) > 1 && len(table.Columns[0]) > 1) {
+				return errors.New("JSON output format is not supported for aggregated results with groups")
+			}
+			if opts.IO.IsStdoutTTY() {
+				fmt.Fprint(opts.IO.Out(), headerText)
+			}
+			return iofmt.FormatToJSON(opts.IO.Out(), table.Columns[0][0], opts.IO.ColorEnabled())
+		}
+
 		if opts.IO.IsStdoutTTY() {
 			fmt.Fprint(opts.IO.Out(), headerText)
 		}
 
-		for _, entry := range res.Matches {
-			var data any
-			switch opts.Format {
-			case iofmt.JSON.String():
-				data = entry
-			default:
-				fmt.Fprintf(opts.IO.Out(), "%s\t", cs.Gray(entry.Time.Format(time.RFC1123)))
-				data = entry.Data
-			}
-			if err = iofmt.FormatToJSON(opts.IO.Out(), data, opts.IO.ColorEnabled()); err != nil {
+		for i := range len(table.Columns[0]) {
+			if err = iofmt.FormatToJSON(opts.IO.Out(), tableRowAtIndex(table, i), opts.IO.ColorEnabled()); err != nil {
 				return err
 			}
 		}
@@ -217,43 +206,110 @@ func run(ctx context.Context, opts *options) error {
 		return nil
 	}
 
-	// Deal with table output format for grouped results.
-
-	// If we have no groups, we just print the aggregated total.
-	if len(res.Buckets.Totals[0].Group) == 0 {
+	// Deal with table output for a result with more than ten fields as it
+	// wouldn't be readable in a table.
+	if !tableHasAggregation(table) && len(table.Fields) > 10 {
 		if opts.IO.IsStdoutTTY() {
 			fmt.Fprint(opts.IO.Out(), headerText)
 		}
 
-		return iofmt.FormatToJSON(opts.IO.Out(),
-			res.Buckets.Totals[0].Aggregations[0].Value, opts.IO.ColorEnabled())
+		hasTimeField := slices.ContainsFunc(table.Fields, func(field query.Field) bool {
+			return field.Name == "_time"
+		})
+		hasSysTimeField := slices.ContainsFunc(table.Fields, func(field query.Field) bool {
+			return field.Name == "_sysTime"
+		})
+
+		for i := range len(table.Columns[0]) {
+			row := tableRowAtIndex(table, i)
+			if hasTimeField {
+				ts, err := time.Parse(time.RFC3339Nano, fmt.Sprint(row["_time"]))
+				if err != nil {
+					return err
+				}
+				fmt.Fprintf(opts.IO.Out(), "%s\t", cs.Gray(ts.Format(time.RFC1123)))
+				delete(row, "_time")
+			}
+			if hasSysTimeField {
+				delete(row, "_sysTime")
+			}
+			if err = iofmt.FormatToJSON(opts.IO.Out(), row, opts.IO.ColorEnabled()); err != nil {
+				return err
+			}
+		}
+
+		return nil
 	}
 
-	// If we have groups, we print a table with the groups as columns and the
-	// aggregated totals as rows.
-	var (
-		header      iofmt.HeaderBuilderFunc
-		columnNames = res.GroupBy
-	)
+	// Deal with table output format for non-aggregated results.
+	if !tableHasAggregation(table) {
+		var header iofmt.HeaderBuilderFunc
+		if opts.IO.IsStdoutTTY() {
+			header = func(_ io.Writer, trb iofmt.TableRowBuilder) {
+				fmt.Fprint(opts.IO.Out(), headerText)
+				for _, field := range table.Fields {
+					trb.AddField(field.Name, cs.Bold)
+				}
+			}
+		}
+
+		contentRow := func(trb iofmt.TableRowBuilder, k int) {
+			for _, column := range table.Columns {
+				trb.AddField(fmt.Sprint(column[k]), nil)
+			}
+		}
+
+		return iofmt.FormatToTable(opts.IO, len(table.Columns[0]), header, nil, contentRow)
+	}
+
+	// Deal with table output format for aggregated results.
+	var header iofmt.HeaderBuilderFunc
 	if opts.IO.IsStdoutTTY() {
 		header = func(_ io.Writer, trb iofmt.TableRowBuilder) {
 			fmt.Fprint(opts.IO.Out(), headerText)
-			for _, name := range columnNames {
-				trb.AddField(name, cs.Bold)
+			for _, field := range table.Fields {
+				trb.AddField(field.Name, cs.Bold)
 			}
-			trb.AddField(res.Buckets.Totals[0].Aggregations[0].Alias, cs.Bold)
 		}
 	}
 
 	contentRow := func(trb iofmt.TableRowBuilder, k int) {
-		total := res.Buckets.Totals[k]
-		aggValue, _ := json.Marshal(total.Aggregations[0].Value)
-
-		for _, name := range columnNames {
-			trb.AddField(fmt.Sprint(total.Group[name]), nil)
+		for _, column := range table.Columns {
+			trb.AddField(fmt.Sprint(column[k]), nil)
 		}
-		trb.AddField(string(aggValue), nil)
 	}
 
-	return iofmt.FormatToTable(opts.IO, len(res.Buckets.Totals), header, nil, contentRow)
+	var footer iofmt.HeaderBuilderFunc
+	if opts.IO.IsStdoutTTY() && len(res.Tables) > 1 && res.Tables[1].Name == "_totals" {
+		totalsTable := res.Tables[1]
+		footer = func(_ io.Writer, trb iofmt.TableRowBuilder) {
+			trb.AddField("Total", cs.Bold) // Account for the _time field present in the former table.
+			for i, field := range totalsTable.Fields {
+				var total string
+				if field.Aggregation != nil {
+					total = fmt.Sprint(totalsTable.Columns[i][0])
+				}
+				trb.AddField(total, nil)
+			}
+		}
+	}
+
+	return iofmt.FormatToTable(opts.IO, len(table.Columns[0]), header, footer, contentRow)
+}
+
+func tableHasAggregation(table query.Table) bool {
+	for _, field := range table.Fields {
+		if field.Aggregation != nil {
+			return true
+		}
+	}
+	return false
+}
+
+func tableRowAtIndex(table query.Table, rowIdx int) map[string]any {
+	row := make(map[string]any, len(table.Fields))
+	for i, field := range table.Fields {
+		row[field.Name] = table.Columns[i][rowIdx]
+	}
+	return row
 }

@@ -364,14 +364,14 @@ func run(ctx context.Context, opts *options, flushEverySet, batchSizeSet, csvFie
 		if res.Ingested > 0 {
 			fmt.Fprintf(opts.IO.ErrOut(), "%s Ingested %s\n",
 				cs.SuccessIcon(),
-				utils.Pluralize(cs, "event", int(res.Ingested)),
+				utils.Pluralize(cs, "event", int(res.Ingested)), //nolint:gosec // Not relevant here.
 			)
 		}
 
 		if res.Failed > 0 {
 			fmt.Fprintf(opts.IO.ErrOut(), "%s Failed to ingest %s:\n\n",
 				cs.ErrorIcon(),
-				utils.Pluralize(cs, "event", int(res.Failed)),
+				utils.Pluralize(cs, "event", int(res.Failed)), //nolint:gosec // Not relevant here.
 			)
 			for _, fail := range res.Failures {
 				fmt.Fprintf(opts.IO.ErrOut(), "%s: %s\n",
