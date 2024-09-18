@@ -17,7 +17,7 @@ require (
 	github.com/dustin/go-humanize v1.0.1
 	github.com/golangci/golangci-lint v1.61.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
-	github.com/goreleaser/goreleaser/v2 v2.3.1
+	github.com/goreleaser/goreleaser/v2 v2.3.2
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/klauspost/compress v1.17.9
 	github.com/mattn/go-colorable v0.1.13
@@ -238,7 +238,7 @@ require (
 	github.com/golangci/unconvert v0.0.0-20240309020433-c5143eacb3ed // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/go-containerregistry v0.20.2 // indirect
-	github.com/google/go-github/v64 v64.0.0 // indirect
+	github.com/google/go-github/v65 v65.0.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/ko v0.16.0 // indirect
 	github.com/google/rpmpack v0.6.1-0.20240329070804-c2247cbb881a // indirect
