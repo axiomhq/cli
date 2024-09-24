@@ -8,7 +8,7 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
-	github.com/axiomhq/axiom-go v0.21.0
+	github.com/axiomhq/axiom-go v0.21.1
 	github.com/axiomhq/pkg v0.6.0
 	github.com/briandowns/spinner v1.23.1
 	github.com/cli/cli v1.14.0
