@@ -10,7 +10,7 @@ require (
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
 	github.com/axiomhq/axiom-go v0.21.1
 	github.com/axiomhq/pkg v0.6.0
-	github.com/briandowns/spinner v1.23.1
+	github.com/briandowns/spinner v1.23.2
 	github.com/cli/cli v1.14.0
 	github.com/cli/safeexec v1.0.1
 	github.com/cpuguy83/go-md2man v1.0.10
