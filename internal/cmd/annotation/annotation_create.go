@@ -126,7 +126,7 @@ func completeCreate(ctx context.Context, opts *createOptions) error {
 
 var typeRegex = regexp.MustCompile(`^[a-z0-9-]+$`)
 
-func validateType(ans interface{}) error {
+func validateType(ans any) error {
 	typ, ok := ans.(string)
 	if !ok {
 		return fmt.Errorf("expected a string, got %T", ans)
