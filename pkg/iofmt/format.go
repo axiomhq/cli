@@ -2,7 +2,7 @@ package iofmt
 
 import "fmt"
 
-//go:generate ../../bin/stringer -type=Format -linecomment -output=format_string.go
+//go:generate go tool stringer -type=Format -linecomment -output=format_string.go
 
 // Format is an output format.
 type Format uint8

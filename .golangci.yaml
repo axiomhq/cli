@@ -1,8 +1,10 @@
+version: "2"
+
 run:
   modules-download-mode: readonly
 
 linters:
-  disable-all: true
+  default: none
   enable:
     - bodyclose
     - copyloopvar
@@ -10,10 +12,7 @@ linters:
     - dupl
     - errcheck
     - goconst
-    - gofmt
-    - goimports
     - gosec
-    - gosimple
     - govet
     - ineffassign
     - misspell
@@ -21,48 +20,64 @@ linters:
     - prealloc
     - revive
     - staticcheck
-    - stylecheck
-    - typecheck
     - unconvert
     - unparam
     - unused
     - whitespace
+  settings:
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+      allow-unused: false
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - staticcheck
+        text: "SA1019: res.BlocksDeleted"
+      - linters:
+          - staticcheck
+        text: "SA1019: client.Datasets.QueryLegacy"
+      - linters:
+          - staticcheck
+        text: "SA1019: client.QueryLegacy"
+      - linters:
+          - staticcheck
+        text: 'SA1019: "github.com/axiomhq/axiom-go/axiom/querylegacy"'
+      - linters:
+          - gosec
+        text: "G115: integer overflow conversion"
+    paths:
+      - .git
+      - .github
+      - .vscode
+      - bin
+      - dist
+      - man
+      - testdata
 
-linters-settings:
-  gofmt:
-    simplify: true
-  goimports:
-    local-prefixes: github.com/axiomhq/cli
-  govet:
-    shadow: true
-  nolintlint:
-    allow-unused: false
-    allow-leading-space: false
-    require-explanation: true
-    require-specific: true
-
-issues:
-  exclude-dirs:
-    - .git
-    - .github
-    - .vscode
-    - bin
-    - dist
-    - man
-    - testdata
-  exclude-rules:
-    - linters:
-        - staticcheck
-      text: "SA1019: res.BlocksDeleted"
-    - linters:
-        - staticcheck
-      text: "SA1019: client.Datasets.QueryLegacy"
-    - linters:
-        - staticcheck
-      text: "SA1019: client.QueryLegacy"
-    - linters:
-        - staticcheck
-      text: 'SA1019: "github.com/axiomhq/axiom-go/axiom/querylegacy"'
-    - linters:
-        - gosec
-      text: "G115: integer overflow conversion"
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    gofmt:
+      simplify: true
+    goimports:
+      local-prefixes:
+        - github.com/axiomhq/cli
+  exclusions:
+    generated: lax
+    paths:
+      - .git
+      - .github
+      - .vscode
+      - bin
+      - dist
+      - man
+      - testdata

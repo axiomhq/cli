@@ -9,6 +9,8 @@ import (
 
 	"github.com/axiomhq/cli/internal/client"
 
+	"slices"
+
 	"github.com/AlecAivazis/survey/v2"
 )
 
@@ -50,10 +52,8 @@ func NotIn(ss []string) survey.Validator {
 			return fmt.Errorf("input cannot be of type %v", reflect.TypeOf(val).Name())
 		}
 
-		for _, s := range ss {
-			if v == s {
-				return fmt.Errorf("input cannot be %q", v)
-			}
+		if slices.Contains(ss, v) {
+			return fmt.Errorf("input cannot be %q", v)
 		}
 
 		return nil
