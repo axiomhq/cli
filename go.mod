@@ -18,7 +18,7 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
-	github.com/axiomhq/axiom-go v0.23.1
+	github.com/axiomhq/axiom-go v0.23.2
 	github.com/axiomhq/pkg v0.6.0
 	github.com/briandowns/spinner v1.23.2
 	github.com/cli/cli v1.14.0
@@ -487,7 +487,7 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	gotest.tools/gotestsum v1.12.1 // indirect
+	gotest.tools/gotestsum v1.12.2 // indirect
 	honnef.co/go/tools v0.6.1 // indirect
 	lukechampine.com/blake3 v1.2.1 // indirect
 	mvdan.cc/gofumpt v0.7.0 // indirect
