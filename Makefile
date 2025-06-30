@@ -94,7 +94,9 @@ fmt: ## Format and simplify the source code using `golangci-lint fmt`
 generate: pkg/iofmt/format_string.go ## Generate code using `go generate`
 
 .PHONY: install
-install: $(GOPATH)/bin/axiom ## Install the binary into the $GOPATH/bin directory
+install: ## Install the binary into the $GOPATH/bin directory
+	@echo ">> installing binary"
+	@$(GO) install ./cmd/axiom
 
 .PHONY: lint
 lint: ## Lint the source code

@@ -1,3 +1,4 @@
+//nolint:revive // This is a legacy package name, so don't complain.
 package utils
 
 import (
