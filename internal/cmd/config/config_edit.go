@@ -26,7 +26,7 @@ func newEditCmd(f *cmdutil.Factory) *cobra.Command {
 		Example: heredoc.Doc(`
 			# Open the default configuration file in the configured editor:
 			$ axiom config edit
-			
+
 			# Open the specified configuration file in the configured editor:
 			$ axiom config edit -C /etc/axiom/cli.toml
 		`),
