@@ -179,6 +179,20 @@ dockers:
       - --label=org.opencontainers.image.vendor=Axiom, Inc.
 
 aurs:
+  # IMPORTANT: Architecture Support Fix
+  # ====================================
+  # GoReleaser's AUR integration has a limitation where it doesn't properly handle
+  # multiple architectures (x86_64 and aarch64). The generated PKGBUILD downloads
+  # a fixed archive URL regardless of the system architecture.
+  #
+  # To fix this, we:
+  # 1. Set skip_upload: true to prevent automatic upload
+  # 2. Maintain a proper multi-architecture PKGBUILD in aur/PKGBUILD
+  # 3. Use aur/update-pkgbuild.sh to update version and checksums after releases
+  #
+  # See aur/README.md for detailed instructions on maintaining the AUR package.
+  #
+  # The GoReleaser-generated PKGBUILD (in dist/ after build) serves only as a reference.
   - name: axiom-bin
     ids:
       - nix
@@ -191,12 +205,36 @@ aurs:
     license: MIT
     private_key: "{{ .Env.AUR_KEY }}"
     git_url: ssh://aur@aur.archlinux.org/axiom-bin.git
-    skip_upload: auto
+    # Set to true to prevent automatic upload - we'll maintain the PKGBUILD manually
+    skip_upload: true
     provides:
       - axiom-bin
     conflicts:
       - axiom-bin
       - axiom-git
+    # Custom package function that will be used in the generated PKGBUILD
+    # This serves as a template/reference for the manually maintained version
+    package: |-
+      # bin
+      install -Dm755 "./axiom" "${pkgdir}/usr/bin/axiom"
+
+      # license
+      install -Dm644 "./LICENSE" "${pkgdir}/usr/share/licenses/axiom-bin/LICENSE"
+
+      # man pages
+      for f in ./man/*.1; do
+        [ -f "$f" ] && install -Dm644 "$f" "${pkgdir}/usr/share/man/man1/$(basename $f)"
+      done
+
+      # completions
+      mkdir -p "${pkgdir}/usr/share/bash-completion/completions/"
+      mkdir -p "${pkgdir}/usr/share/zsh/site-functions/"
+      mkdir -p "${pkgdir}/usr/share/fish/vendor_completions.d/"
+      "./axiom" completion bash > "${pkgdir}/usr/share/bash-completion/completions/axiom"
+      "./axiom" completion zsh > "${pkgdir}/usr/share/zsh/site-functions/_axiom"
+      "./axiom" completion fish > "${pkgdir}/usr/share/fish/vendor_completions.d/axiom.fish"
+    # Override the URL template to use a placeholder that can be replaced in the manual PKGBUILD
+    url_template: "https://github.com/axiomhq/cli/releases/download/{{ .Tag }}/{{ .ProjectName }}_{{ .Version }}_linux_ARCH.tar.gz"
     commit_author:
       name: axiomautomation
       email: hello@axiom.co
