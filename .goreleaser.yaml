@@ -86,22 +86,24 @@ archives:
   - <<: &archive_defaults
       name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
     id: nix
-    builds:
+    ids:
       - darwin
       - linux
       - linux-no-pie
     wrap_in_directory: true
-    format: tar.gz
+    formats:
+      - tar.gz
     files:
       - LICENSE
       - README.md
       - man/{{ .ProjectName }}*.1
   - <<: *archive_defaults
     id: windows
-    builds:
+    ids:
       - windows
     wrap_in_directory: false
-    format: zip
+    formats:
+      - zip
     files:
       - LICENSE
       - README.md
