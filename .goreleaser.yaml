@@ -200,3 +200,16 @@ aurs:
     commit_author:
       name: axiomautomation
       email: hello@axiom.co
+    package: |
+      case "$CARCH" in
+        aarch64) _arch="arm64" ;;
+        armv7h) _arch="armv7" ;;
+        i686) _arch="386" ;;
+        x86_64) _arch="amd64" ;;
+      esac
+      
+      install -Dm755 "./axiom_${pkgver}_linux_${_arch}/axiom" "${pkgdir}/usr/bin/axiom"
+      
+      if [[ -d "./axiom_${pkgver}_linux_${_arch}/man" ]]; then
+        install -Dm644 "./axiom_${pkgver}_linux_${_arch}/man"/*.1 -t "${pkgdir}/usr/share/man/man1/"
+      fi
