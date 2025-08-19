@@ -59,7 +59,7 @@ jobs:
         with:
           version: ${{ env.GORELEASER_VERSION }}
           args: build --snapshot
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v4
         with:
           path: |
             dist/darwin_darwin_amd64_v1/axiom
@@ -93,12 +93,12 @@ jobs:
       AXIOM_DATASET: cli-test-${{ github.run_id }}-${{ matrix.goos }}
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v4
       - name: Test (Unix)
         if: matrix.goos == 'darwin' || matrix.goos == 'linux'
         run: |
-          chmod +x ${{ matrix.goos }}_${{ matrix.goos }}_amd64_v1/axiom
-          mv ${{ matrix.goos }}_${{ matrix.goos }}_amd64_v1/axiom /usr/local/bin/axiom
+          chmod +x artifact/${{ matrix.goos }}_${{ matrix.goos }}_amd64_v1/axiom
+          mv artifact/${{ matrix.goos }}_${{ matrix.goos }}_amd64_v1/axiom /usr/local/bin/axiom
           axiom version -I
           axiom dataset create -n=${{ env.AXIOM_DATASET }} -d="CLI Integration test"
           axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.json.gz -t=json -e=gzip
@@ -111,8 +111,8 @@ jobs:
       - name: Test (Windows)
         if: matrix.goos == 'windows'
         run: |
-          chmod +x ${{ matrix.goos }}_${{ matrix.goos }}_amd64_v1/axiom.exe
-          mv ${{ matrix.goos }}_${{ matrix.goos }}_amd64_v1/axiom.exe C:/Windows/System32/axiom.exe
+          chmod +x artifact/${{ matrix.goos }}_${{ matrix.goos }}_amd64_v1/axiom.exe
+          mv artifact/${{ matrix.goos }}_${{ matrix.goos }}_amd64_v1/axiom.exe C:/Windows/System32/axiom.exe
           axiom version -I
           gunzip testdata/logs.*.gz
           axiom dataset create -n=${{ env.AXIOM_DATASET }} -d="CLI Integration test"
