@@ -58,13 +58,14 @@ jobs:
       - uses: goreleaser/goreleaser-action@v6
         with:
           version: ${{ env.GORELEASER_VERSION }}
-          args: build --snapshot
+          args: --snapshot
       - uses: actions/upload-artifact@v4
         with:
+          name: binaries
           path: |
-            dist/darwin_darwin_amd64_v1/axiom
-            dist/linux_linux_amd64_v1/axiom
-            dist/windows_windows_amd64_v1/axiom.exe
+            dist/axiom_*_darwin_amd64.tar.gz
+            dist/axiom_*_linux_amd64.tar.gz
+            dist/axiom_*_windows_amd64.zip
 
   binary-integration:
     name: Binary integration
@@ -94,11 +95,14 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: actions/download-artifact@v5
+        with:
+          name: binaries
       - name: Test (Unix)
         if: matrix.goos == 'darwin' || matrix.goos == 'linux'
         run: |
-          chmod +x artifact/${{ matrix.goos }}_${{ matrix.goos }}_amd64_v1/axiom
-          mv artifact/${{ matrix.goos }}_${{ matrix.goos }}_amd64_v1/axiom /usr/local/bin/axiom
+          tar -xzf axiom_*_${{ matrix.goos }}_amd64.tar.gz
+          chmod +x axiom_*_${{ matrix.goos }}_amd64/axiom
+          mv axiom_*_${{ matrix.goos }}_amd64/axiom /usr/local/bin/axiom
           axiom version -I
           axiom dataset create -n=${{ env.AXIOM_DATASET }} -d="CLI Integration test"
           axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.json.gz -t=json -e=gzip
@@ -111,8 +115,9 @@ jobs:
       - name: Test (Windows)
         if: matrix.goos == 'windows'
         run: |
-          chmod +x artifact/${{ matrix.goos }}_${{ matrix.goos }}_amd64_v1/axiom.exe
-          mv artifact/${{ matrix.goos }}_${{ matrix.goos }}_amd64_v1/axiom.exe C:/Windows/System32/axiom.exe
+          unzip axiom_*_windows_amd64.zip
+          chmod +x axiom.exe
+          mv axiom.exe C:/Windows/System32/axiom.exe
           axiom version -I
           gunzip testdata/logs.*.gz
           axiom dataset create -n=${{ env.AXIOM_DATASET }} -d="CLI Integration test"

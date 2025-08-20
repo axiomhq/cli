@@ -98,6 +98,7 @@ archives:
       - LICENSE
       - README.md
       - man/{{ .ProjectName }}*.1
+      - completions/*
   - <<: *archive_defaults
     id: windows
     ids:
@@ -108,18 +109,6 @@ archives:
     files:
       - LICENSE
       - README.md
-  - <<: *archive_defaults
-    id: homebrew
-    ids:
-      - darwin
-    wrap_in_directory: true
-    formats:
-      - tar.gz
-    files:
-      - LICENSE
-      - README.md
-      - man/{{ .ProjectName }}*.1
-      - completions/*
 
 checksum:
   name_template: checksums.txt
@@ -149,7 +138,7 @@ homebrew_casks:
     description: Powerful log analytics from the comfort of your command-line
     homepage: https://axiom.co
     ids:
-      - homebrew
+      - nix
     repository:
       owner: axiomhq
       name: homebrew-tap
