@@ -5,6 +5,7 @@ project_name: axiom
 before:
   hooks:
     - make man
+    - make completions
 
 git:
   prerelease_suffix: "-"
@@ -107,6 +108,18 @@ archives:
     files:
       - LICENSE
       - README.md
+  - <<: *archive_defaults
+    id: homebrew
+    ids:
+      - darwin
+    wrap_in_directory: true
+    formats:
+      - tar.gz
+    files:
+      - LICENSE
+      - README.md
+      - man/{{ .ProjectName }}*.1
+      - completions/*
 
 checksum:
   name_template: checksums.txt
@@ -131,11 +144,12 @@ release:
   prerelease: auto
   name_template: Axiom CLI v{{ .Version }}
 
-brews:
+homebrew_casks:
   - name: axiom
     description: Powerful log analytics from the comfort of your command-line
     homepage: https://axiom.co
-    license: MIT
+    ids:
+      - homebrew
     repository:
       owner: axiomhq
       name: homebrew-tap
@@ -144,15 +158,20 @@ brews:
       name: axiom-automation
       email: hello@axiom.co
     skip_upload: auto
-    directory: Formula
-    install: |
-      bin.install "{{ .ProjectName }}"
-      man1.install Dir["man/{{ .ProjectName }}*.1"]
-      (bash_completion/"{{ .ProjectName }}").write `#{bin}/{{ .ProjectName }} completion bash`
-      (fish_completion/"{{ .ProjectName }}.fish").write `#{bin}/{{ .ProjectName }} completion fish`
-      (zsh_completion/"_{{ .ProjectName }}").write `#{bin}/{{ .ProjectName }} completion zsh`
-    test: |
-      assert_match "Axiom CLI version #{version}", shell_output("#{bin}/{{ .ProjectName }} -v")
+    conflicts:
+      - formula: axiom
+    manpages:
+      - "man/{{ .ProjectName }}*.1"
+    completions:
+      bash: completions/axiom.bash
+      zsh: completions/_axiom
+      fish: completions/axiom.fish
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/{{ .ProjectName }}"]
+          end
 
 dockers:
   - ids:
@@ -210,9 +229,9 @@ aurs:
         x86_64) _arch="amd64" ;;
         *) echo "Unsupported architecture: $CARCH" >&2; exit 1 ;;
       esac
-      
+
       install -Dm755 "./axiom_${pkgver}_linux_${_arch}/axiom" "${pkgdir}/usr/bin/axiom"
-      
+
       if [[ -d "./axiom_${pkgver}_linux_${_arch}/man" ]]; then
         install -Dm644 "./axiom_${pkgver}_linux_${_arch}/man"/*.1 -t "${pkgdir}/usr/share/man/man1/"
       fi

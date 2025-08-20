@@ -16,6 +16,7 @@ USER		:= $(shell whoami)
 COVERPROFILE	:= coverage.out
 DIST_DIR		:= dist
 MANPAGES_DIR	:= man
+COMPLETIONS_DIR	:= completions
 
 # GO TAGS
 GO_TAGS := osusergo netgo static_build
@@ -58,12 +59,21 @@ build: dep.stamp $(call go-pkg-sourcefiles, ./...) ## Build the binaries
 .PHONY: clean
 clean: ## Remove build and test artifacts
 	@echo ">> cleaning up artifacts"
-	@rm -rf bin $(DIST_DIR) $(COVERPROFILE) dep.stamp
+	@rm -rf bin $(DIST_DIR) $(COMPLETIONS_DIR) $(COVERPROFILE) dep.stamp
 
 .PHONY: cover
 cover: $(COVERPROFILE) ## Calculate the code coverage score
 	@echo ">> calculating code coverage"
 	@$(GO) tool cover -func=$(COVERPROFILE) | tail -n1
+
+.PHONY: completions
+completions: ## Generate shell completion scripts
+	@echo ">> generating shell completions"
+	@rm -rf $(COMPLETIONS_DIR)
+	@mkdir -p $(COMPLETIONS_DIR)
+	@$(GO) run ./cmd/axiom completion bash > $(COMPLETIONS_DIR)/axiom.bash
+	@$(GO) run ./cmd/axiom completion zsh > $(COMPLETIONS_DIR)/_axiom
+	@$(GO) run ./cmd/axiom completion fish > $(COMPLETIONS_DIR)/axiom.fish
 
 .PHONY: dep-clean
 dep-clean: ## Remove obsolete dependencies

@@ -2,23 +2,20 @@ module github.com/axiomhq/cli
 
 go 1.25.0
 
-tool github.com/golangci/golangci-lint/v2/cmd/golangci-lint
-
-tool github.com/goreleaser/goreleaser/v2
-
-tool golang.org/x/tools/cmd/stringer
-
-tool gotest.tools/gotestsum
-
-tool github.com/axiomhq/cli/tools/gen-cli-docs
-
-tool github.com/axiomhq/cli/tools/loggen
+tool (
+	github.com/axiomhq/cli/tools/gen-cli-docs
+	github.com/axiomhq/cli/tools/loggen
+	github.com/golangci/golangci-lint/v2/cmd/golangci-lint
+	github.com/goreleaser/goreleaser/v2
+	golang.org/x/tools/cmd/stringer
+	gotest.tools/gotestsum
+)
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
-	github.com/axiomhq/axiom-go v0.25.1
+	github.com/axiomhq/axiom-go v0.26.0
 	github.com/axiomhq/pkg v0.6.0
 	github.com/briandowns/spinner v1.23.2
 	github.com/cli/cli v1.14.0
@@ -486,11 +483,11 @@ require (
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/contrib/detectors/gcp v1.36.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.61.0 // indirect
-	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.61.0 // indirect
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.62.0 // indirect
 	go.opentelemetry.io/otel v1.37.0 // indirect
 	go.opentelemetry.io/otel/metric v1.37.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.37.0 // indirect
-	go.opentelemetry.io/otel/sdk/metric v1.36.0 // indirect
+	go.opentelemetry.io/otel/sdk/metric v1.37.0 // indirect
 	go.opentelemetry.io/otel/trace v1.37.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/automaxprocs v1.6.0 // indirect
