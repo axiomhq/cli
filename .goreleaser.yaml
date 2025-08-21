@@ -100,15 +100,25 @@ archives:
       - man/{{ .ProjectName }}*.1
       - completions/*
   - <<: *archive_defaults
+    id: homebrew
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}_homebrew"
+    ids:
+      - darwin
+    wrap_in_directory: false
+    formats:
+      - tar.gz
+    files:
+      - LICENSE
+      - README.md
+      - man/{{ .ProjectName }}*.1
+      - completions/*
+  - <<: *archive_defaults
     id: windows
     ids:
       - windows
     wrap_in_directory: false
     formats:
       - zip
-    files:
-      - LICENSE
-      - README.md
 
 checksum:
   name_template: checksums.txt
@@ -138,7 +148,7 @@ homebrew_casks:
     description: Powerful log analytics from the comfort of your command-line
     homepage: https://axiom.co
     ids:
-      - nix
+      - homebrew
     repository:
       owner: axiomhq
       name: homebrew-tap
@@ -147,8 +157,6 @@ homebrew_casks:
       name: axiom-automation
       email: hello@axiom.co
     skip_upload: auto
-    conflicts:
-      - formula: axiom
     manpages:
       - "man/{{ .ProjectName }}*.1"
     completions:

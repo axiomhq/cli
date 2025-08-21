@@ -37,7 +37,7 @@ For more information check out the
 
 There are multiple ways you can install the CLI:
 
-- With Homebrew: `brew install axiomhq/tap/axiom`
+- With Homebrew: `brew install --cask axiomhq/tap/axiom`
 - Download the pre-built binary from the
   [GitHub Releases](https://github.com/axiomhq/cli/releases/latest)
 - Using Go: `go install github.com/axiomhq/cli/cmd/axiom@latest`
@@ -57,6 +57,7 @@ CORE COMMANDS
   stream:      Livestream data
 
 MANAGEMENT COMMANDS
+  annotation:  Manage annotations
   auth:        Manage authentication state
   config:      Manage configuration
   dataset:     Manage datasets
