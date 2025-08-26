@@ -15,7 +15,7 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
-	github.com/axiomhq/axiom-go v0.26.0
+	github.com/axiomhq/axiom-go v0.26.1
 	github.com/axiomhq/pkg v0.6.0
 	github.com/briandowns/spinner v1.23.2
 	github.com/cli/cli v1.14.0
@@ -35,7 +35,7 @@ require (
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.7
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.0
 	golang.org/x/oauth2 v0.30.0
 	golang.org/x/sync v0.16.0
 	golang.org/x/term v0.34.0
