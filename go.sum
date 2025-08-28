@@ -303,6 +303,8 @@ github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.10.1 h1:6lMw4/QGLFP
 github.com/awslabs/amazon-ecr-credential-helper/ecr-login v0.10.1/go.mod h1:EVJOSYOVeoD3VFFZ/dWCAzWJp5wZr9lTOCjW8ejAmO0=
 github.com/axiomhq/axiom-go v0.26.1 h1:DZO084iu7QuwwKWkX3rIjqbyNtDqNqncLjEPdNDMYWg=
 github.com/axiomhq/axiom-go v0.26.1/go.mod h1:UT0bOelSY4Ifn9b7AU9XCFLYJaK6DS4i2dSVVjkswdk=
+github.com/axiomhq/axiom-go v0.26.2 h1:Kfe66TSMRncvTTAfV1/HS010Bu2KgJ8Hj+JrpfzLw0E=
+github.com/axiomhq/axiom-go v0.26.2/go.mod h1:Yz/wFyWm1Q8tXzxZ2YBtc3tM/ScdMhoSSIWlP7ioqr4=
 github.com/axiomhq/pkg v0.6.0 h1:elslidLCtDB+GPOx+1VzXijf+BT28+HnPUir8vSaEkA=
 github.com/axiomhq/pkg v0.6.0/go.mod h1:0Vu7mQOXdsxpYYyGIm5QfHwafGboyyyoz8FIhSvA30M=
 github.com/aymanbagabas/go-osc52/v2 v2.0.1 h1:HwpRHbFMcZLEVr42D4p7XBqjyuxQH5SMiErDT4WkJ2k=
