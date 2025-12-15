@@ -94,7 +94,7 @@ jobs:
       AXIOM_DATASET: cli-test-${{ github.run_id }}-${{ matrix.goos }}
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           name: binaries
       - name: Test (Unix)
