@@ -70,3 +70,38 @@ Commands are grouped:
 internal/cmd/query: fix result formatting
 pkg/terminal: add dark mode support
 ```
+
+## Claude Code Plugin
+
+This repository includes a Claude Code plugin for APL query assistance.
+
+### Skills
+
+| Skill | Command | Description |
+|-------|---------|-------------|
+| `explore-dataset` | `/explore-dataset <name>` | Discover schema, fields, and patterns |
+| `find-traces` | `/find-traces <trace-id>` | Analyze OpenTelemetry traces |
+| `detect-anomalies` | `/detect-anomalies <dataset>` | Statistical anomaly detection |
+
+### Installation
+
+```bash
+# Add the marketplace from GitHub
+claude plugin marketplace add axiomhq/cli
+
+# Install the plugin
+claude plugin install axiom-cli@axiom-cli
+
+# Or for local development in this repo
+claude plugin marketplace add ./
+claude plugin install axiom-cli@axiom-cli --scope local
+```
+
+### Reference
+
+The plugin includes comprehensive APL reference documentation in `skills/axiom-apl/references/`:
+- `cli.md` - CLI flags and usage
+- `operators.md` - APL operators
+- `functions.md` - APL functions
+- `patterns.md` - Query patterns by use case
+- `gotchas.md` - Common mistakes
