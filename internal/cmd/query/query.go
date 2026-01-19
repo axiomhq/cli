@@ -33,6 +33,8 @@ type options struct {
 	TimestampFormat string
 	// Format to output data in. Defaults to tabular output.
 	Format string
+	// FailOnEmpty exits with an error if the query returns no results.
+	FailOnEmpty bool
 
 	startTime time.Time
 	endTime   time.Time
@@ -96,6 +98,7 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.Flags().StringVar(&opts.StartTime, "start-time", "", "Start time of the query - may also be a relative time eg: -24h, -20m")
 	cmd.Flags().StringVar(&opts.EndTime, "end-time", "", "End time of the query - may also be a relative time eg: -24h, -20m")
 	cmd.Flags().StringVar(&opts.TimestampFormat, "timestamp-format", "", "Format used in the the timestamp field. Default uses a heuristic parser. Must be expressed using the reference time 'Mon Jan 2 15:04:05 -0700 MST 2006'")
+	cmd.Flags().BoolVar(&opts.FailOnEmpty, "fail-on-empty", false, "Exit with error code 1 if query returns no results")
 
 	_ = cmd.RegisterFlagCompletionFunc("format", cmdutil.FormatCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("start-time", cmdutil.NoCompletion)
@@ -145,6 +148,23 @@ func complete(opts *options) (err error) {
 	}, &opts.Query, opts.IO.SurveyIO())
 }
 
+func resultIsEmpty(res *query.Result) bool {
+	if res.Status.RowsMatched == 0 || len(res.Tables) == 0 {
+		return true
+	}
+	table := res.Tables[0]
+	if len(table.Columns) == 0 {
+		return true
+	}
+	// Check if all columns are empty (no rows).
+	for _, col := range table.Columns {
+		if len(col) > 0 {
+			return false
+		}
+	}
+	return true
+}
+
 func run(ctx context.Context, opts *options) error {
 	client, err := opts.Client(ctx)
 	if err != nil {
@@ -160,11 +180,22 @@ func run(ctx context.Context, opts *options) error {
 	)
 	if err != nil {
 		return err
-	} else if res.Status.RowsMatched == 0 || len(res.Tables) == 0 || len(res.Tables[0].Columns) == 0 {
-		return errors.New("query returned no results")
 	}
 
 	progStop()
+
+	// Handle empty results gracefully.
+	if resultIsEmpty(res) {
+		if opts.FailOnEmpty {
+			return errors.New("query returned no results")
+		}
+		if opts.Format == iofmt.JSON.String() {
+			fmt.Fprintln(opts.IO.Out(), "[]")
+		} else if opts.IO.IsStdoutTTY() {
+			fmt.Fprintln(opts.IO.Out(), "No results")
+		}
+		return nil
+	}
 
 	pagerStop, err := opts.IO.StartPager(ctx)
 	if err != nil {

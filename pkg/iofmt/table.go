@@ -43,13 +43,8 @@ func FormatToTable(io *terminal.IO, l int, header, footer HeaderBuilderFunc, con
 		tp.EndRow()
 	}
 
-	if l > 1 {
-		for k := range l {
-			contentRow(tp, k)
-			tp.EndRow()
-		}
-	} else {
-		contentRow(tp, 0)
+	for k := range l {
+		contentRow(tp, k)
 		tp.EndRow()
 	}
 
