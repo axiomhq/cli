@@ -34,6 +34,8 @@ type Config struct {
 	URLOverride            string `toml:"-" envconfig:"url"`
 	TokenOverride          string `toml:"-" envconfig:"token"`
 	OrganizationIDOverride string `toml:"-" envconfig:"org_id"`
+	EdgeURLOverride        string `toml:"-" envconfig:"edge_url"`
+	EdgeRegionOverride     string `toml:"-" envconfig:"edge_region"`
 
 	ConfigFilePath string `toml:"-"`
 
@@ -50,6 +52,8 @@ func (c *Config) GetActiveDeployment() (Deployment, bool) {
 				URL:            c.URLOverride,
 				Token:          c.TokenOverride,
 				OrganizationID: c.OrganizationIDOverride,
+				EdgeURL:        c.EdgeURLOverride,
+				EdgeRegion:     c.EdgeRegionOverride,
 			}
 			return dep, true
 		}
@@ -64,6 +68,12 @@ func (c *Config) GetActiveDeployment() (Deployment, bool) {
 	}
 	if c.OrganizationIDOverride != "" {
 		dep.OrganizationID = c.OrganizationIDOverride
+	}
+	if c.EdgeURLOverride != "" {
+		dep.EdgeURL = c.EdgeURLOverride
+	}
+	if c.EdgeRegionOverride != "" {
+		dep.EdgeRegion = c.EdgeRegionOverride
 	}
 
 	return dep, true
@@ -80,6 +90,8 @@ type Deployment struct {
 	URL            string `toml:"url"`
 	Token          string `toml:"token"`
 	OrganizationID string `toml:"org_id"`
+	EdgeURL        string `toml:"edge_url"`
+	EdgeRegion     string `toml:"edge_region"`
 }
 
 // LoadDefault tries to load the default configuration. It behaves like Load()
@@ -184,13 +196,15 @@ func (c *Config) Set(key, value string) error {
 
 // Keys which are valid arguments to Get() and Set().
 func (c *Config) Keys() []string {
-	res := make([]string, 0, len(c.Deployments)*4+1) // 4 fields for each deployment plus the "active_deployment" one.
+	res := make([]string, 0, len(c.Deployments)*6+1) // 6 fields for each deployment plus the "active_deployment" one.
 	res = append(res, "active_deployment")
 	for k := range c.Deployments {
 		base := strings.Join([]string{"deployments", k}, ".")
 		res = append(res, strings.Join([]string{base, "url"}, "."))
 		res = append(res, strings.Join([]string{base, "token"}, "."))
 		res = append(res, strings.Join([]string{base, "org_id"}, "."))
+		res = append(res, strings.Join([]string{base, "edge_url"}, "."))
+		res = append(res, strings.Join([]string{base, "edge_region"}, "."))
 	}
 	sort.Strings(res)
 	return res
@@ -225,5 +239,6 @@ func (c *Config) Write() error {
 func (c *Config) IsEmpty() bool {
 	return c.ActiveDeployment == "" && len(c.Deployments) == 0 && !c.Insecure &&
 		c.URLOverride == "" && c.TokenOverride == "" &&
-		c.OrganizationIDOverride == ""
+		c.OrganizationIDOverride == "" &&
+		c.EdgeURLOverride == "" && c.EdgeRegionOverride == ""
 }
