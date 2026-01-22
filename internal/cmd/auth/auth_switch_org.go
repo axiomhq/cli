@@ -83,7 +83,7 @@ func newSwitchOrgCmd(f *cmdutil.Factory) *cobra.Command {
 			// active deployment, so no need to check for existence.
 			activeDeployment, _ := f.Config.GetActiveDeployment()
 
-			client, err := client.New(cmd.Context(), activeDeployment.URL, activeDeployment.Token, orgID, f.Config.Insecure)
+			client, err := client.New(cmd.Context(), activeDeployment.URL, activeDeployment.Token, orgID, "", "", f.Config.Insecure)
 			if err != nil {
 				return err
 			}

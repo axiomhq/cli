@@ -15,7 +15,7 @@ import (
 )
 
 // New returns a new Axiom client.
-func New(ctx context.Context, baseURL, accessToken, orgID string, insecure bool) (*axiom.Client, error) {
+func New(ctx context.Context, baseURL, accessToken, orgID, edgeURL, edgeRegion string, insecure bool) (*axiom.Client, error) {
 	if baseURL != "" && !strings.HasPrefix(baseURL, "http://") && !strings.HasPrefix(baseURL, "https://") {
 		baseURL = "https://" + baseURL
 	}
@@ -55,6 +55,12 @@ func New(ctx context.Context, baseURL, accessToken, orgID string, insecure bool)
 	}
 	if orgID != "" {
 		options = append(options, axiom.SetOrganizationID(orgID))
+	}
+	if edgeURL != "" {
+		options = append(options, axiom.SetEdgeURL(edgeURL))
+	}
+	if edgeRegion != "" {
+		options = append(options, axiom.SetEdge(edgeRegion))
 	}
 
 	client, err := axiom.NewClient(options...)

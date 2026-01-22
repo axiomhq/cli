@@ -18,15 +18,25 @@ var topics = map[string]string{
 		them with Axiom CLI is encouraged for ingest-only and/or query-only
 		situations but renders the CLI unable to do anything else. Use a
 		Personal Access Token to get full access to the deployment.
+
+		EDGE OPERATIONS: When using edge endpoints (--edge-url or --edge-region),
+		ingest operations require an API token (xaat-*). Personal tokens are
+		only supported for edge queries, not edge ingest.
 	`,
 
 	"environment": `
 		AXIOM_DEPLOYMENT: The deployment to use. Overwrites the choice loaded
 		from the configuration file.
 
+		AXIOM_EDGE_REGION: Regional edge domain for ingest and query operations
+		(e.g., "eu-west-1.aws.edge.axiom.co").
+
+		AXIOM_EDGE_URL: Explicit edge URL for ingest and query operations. Takes
+		precedence over AXIOM_EDGE_REGION if both are set.
+
 		AXIOM_ORG_ID: The organization id of the organization the access token
 		is valid for.
-		
+
 		AXIOM_PAGER, PAGER (in order of precedence): A terminal paging program
 		to send standard output to, e.g. "less".
 
