@@ -156,6 +156,7 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 			cmdutil.AsksForSetup(f, auth.NewLoginCmd(f)),
 			cmdutil.NeedsActiveDeployment(f),
 			cmdutil.NeedsDatasets(f),
+			cmdutil.NeedsAPITokenForEdgeIngest(f),
 		),
 
 		RunE: func(cmd *cobra.Command, _ []string) (err error) {
