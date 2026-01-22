@@ -72,6 +72,12 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 			if fl := cmd.Flag("auth-url"); fl.Changed {
 				f.Config.URLOverride = fl.Value.String()
 			}
+			if fl := cmd.Flag("edge-url"); fl.Changed {
+				f.Config.EdgeURLOverride = fl.Value.String()
+			}
+			if fl := cmd.Flag("edge-region"); fl.Changed {
+				f.Config.EdgeRegionOverride = fl.Value.String()
+			}
 
 			f.Config.Insecure = cmd.Flag("insecure").Changed
 			f.IO.EnableActivityIndicator(!cmd.Flag("no-spinner").Changed)
@@ -88,6 +94,12 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 				}
 				if os.Getenv("AXIOM_URL") != "" {
 					fmt.Fprintf(f.IO.ErrOut(), "%s URL is set using %q!\n", cs.WarningIcon(), "AXIOM_URL")
+				}
+				if os.Getenv("AXIOM_EDGE_URL") != "" {
+					fmt.Fprintf(f.IO.ErrOut(), "%s Edge URL is set using %q!\n", cs.WarningIcon(), "AXIOM_EDGE_URL")
+				}
+				if os.Getenv("AXIOM_EDGE_REGION") != "" {
+					fmt.Fprintf(f.IO.ErrOut(), "%s Edge region is set using %q!\n", cs.WarningIcon(), "AXIOM_EDGE_REGION")
 				}
 			}
 
@@ -123,6 +135,8 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.PersistentFlags().StringP("auth-org-id", "O", os.Getenv("AXIOM_ORG_ID"), "Organization ID to use")
 	cmd.PersistentFlags().StringP("auth-token", "T", os.Getenv("AXIOM_TOKEN"), "Token to use")
 	cmd.PersistentFlags().StringP("auth-url", "U", os.Getenv("AXIOM_URL"), "Url to use")
+	cmd.PersistentFlags().String("edge-url", os.Getenv("AXIOM_EDGE_URL"), "Edge URL for ingest and query operations")
+	cmd.PersistentFlags().String("edge-region", os.Getenv("AXIOM_EDGE_REGION"), "Regional edge domain (e.g., eu-central-1.aws.edge.axiom.co)")
 	cmd.PersistentFlags().BoolP("insecure", "I", false, "Bypass certificate validation")
 	cmd.PersistentFlags().Bool("no-spinner", false, "Disable the activity indicator")
 

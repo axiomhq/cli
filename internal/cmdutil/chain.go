@@ -69,6 +69,16 @@ var (
 		  To update the token for the deployment, run:
 		  $ {{ bold "axiom auth update-token" }}
 	`)
+
+	edgeIngestWithPersonalTokenMsgTmpl = heredoc.Doc(`
+		{{ errorIcon }} Edge ingest requires an API token!
+
+		  Personal access tokens (xapt-*) are not supported for edge ingest.
+		  Edge ingest requires an API token (xaat-*).
+
+		  Help on tokens:
+		  $ {{ bold "axiom help credentials" }}
+	`)
 )
 
 // RunFunc is a cobra run function which is compatible with PersistentPreRunE,
@@ -228,6 +238,30 @@ func NeedsPersonalAccessToken(f *Factory) RunFunc {
 		})
 
 		return err
+	}
+}
+
+// NeedsAPITokenForEdgeIngest validates that edge ingest operations use an API
+// token. Personal tokens (xapt-*) are only supported for edge queries, not
+// ingest.
+func NeedsAPITokenForEdgeIngest(f *Factory) RunFunc {
+	return func(_ *cobra.Command, _ []string) error {
+		dep, ok := f.Config.GetActiveDeployment()
+		if !ok {
+			return nil
+		}
+
+		// Only validate if edge is configured.
+		if dep.EdgeURL == "" && dep.EdgeRegion == "" {
+			return nil
+		}
+
+		// Personal tokens are not allowed for edge ingest.
+		if client.IsPersonalToken(dep.Token) {
+			return execTemplateSilent(f.IO, edgeIngestWithPersonalTokenMsgTmpl, nil)
+		}
+
+		return nil
 	}
 }
 
