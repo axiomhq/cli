@@ -100,6 +100,28 @@ Configuration values can also be set using flags or the environment. Flags get
 precedence over environment variables which get precedence over the
 configuration file values.
 
+## Claude Code Plugin
+
+This repository includes a [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
+plugin for APL query assistance. The plugin provides skills for dataset
+exploration, trace analysis, and anomaly detection.
+
+### Installation
+
+```bash
+# Add the Axiom CLI marketplace
+claude plugin marketplace add axiomhq/cli
+
+# Install the plugin
+claude plugin install axiom-cli@axiomhq-cli
+```
+
+### Available Skills
+
+- `/explore-dataset <name>` - Discover schema, fields, and query patterns
+- `/find-traces <trace-id>` - Analyze OpenTelemetry distributed traces
+- `/detect-anomalies <dataset>` - Statistical anomaly detection
+
 ## License
 
 Distributed under the [MIT License](./LICENSE).

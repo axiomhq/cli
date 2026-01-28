@@ -1,0 +1,26 @@
+{
+  "name": "axiom-cli",
+  "owner": {
+    "name": "Axiom, Inc.",
+    "email": "support@axiom.co"
+  },
+  "metadata": {
+    "description": "Axiom CLI plugin marketplace",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "axiom-cli",
+      "source": "./",
+      "description": "APL query assistance and Axiom CLI skills for Claude Code",
+      "version": "1.0.0",
+      "author": {
+        "name": "Axiom, Inc."
+      },
+      "homepage": "https://axiom.co/docs/reference/cli",
+      "repository": "https://github.com/axiomhq/cli",
+      "license": "MIT",
+      "keywords": ["axiom", "observability", "apl", "logs", "traces", "metrics"]
+    }
+  ]
+}
