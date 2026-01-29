@@ -90,7 +90,7 @@ func runStatus(ctx context.Context, opts *statusOptions) error {
 				statusInfo[deploymentAlias] = append(statusInfo[deploymentAlias], info)
 			}()
 
-			client, err := client.New(ctx, deployment.URL, deployment.Token, deployment.OrganizationID, opts.Config.Insecure)
+			client, err := client.New(ctx, deployment.URL, deployment.Token, deployment.OrganizationID, "", "", opts.Config.Insecure)
 			if err != nil {
 				info = fmt.Sprintf("%s %s", cs.ErrorIcon(), err)
 				return err
