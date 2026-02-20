@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Axiom CLI plugin marketplace",
-    "version": "1.0.0"
+    "version": "1.1.0"
   },
   "plugins": [
     {
       "name": "axiom-cli",
       "source": "./",
       "description": "APL query assistance and Axiom CLI skills for Claude Code",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "Axiom, Inc."
       },
