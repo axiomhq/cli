@@ -53,6 +53,17 @@ linters:
       - linters:
           - gosec
         text: "G115: integer overflow conversion"
+      - linters:
+          - gosec
+        text: "G101: Potential hardcoded credentials"
+        path: internal/cmd/root/help_topic.go
+      - linters:
+          - gosec
+        text: "G705: XSS via taint analysis"
+        path: tools/
+      - linters:
+          - revive
+        text: "var-naming: avoid package names that conflict with Go standard library package names"
     paths:
       - .git
       - .github
