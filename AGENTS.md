@@ -83,6 +83,17 @@ This repository includes a Claude Code plugin for APL query assistance.
 | `find-traces` | `/find-traces <trace-id>` | Analyze OpenTelemetry traces |
 | `detect-anomalies` | `/detect-anomalies <dataset>` | Statistical anomaly detection |
 
+### Default Permissions
+
+The plugin ships `settings.json` with pre-approved read-only operations:
+- `axiom query`, `axiom dataset list`, `axiom dataset info`, `axiom stream`, `axiom version`
+
+Mutating operations (`auth`, `dataset create`, `dataset delete`, `ingest`) require manual approval.
+
+### Hooks
+
+A `PostToolUse` hook in `hooks/` nudges agents toward using the plugin's skills when they run raw `axiom query`, `axiom dataset`, or `axiom stream` commands. The nudge fires once per session.
+
 ### Installation
 
 ```bash

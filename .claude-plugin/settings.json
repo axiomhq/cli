@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(axiom query:*)",
+      "Bash(axiom dataset list:*)",
+      "Bash(axiom dataset info:*)",
+      "Bash(axiom stream:*)",
+      "Bash(axiom version:*)",
+      "Skill(axiom-cli:axiom-apl)",
+      "Skill(axiom-cli:explore-dataset)",
+      "Skill(axiom-cli:find-traces)",
+      "Skill(axiom-cli:detect-anomalies)",
+      "Skill(axiom-apl)",
+      "Skill(explore-dataset)",
+      "Skill(find-traces)",
+      "Skill(detect-anomalies)"
+    ]
+  }
+}
