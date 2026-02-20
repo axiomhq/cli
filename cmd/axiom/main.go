@@ -102,10 +102,11 @@ func main() {
 func printError(w io.Writer, err error, cmd *cobra.Command) {
 	// We don't want to print an error if it is explicitly marked as silent or
 	// a survey prompt is terminated by interrupt.
-	var pagerPipeError *terminal.ErrClosedPagerPipe
 	if errors.Is(err, cmdutil.ErrSilent) ||
-		errors.Is(err, surveyTerm.InterruptErr) ||
-		errors.As(err, &pagerPipeError) {
+		errors.Is(err, surveyTerm.InterruptErr) {
+		return
+	}
+	if _, ok := errors.AsType[*terminal.ErrClosedPagerPipe](err); ok {
 		return
 	}
 
@@ -131,8 +132,7 @@ func printError(w io.Writer, err error, cmd *cobra.Command) {
 	fmt.Fprintf(w, "Error: %s\n", err)
 
 	// Only print the command usage if the error is related to bad user input.
-	var flagError *cmdutil.FlagError
-	if errors.As(err, &flagError) || strings.HasPrefix(err.Error(), "unknown command ") {
+	if _, ok := errors.AsType[*cmdutil.FlagError](err); ok || strings.HasPrefix(err.Error(), "unknown command ") {
 		if !strings.HasSuffix(err.Error(), "\n") {
 			fmt.Fprintln(w)
 		}
