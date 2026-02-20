@@ -1,0 +1,16 @@
+{
+  "description": "Nudge agents to use Axiom CLI skills instead of raw commands",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/nudge-skill.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
