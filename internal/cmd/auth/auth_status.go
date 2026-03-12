@@ -33,7 +33,7 @@ func newStatusCmd(f *cmdutil.Factory) *cobra.Command {
 
 		DisableFlagsInUseLine: true,
 
-		Args:              cmdutil.PopulateFromArgs(f, &opts.Alias),
+		Args:              cobra.MaximumNArgs(1),
 		ValidArgsFunction: deploymentCompletionFunc(f.Config),
 
 		Example: heredoc.Doc(`
@@ -50,7 +50,10 @@ func newStatusCmd(f *cmdutil.Factory) *cobra.Command {
 			cmdutil.NeedsValidDeployment(f, &opts.Alias),
 		),
 
-		RunE: func(cmd *cobra.Command, _ []string) error {
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) > 0 {
+				opts.Alias = args[0]
+			}
 			return runStatus(cmd.Context(), opts)
 		},
 	}
@@ -128,9 +131,9 @@ func runStatus(ctx context.Context, opts *statusOptions) error {
 
 	stop()
 
-	if opts.IO.IsStderrTTY() {
-		var buf strings.Builder
-		for _, alias := range deploymentAliases {
+	var buf strings.Builder
+	for _, alias := range deploymentAliases {
+		if opts.IO.IsStdoutTTY() {
 			if alias == opts.Config.ActiveDeployment {
 				fmt.Fprintf(&buf, "%s %s\n", cs.Yellow("➜"), cs.Bold(alias))
 			} else {
@@ -139,9 +142,14 @@ func runStatus(ctx context.Context, opts *statusOptions) error {
 			for _, line := range statusInfo[alias] {
 				fmt.Fprintf(&buf, "    %s\n", line)
 			}
+		} else {
+			fmt.Fprintf(&buf, "%s\n", alias)
+			for _, line := range statusInfo[alias] {
+				fmt.Fprintf(&buf, "  %s\n", line)
+			}
 		}
-		fmt.Fprint(opts.IO.ErrOut(), utils.Dedent(buf.String()))
 	}
+	fmt.Fprint(opts.IO.Out(), utils.Dedent(buf.String()))
 
 	if failed {
 		return cmdutil.ErrSilent

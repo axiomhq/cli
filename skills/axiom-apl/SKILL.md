@@ -4,7 +4,7 @@ description: APL query language reference for Axiom. Provides operators, functio
 compatibility: Requires authenticated Axiom CLI (axiom)
 user-invocable: false
 context: fork
-allowed-tools: Bash(axiom query:*), Bash(axiom dataset list:*), Bash(axiom stream:*), Read, Grep, Glob
+allowed-tools: Bash(axiom query *), Bash(axiom dataset list), Bash(axiom dataset list *), Bash(axiom stream *), Bash(axiom config get *), Read, Grep, Glob
 ---
 
 # Axiom Processing Language (APL)

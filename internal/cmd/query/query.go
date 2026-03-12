@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -95,8 +96,8 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&opts.Format, "format", "f", iofmt.Table.String(), "Format to output data in")
-	cmd.Flags().StringVar(&opts.StartTime, "start-time", "", "Start time of the query - may also be a relative time eg: -24h, -20m")
-	cmd.Flags().StringVar(&opts.EndTime, "end-time", "", "End time of the query - may also be a relative time eg: -24h, -20m")
+	cmd.Flags().StringVar(&opts.StartTime, "start-time", "", "Start time of the query - may also be a relative time eg: -2w, -7d, -24h, -20m")
+	cmd.Flags().StringVar(&opts.EndTime, "end-time", "", "End time of the query - may also be a relative time eg: -2w, -7d, -24h, -20m")
 	cmd.Flags().StringVar(&opts.TimestampFormat, "timestamp-format", "", "Format used in the the timestamp field. Default uses a heuristic parser. Must be expressed using the reference time 'Mon Jan 2 15:04:05 -0700 MST 2006'")
 	cmd.Flags().BoolVar(&opts.FailOnEmpty, "fail-on-empty", false, "Exit with error code 1 if query returns no results")
 
@@ -114,14 +115,92 @@ func timeStrToTime(timeStr string, timestampFormat string) (time.Time, error) {
 		return time.Parse(timestampFormat, timeStr)
 	}
 
-	// try relative dates first
-	duration, err := time.ParseDuration(timeStr)
+	// try relative dates first, expanding day/week suffixes
+	duration, err := parseDuration(timeStr)
 	if err == nil {
 		return time.Now().Add(duration), nil
 	}
 
 	// try absolute dates without format
 	return dateparse.ParseAny(timeStr)
+}
+
+// parseDuration parses a duration string like time.ParseDuration but also
+// supports "d" (day = 24h) and "w" (week = 168h) suffixes. Mixed units like
+// "1w2d12h" are supported.
+func parseDuration(s string) (time.Duration, error) {
+	// Fast path: try stdlib first, which handles everything except d/w.
+	if d, err := time.ParseDuration(s); err == nil {
+		return d, nil
+	}
+
+	// Check if the string contains "d" or "w" at all.
+	if !strings.ContainsAny(s, "dw") {
+		return 0, fmt.Errorf("time: invalid duration %q", s)
+	}
+
+	// Replace "d" and "w" with their hour equivalents so the stdlib can
+	// parse the result. We accumulate extra hours from d/w conversions and
+	// append them to the remaining string.
+	neg := strings.HasPrefix(s, "-")
+	raw := strings.TrimLeft(s, "+-")
+
+	var extra time.Duration
+	var rest strings.Builder
+	i := 0
+	for i < len(raw) {
+		// Scan a number.
+		numStart := i
+		for i < len(raw) && (raw[i] == '.' || (raw[i] >= '0' && raw[i] <= '9')) {
+			i++
+		}
+		if numStart == i {
+			return 0, fmt.Errorf("time: invalid duration %q", s)
+		}
+		num := raw[numStart:i]
+
+		// Scan the unit suffix.
+		unitStart := i
+		for i < len(raw) && (raw[i] < '0' || raw[i] > '9') && raw[i] != '.' {
+			i++
+		}
+		if unitStart == i {
+			return 0, fmt.Errorf("time: missing unit in duration %q", s)
+		}
+		unit := raw[unitStart:i]
+
+		switch unit {
+		case "d":
+			v, err := time.ParseDuration(num + "h")
+			if err != nil {
+				return 0, fmt.Errorf("time: invalid duration %q", s)
+			}
+			extra += v * 24
+		case "w":
+			v, err := time.ParseDuration(num + "h")
+			if err != nil {
+				return 0, fmt.Errorf("time: invalid duration %q", s)
+			}
+			extra += v * 168
+		default:
+			rest.WriteString(num)
+			rest.WriteString(unit)
+		}
+	}
+
+	var d time.Duration
+	if rest.Len() > 0 {
+		var err error
+		d, err = time.ParseDuration(rest.String())
+		if err != nil {
+			return 0, err
+		}
+	}
+	d += extra
+	if neg {
+		d = -d
+	}
+	return d, nil
 }
 
 func complete(opts *options) (err error) {

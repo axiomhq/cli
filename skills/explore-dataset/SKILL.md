@@ -4,7 +4,7 @@ description: Explore an Axiom dataset to understand its schema, fields, volume, 
 compatibility: Requires authenticated Axiom CLI (axiom)
 user-invocable: true
 context: fork
-allowed-tools: Bash(axiom query:*), Bash(axiom dataset list:*), Read, Grep, Glob
+allowed-tools: Bash(axiom query *), Bash(axiom dataset list), Bash(axiom dataset list *), Bash(axiom config get *), Read, Grep, Glob
 ---
 
 # Dataset Exploration
