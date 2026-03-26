@@ -3,6 +3,8 @@ package query
 import (
 	"testing"
 	"time"
+
+	"github.com/axiomhq/axiom-go/axiom/query"
 )
 
 func TestParseDuration(t *testing.T) {
@@ -51,6 +53,83 @@ func TestParseDuration(t *testing.T) {
 				t.Errorf("parseDuration(%q) = %v, want %v", tt.input, got, tt.want)
 			}
 		})
+	}
+}
+
+func TestTableRowAtIndex(t *testing.T) {
+	table := query.Table{
+		Fields: []query.Field{
+			{Name: "organizations"},
+			{Name: "datasets"},
+			{Name: "spans"},
+		},
+		Columns: []query.Column{
+			{"102 (+2)"},
+			{"132 (+3)"},
+			{"49.3M (+2.5M)"},
+		},
+	}
+
+	row := tableRowAtIndex(table, 0)
+
+	if got := row["organizations"]; got != "102 (+2)" {
+		t.Errorf("organizations = %v, want %q", got, "102 (+2)")
+	}
+	if got := row["datasets"]; got != "132 (+3)" {
+		t.Errorf("datasets = %v, want %q", got, "132 (+3)")
+	}
+	if got := row["spans"]; got != "49.3M (+2.5M)" {
+		t.Errorf("spans = %v, want %q", got, "49.3M (+2.5M)")
+	}
+}
+
+func TestTableRowAtIndexMultipleRows(t *testing.T) {
+	table := query.Table{
+		Fields: []query.Field{
+			{Name: "status"},
+			{Name: "count_", Aggregation: &query.Aggregation{Op: query.OpCount}},
+		},
+		Columns: []query.Column{
+			{"ok", "err"},
+			{float64(42), float64(3)},
+		},
+	}
+
+	row0 := tableRowAtIndex(table, 0)
+	if got := row0["status"]; got != "ok" {
+		t.Errorf("row0 status = %v, want %q", got, "ok")
+	}
+	if got := row0["count_"]; got != float64(42) {
+		t.Errorf("row0 count_ = %v, want %v", got, 42)
+	}
+
+	row1 := tableRowAtIndex(table, 1)
+	if got := row1["status"]; got != "err" {
+		t.Errorf("row1 status = %v, want %q", got, "err")
+	}
+	if got := row1["count_"]; got != float64(3) {
+		t.Errorf("row1 count_ = %v, want %v", got, 3)
+	}
+}
+
+func TestTableHasAggregation(t *testing.T) {
+	noAgg := query.Table{
+		Fields: []query.Field{
+			{Name: "org"},
+			{Name: "spans"},
+		},
+	}
+	if tableHasAggregation(noAgg) {
+		t.Error("expected no aggregation for plain fields")
+	}
+
+	withAgg := query.Table{
+		Fields: []query.Field{
+			{Name: "count_", Aggregation: &query.Aggregation{Op: query.OpCount}},
+		},
+	}
+	if !tableHasAggregation(withAgg) {
+		t.Error("expected aggregation when field has Aggregation set")
 	}
 }
 
