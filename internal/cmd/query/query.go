@@ -290,19 +290,9 @@ func run(ctx context.Context, opts *options) error {
 
 	table := res.Tables[0]
 
-	// Deal with JSON output format. It only works for non-aggregated results OR
-	// an aggregated result which produces a single value (it has no groups).
+	// Deal with JSON output format. Outputs NDJSON (one JSON object per row)
+	// for all results, regardless of whether they are aggregated.
 	if opts.Format == iofmt.JSON.String() {
-		if tableHasAggregation(table) {
-			if len(table.Groups) > 1 || (len(table.Columns) > 1 && len(table.Columns[0]) > 1) {
-				return errors.New("JSON output format is not supported for aggregated results with groups")
-			}
-			if opts.IO.IsStdoutTTY() {
-				fmt.Fprint(opts.IO.Out(), headerText)
-			}
-			return iofmt.FormatToJSON(opts.IO.Out(), table.Columns[0][0], opts.IO.ColorEnabled())
-		}
-
 		if opts.IO.IsStdoutTTY() {
 			fmt.Fprint(opts.IO.Out(), headerText)
 		}
