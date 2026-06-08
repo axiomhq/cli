@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -154,12 +155,9 @@ func (io *IO) StartPager(ctx context.Context) (func(), error) {
 	}
 
 	// Get additional pager configuration from environment.
-	env := os.Environ()
-	for i := len(env) - 1; i >= 0; i-- {
-		if strings.HasPrefix(env[i], "PAGER=") {
-			env = append(env[0:i], env[i+1:]...)
-		}
-	}
+	env := slices.DeleteFunc(os.Environ(), func(s string) bool {
+		return strings.HasPrefix(s, "PAGER=")
+	})
 	if _, ok := os.LookupEnv("LESS"); !ok {
 		env = append(env, "LESS=FRX")
 	}
