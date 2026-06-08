@@ -211,13 +211,18 @@ func (c *Config) Keys() []string {
 }
 
 // Write the configuration to its configuration file on disk. If it doesn't
-// exist, it is created.
+// exist, it is created. The file is written with mode 0o600 so the embedded
+// per-deployment tokens are not exposed to other local users.
 func (c *Config) Write() error {
-	f, err := os.Create(c.ConfigFilePath)
+	f, err := os.OpenFile(c.ConfigFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
+
+	if err = os.Chmod(c.ConfigFilePath, 0o600); err != nil {
+		return err
+	}
 
 	// HINT(lukasmalkmus): Rewrite old config files that were talking to
 	// cloud.axiom.co or similar deployments.

@@ -62,11 +62,16 @@ func newEditCmd(f *cmdutil.Factory) *cobra.Command {
 		},
 
 		PostRunE: func(*cobra.Command, []string) error {
-			f, err := os.Create(f.Config.ConfigFilePath)
+			path := f.Config.ConfigFilePath
+			f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
 			if err != nil {
 				return err
 			}
 			defer f.Close()
+
+			if err = os.Chmod(path, 0o600); err != nil {
+				return err
+			}
 
 			if _, err = f.WriteString(content); err != nil {
 				return err
