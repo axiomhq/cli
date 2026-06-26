@@ -3,7 +3,6 @@ name: axiom-apl
 description: APL query language reference for Axiom. Provides operators, functions, patterns, and CLI usage. Auto-invoked by specialized Axiom skills when writing or debugging APL queries.
 compatibility: Requires authenticated Axiom CLI (axiom)
 user-invocable: false
-context: fork
 allowed-tools: Bash(axiom query *), Bash(axiom dataset list), Bash(axiom dataset list *), Bash(axiom stream *), Bash(axiom config get *), Read, Grep, Glob
 ---
 
