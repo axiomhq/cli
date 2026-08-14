@@ -1,10 +1,13 @@
 package query
 
 import (
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/axiomhq/axiom-go/axiom/query"
+
+	"github.com/axiomhq/cli/pkg/terminal"
 )
 
 func TestParseDuration(t *testing.T) {
@@ -146,6 +149,70 @@ func TestParseDurationErrors(t *testing.T) {
 			_, err := parseDuration(input)
 			if err == nil {
 				t.Errorf("parseDuration(%q) expected error, got nil", input)
+			}
+		})
+	}
+}
+
+func TestPrintMessages(t *testing.T) {
+	tests := []struct {
+		name string
+		msgs []query.Message
+		want string
+	}{
+		{
+			name: "no messages",
+			msgs: nil,
+			want: "",
+		},
+		{
+			name: "warning is printed",
+			msgs: []query.Message{
+				{Priority: "warn", Msg: "A default limit of 1000 was applied"},
+			},
+			want: "! A default limit of 1000 was applied\n",
+		},
+		{
+			name: "errors and fatals are printed",
+			msgs: []query.Message{
+				{Priority: "error", Msg: "best effort"},
+				{Priority: "fatal", Msg: "truncated"},
+			},
+			want: "✖ best effort\n✖ truncated\n",
+		},
+		{
+			name: "below warn is skipped",
+			msgs: []query.Message{
+				{Priority: "trace", Msg: "spew"},
+				{Priority: "debug", Msg: "detail"},
+				{Priority: "info", Msg: "notable"},
+			},
+			want: "",
+		},
+		{
+			name: "unknown priority is skipped",
+			msgs: []query.Message{{Priority: "", Msg: "no priority"}},
+			want: "",
+		},
+		{
+			name: "mixed priorities keep order and drop the noise",
+			msgs: []query.Message{
+				{Priority: "info", Msg: "notable"},
+				{Priority: "warn", Msg: "first"},
+				{Priority: "debug", Msg: "detail"},
+				{Priority: "warn", Msg: "second"},
+			},
+			want: "! first\n! second\n",
+		},
+	}
+
+	cs := terminal.NewColorScheme(false)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf strings.Builder
+			printMessages(&buf, cs, tt.msgs)
+			if got := buf.String(); got != tt.want {
+				t.Errorf("printMessages() = %q, want %q", got, tt.want)
 			}
 		})
 	}
