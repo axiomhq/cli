@@ -117,6 +117,7 @@ func printError(w io.Writer, err error, cmd *cobra.Command) {
 			err = unwrappedErr
 		}
 		fmt.Fprintf(w, "Error: %s\n", err)
+		printTraceID(w, err)
 		return
 	}
 
@@ -130,6 +131,7 @@ func printError(w io.Writer, err error, cmd *cobra.Command) {
 	}
 
 	fmt.Fprintf(w, "Error: %s\n", err)
+	printTraceID(w, err)
 
 	// Only print the command usage if the error is related to bad user input.
 	if _, ok := errors.AsType[*cmdutil.FlagError](err); ok || strings.HasPrefix(err.Error(), "unknown command ") {
@@ -143,4 +145,16 @@ func printError(w io.Writer, err error, cmd *cobra.Command) {
 			fmt.Fprintln(w)
 		}
 	}
+}
+
+// printTraceID writes the trace id the server assigned to the failed request,
+// if the error carries one, so support can look the request up. It gets its own
+// line because API errors are often multi-line.
+func printTraceID(w io.Writer, err error) {
+	httpErr, ok := errors.AsType[axiom.HTTPError](err)
+	if !ok || httpErr.TraceID == "" {
+		return
+	}
+
+	fmt.Fprintf(w, "Trace: %s\n", httpErr.TraceID)
 }

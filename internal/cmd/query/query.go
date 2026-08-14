@@ -18,6 +18,7 @@ import (
 	"github.com/axiomhq/cli/internal/cmd/auth"
 	"github.com/axiomhq/cli/internal/cmdutil"
 	"github.com/axiomhq/cli/pkg/iofmt"
+	"github.com/axiomhq/cli/pkg/terminal"
 )
 
 type options struct {
@@ -227,6 +228,23 @@ func complete(opts *options) (err error) {
 	}, &opts.Query, opts.IO.SurveyIO())
 }
 
+// printMessages writes the messages the server emitted for a query to w. It
+// skips anything below "warn", which only matters when you debug the server.
+func printMessages(w io.Writer, cs *terminal.ColorScheme, msgs []query.Message) {
+	for _, msg := range msgs {
+		var icon string
+		switch msg.Priority {
+		case "warn":
+			icon = cs.WarningIcon()
+		case "error", "fatal":
+			icon = cs.ErrorIcon()
+		default:
+			continue
+		}
+		fmt.Fprintf(w, "%s %s\n", icon, msg.Msg)
+	}
+}
+
 func resultIsEmpty(res *query.Result) bool {
 	if res.Status.RowsMatched == 0 || len(res.Tables) == 0 {
 		return true
@@ -263,6 +281,12 @@ func run(ctx context.Context, opts *options) error {
 
 	progStop()
 
+	cs := opts.IO.ColorScheme()
+
+	// Not TTY-gated, unlike the warnings in the root command: a truncated
+	// result matters most when output is redirected.
+	printMessages(opts.IO.ErrOut(), cs, res.Status.Messages)
+
 	// Handle empty results gracefully.
 	if resultIsEmpty(res) {
 		if opts.FailOnEmpty {
@@ -282,10 +306,11 @@ func run(ctx context.Context, opts *options) error {
 	}
 	defer pagerStop()
 
-	cs := opts.IO.ColorScheme()
-
 	headerText := cs.Bold(opts.Query)
 	headerText += fmt.Sprintf(" processed in %s", cs.Gray(res.Status.ElapsedTime.String()))
+	if res.TraceID != "" {
+		headerText += fmt.Sprintf(" (trace %s)", cs.Gray(res.TraceID))
+	}
 	headerText = fmt.Sprintf("Result of query %s:\n\n", headerText)
 
 	table := res.Tables[0]

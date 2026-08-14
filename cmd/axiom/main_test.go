@@ -3,8 +3,10 @@ package main
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"testing"
 
+	"github.com/axiomhq/axiom-go/axiom"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 
@@ -53,6 +55,48 @@ func Test_printError(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			printError(&buf, tt.args.err, tt.args.cmd)
+			assert.Equal(t, tt.want, buf.String())
+		})
+	}
+}
+
+func Test_printTraceID(t *testing.T) {
+	tests := []struct {
+		name string
+		err  error
+		want string
+	}{
+		{
+			name: "plain error carries no trace id",
+			err:  errors.New("boom"),
+			want: "",
+		},
+		{
+			name: "http error",
+			err:  axiom.HTTPError{Status: 400, Message: "bad request", TraceID: "abc123"},
+			want: "Trace: abc123\n",
+		},
+		{
+			name: "http error without a trace id stays quiet",
+			err:  axiom.HTTPError{Status: 400, Message: "bad request"},
+			want: "",
+		},
+		{
+			name: "wrapped http error",
+			err:  fmt.Errorf("running query: %w", axiom.HTTPError{Status: 400, TraceID: "def456"}),
+			want: "Trace: def456\n",
+		},
+		{
+			name: "limit error",
+			err:  axiom.LimitError{HTTPError: axiom.HTTPError{Status: 429, TraceID: "ghi789"}},
+			want: "Trace: ghi789\n",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			printTraceID(&buf, tt.err)
 			assert.Equal(t, tt.want, buf.String())
 		})
 	}
