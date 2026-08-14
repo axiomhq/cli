@@ -21,7 +21,11 @@ import (
 	"github.com/axiomhq/cli/pkg/surveyext"
 )
 
-const oAuth2ClientID = "13c885a8-f46a-4424-82d2-883cf7ccfe49"
+const (
+	oAuth2ClientID = "13c885a8-f46a-4424-82d2-883cf7ccfe49"
+
+	selectOrganizationMsg = "Which organization to use?"
+)
 
 type loginOptions struct {
 	*cmdutil.Factory
@@ -176,7 +180,7 @@ func completeLogin(ctx context.Context, opts *loginOptions) error {
 
 			var organizationName string
 			if err := survey.AskOne(&survey.Select{
-				Message: "Which organization to use?",
+				Message: selectOrganizationMsg,
 				Options: organizationNames,
 				Default: organizationNames[0],
 				Description: func(_ string, idx int) string {
@@ -286,7 +290,7 @@ func autoLogin(ctx context.Context, opts *loginOptions) error {
 
 			var organizationName string
 			if err := survey.AskOne(&survey.Select{
-				Message: "Which organization to use?",
+				Message: selectOrganizationMsg,
 				Options: organizationNames,
 				Default: organizationNames[0],
 				Description: func(_ string, idx int) string {

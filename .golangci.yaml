@@ -26,6 +26,12 @@ linters:
     - unused
     - whitespace
   settings:
+    goconst:
+      ignore-tests: true
+      # "name" binds a survey.Question to its answer field and "Deployment" must
+      # match the {{.Deployment}} placeholder in the message templates.
+      ignore-string-values:
+        - '^(name|Deployment)$'
     nolintlint:
       require-explanation: true
       require-specific: true
@@ -61,6 +67,17 @@ linters:
           - gosec
         text: "G705: XSS via taint analysis"
         path: tools/
+      # The only form parsing happens in the loopback-only OAuth2 callback
+      # server, where ParseForm's own 10MB cap already bounds it.
+      - linters:
+          - gosec
+        text: "G120: Parsing form data without limiting request body size"
+        path: internal/client/auth/
+      # The redirect is the fake authorization server the login test stands up.
+      - linters:
+          - gosec
+        text: "G710: Open redirect via taint analysis"
+        path: internal/client/auth/auth_test.go
       - linters:
           - revive
         text: "var-naming: avoid package names that conflict with Go standard library package names"
