@@ -287,6 +287,14 @@ func run(ctx context.Context, opts *options) error {
 	// result matters most when output is redirected.
 	printMessages(opts.IO.ErrOut(), cs, res.Status.Messages)
 
+	// The server reports these as status flags, not as messages.
+	if res.Status.IsEstimate {
+		fmt.Fprintf(opts.IO.ErrOut(), "%s Results are estimated\n", cs.WarningIcon())
+	}
+	if res.Status.IsPartial {
+		fmt.Fprintf(opts.IO.ErrOut(), "%s Results are partial\n", cs.WarningIcon())
+	}
+
 	// Handle empty results gracefully.
 	if resultIsEmpty(res) {
 		if opts.FailOnEmpty {
