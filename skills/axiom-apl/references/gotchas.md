@@ -238,12 +238,57 @@ EOF
 
 ### Problem: Missing time range
 
+Without `--start-time` the query covers the last 10 years. The default limit
+does not prevent this, and a count over time returns yearly buckets.
+
 ```bash
-# WRONG - uses default (might be too broad)
-axiom query "['logs'] | limit 10"
+# WRONG - covers 10 years, buckets by year
+axiom query "['logs'] | summarize count() by bin_auto(_time)"
 
 # CORRECT - explicit time range
-axiom query "['logs'] | limit 10" --start-time -1h
+axiom query "['logs'] | summarize count() by bin_auto(_time)" --start-time -1h
+```
+
+**Rule:** Always pass `--start-time`.
+
+### Problem: Truncated results
+
+Without an explicit limit the result stops at 1000 rows:
+
+```
+! A default limit of 1000 was applied
+```
+
+```bash
+# WRONG - returns the first 1000 rows only
+axiom query "['logs'] | where status == 500" --start-time -1h
+
+# CORRECT - aggregate instead of listing
+axiom query "['logs'] | where status == 500 | count" --start-time -1h
+```
+
+**Rule:** Add `| limit N` or aggregate.
+
+### Problem: Estimated aggregates
+
+A `top` over a high-cardinality group returns approximate counts:
+
+```
+! Results are estimated
+```
+
+**Rule:** Do not report these as exact. Narrow the time range or the group.
+
+### Problem: Parsing output with stderr merged
+
+Diagnostics go to stderr, results to stdout.
+
+```bash
+# WRONG - warning lines end up in the JSON stream
+axiom query "['logs'] | limit 10" -f json --start-time -1h 2>&1 | jq .
+
+# CORRECT
+axiom query "['logs'] | limit 10" -f json --start-time -1h 2>/dev/null | jq .
 ```
 
 ## OTel Field Mismatches
