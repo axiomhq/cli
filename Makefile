@@ -17,6 +17,8 @@ COVERPROFILE	:= coverage.out
 DIST_DIR		:= dist
 MANPAGES_DIR	:= man
 COMPLETIONS_DIR	:= completions
+PLUGIN_MANIFEST		:= .claude-plugin/plugin.json
+PLUGIN_MARKETPLACE	:= .claude-plugin/marketplace.json
 
 # GO TAGS
 GO_TAGS := osusergo netgo static_build
@@ -116,6 +118,27 @@ man: ## Generate man pages
 	@echo ">> generate man pages"
 	@rm -rf $(MANPAGES_DIR)
 	@$(GO) tool gen-cli-docs -d=$(MANPAGES_DIR) -t=$(RELEASE)
+
+.PHONY: plugin-version
+plugin-version: ## Set the Claude Code plugin version. Run with VERSION=x.y.z.
+	@test -n "$(VERSION)" || { echo "VERSION is required, e.g. make plugin-version VERSION=0.17.0"; exit 1; }
+	@echo ">> setting plugin version to $(VERSION)"
+	@jq --arg v "$(VERSION)" '.version = $$v' $(PLUGIN_MANIFEST) > $(PLUGIN_MANIFEST).tmp
+	@mv $(PLUGIN_MANIFEST).tmp $(PLUGIN_MANIFEST)
+	@jq --arg v "$(VERSION)" '.metadata.version = $$v | .plugins[].version = $$v' $(PLUGIN_MARKETPLACE) > $(PLUGIN_MARKETPLACE).tmp
+	@mv $(PLUGIN_MARKETPLACE).tmp $(PLUGIN_MARKETPLACE)
+
+.PHONY: plugin-version-check
+plugin-version-check: ## Verify the plugin versions agree. Set EXPECT to also compare a value.
+	@echo ">> checking plugin version"
+	@found=$$(jq -r '.version' $(PLUGIN_MANIFEST); jq -r '.metadata.version, .plugins[].version' $(PLUGIN_MARKETPLACE)); \
+	if [ "$$(echo "$$found" | sort -u | wc -l)" -ne 1 ]; then \
+		echo "plugin versions disagree:"; echo "$$found"; exit 1; \
+	fi; \
+	if [ -n "$(EXPECT)" ] && [ "$$(echo "$$found" | head -1)" != "$(EXPECT)" ]; then \
+		echo "plugin version $$(echo "$$found" | head -1) does not match $(EXPECT)"; \
+		echo "run: make plugin-version VERSION=$(EXPECT)"; exit 1; \
+	fi
 
 .PHONY: test
 test: ## Run all tests. Run with VERBOSE=1 to get verbose test output ('-v' flag).

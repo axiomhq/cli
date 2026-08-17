@@ -1,6 +1,6 @@
 {
   "name": "axiom-cli",
-  "version": "1.2.0",
+  "version": "0.16.0",
   "description": "Axiom CLI and APL query assistance for Claude Code",
   "author": {
     "name": "Axiom, Inc.",
@@ -9,5 +9,12 @@
   "homepage": "https://axiom.co/docs/reference/cli",
   "repository": "https://github.com/axiomhq/cli",
   "license": "MIT",
-  "keywords": ["axiom", "observability", "apl", "logs", "traces", "metrics"]
+  "keywords": [
+    "axiom",
+    "observability",
+    "apl",
+    "logs",
+    "traces",
+    "metrics"
+  ]
 }

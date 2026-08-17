@@ -19,6 +19,7 @@ jobs:
           go-version-file: go.mod
       - run: make generate man
       - run: git diff --exit-code
+      - run: make plugin-version-check
 
   lint:
     name: Lint
