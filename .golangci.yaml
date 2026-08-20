@@ -44,18 +44,11 @@ linters:
       - legacy
       - std-error-handling
     rules:
+      # Matches both the querylegacy import path and the QueryLegacy method,
+      # which staticcheck reports with the receiver's full package path.
       - linters:
           - staticcheck
-        text: "SA1019: res.BlocksDeleted"
-      - linters:
-          - staticcheck
-        text: "SA1019: client.Datasets.QueryLegacy"
-      - linters:
-          - staticcheck
-        text: "SA1019: client.QueryLegacy"
-      - linters:
-          - staticcheck
-        text: 'SA1019: "github.com/axiomhq/axiom-go/axiom/querylegacy"'
+        text: "SA1019: .*[qQ]uery[lL]egacy"
       - linters:
           - gosec
         text: "G115: integer overflow conversion"
