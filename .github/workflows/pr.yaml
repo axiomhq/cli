@@ -133,3 +133,23 @@ jobs:
       - name: Cleanup
         if: always()
         run: axiom dataset delete -f ${{ env.AXIOM_DATASET }}
+
+  action:
+    name: Action
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+        version:
+          - latest
+          - v0.17.0
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./actions/setup
+        with:
+          version: ${{ matrix.version }}
+      - run: axiom version

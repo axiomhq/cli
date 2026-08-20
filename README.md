@@ -42,6 +42,8 @@ There are multiple ways you can install the CLI:
   [GitHub Releases](https://github.com/axiomhq/cli/releases/latest)
 - Using Go: `go install github.com/axiomhq/cli/cmd/axiom@latest`
 - Use the [Docker image](https://hub.docker.com/r/axiomhq/cli): `docker run axiomhq/cli`
+- In GitHub Actions: `uses: axiomhq/cli/actions/setup@v0.19.0`, see
+  [GitHub Action](#github-action)
 
 Run `axiom help` to get familiar with the supported commands:
 
@@ -99,6 +101,22 @@ The default configuration file is `.axiom.toml` located in the home directory.
 Configuration values can also be set using flags or the environment. Flags get
 precedence over environment variables which get precedence over the
 configuration file values.
+
+## GitHub Action
+
+The `actions/setup` action installs the CLI on a workflow runner and adds it to
+`PATH`. It installs the latest release by default:
+
+```yaml
+- uses: axiomhq/cli/actions/setup@v0.19.0
+  with:
+    version: latest # Optional, this is the default.
+- run: axiom query "['my-dataset']"
+  env:
+    AXIOM_TOKEN: ${{ secrets.AXIOM_TOKEN }}
+```
+
+See [actions/setup](actions/setup/README.md) for the full reference.
 
 ## Claude Code Plugin
 
