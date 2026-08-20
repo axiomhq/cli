@@ -1,6 +1,6 @@
 {
   "name": "axiom-cli",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "description": "Axiom CLI and APL query assistance for Claude Code",
   "author": {
     "name": "Axiom, Inc.",
