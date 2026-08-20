@@ -1,0 +1,22 @@
+name: Setup Axiom CLI
+description: Install the Axiom CLI and add it to PATH.
+author: Axiom, Inc.
+
+inputs:
+  version:
+    description: 'Version to install: a tag like "v0.17.0", a bare "0.17.0", or "latest".'
+    default: latest
+
+outputs:
+  version:
+    description: The installed version, as a tag, e.g. "v0.17.0".
+    value: ${{ steps.install.outputs.version }}
+
+runs:
+  using: composite
+  steps:
+    - id: install
+      shell: bash
+      run: bash "${GITHUB_ACTION_PATH}/install.sh"
+      env:
+        INPUT_VERSION: ${{ inputs.version }}
