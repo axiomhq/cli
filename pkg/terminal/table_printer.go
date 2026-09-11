@@ -7,7 +7,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/cli/cli/pkg/text"
+	"github.com/cli/go-gh/v2/pkg/text"
 )
 
 // TablePrinter prints table formatted output.
