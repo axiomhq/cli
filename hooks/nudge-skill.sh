@@ -6,12 +6,12 @@
 
 input=$(cat)
 
-# Check if the bash command involves axiom query/dataset/stream.
+# Check if the bash command involves axiom query/dataset.
 command=$(echo "$input" | jq -r '.tool_input.command // empty' 2>/dev/null)
 if [[ -z "$command" ]]; then
   exit 0
 fi
-if ! echo "$command" | grep -qE 'axiom (query|dataset|stream)'; then
+if ! echo "$command" | grep -qE 'axiom (query|dataset)'; then
   exit 0
 fi
 

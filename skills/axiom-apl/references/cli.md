@@ -155,14 +155,6 @@ axiom dataset list -f json
 axiom dataset ls
 ```
 
-## Livestream
-
-```bash
-# Stream live data (no filtering; dataset argument required)
-axiom stream <dataset>
-axiom stream logs
-```
-
 ## Query Best Practices
 
 1. **Always specify time range** with `--start-time`. Without it the query

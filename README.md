@@ -56,7 +56,6 @@ USAGE
 CORE COMMANDS
   ingest:      Ingest structured data
   query:       Query data using APL
-  stream:      Livestream data
 
 MANAGEMENT COMMANDS
   annotation:  Manage annotations

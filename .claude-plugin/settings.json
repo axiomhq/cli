@@ -7,7 +7,6 @@
       "Bash(axiom query *)",
       "Bash(axiom dataset list)",
       "Bash(axiom dataset list *)",
-      "Bash(axiom stream *)",
       "Bash(axiom version)",
       "Bash(axiom version *)",
       "Bash(axiom config get *)",
