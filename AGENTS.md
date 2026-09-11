@@ -40,7 +40,7 @@ Commands live in `internal/cmd/<command>/` with a consistent pattern:
 - `<command>_<subcommand>.go` - Subcommands
 
 Commands are grouped:
-- **Core:** `ingest`, `query`, `stream` - Data operations
+- **Core:** `ingest`, `query` - Data operations
 - **Management:** `annotation`, `config`, `dataset` - Resource management
 - **Additional:** `auth`, `completion`, `version`, `web`
 
@@ -86,13 +86,13 @@ This repository includes a Claude Code plugin for APL query assistance.
 ### Default Permissions
 
 The plugin ships `settings.json` with pre-approved read-only operations:
-- `axiom query`, `axiom dataset list`, `axiom dataset info`, `axiom stream`, `axiom version`
+- `axiom query`, `axiom dataset list`, `axiom dataset info`, `axiom version`
 
 Mutating operations (`auth`, `dataset create`, `dataset delete`, `ingest`) require manual approval.
 
 ### Hooks
 
-A `PostToolUse` hook in `hooks/` nudges agents toward using the plugin's skills when they run raw `axiom query`, `axiom dataset`, or `axiom stream` commands. The nudge fires once per session.
+A `PostToolUse` hook in `hooks/` nudges agents toward using the plugin's skills when they run raw `axiom query` or `axiom dataset` commands. The nudge fires once per session.
 
 ### Installation
 
