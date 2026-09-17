@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"io"
 	"strings"
 
@@ -10,6 +11,8 @@ import (
 	"github.com/axiomhq/cli/internal/cmdutil"
 	"github.com/axiomhq/cli/internal/config"
 )
+
+var errTokenNotPiped = errors.New("pipe the token to stdin when stdout is not a terminal")
 
 // NewCmd creates and returns the auth command.
 func NewCmd(f *cmdutil.Factory) *cobra.Command {
