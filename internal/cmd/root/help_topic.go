@@ -14,10 +14,11 @@ var topics = map[string]string{
 		from the users profile page (Settings -> Profile).
 
 		API tokens can be provided by flag or environment variable but are only
-		valid for ingestion and querying, depending on their permissions! Using
-		them with Axiom CLI is encouraged for ingest-only and/or query-only
-		situations but renders the CLI unable to do anything else. Use a
-		Personal Access Token to get full access to the deployment.
+		valid for ingestion, querying and annotations, depending on their
+		permissions! Using them with Axiom CLI is encouraged for ingest-only,
+		query-only and/or annotation-only situations but renders the CLI unable
+		to do anything else. Use a Personal Access Token to get full access to
+		the deployment.
 
 		EDGE OPERATIONS: When using edge endpoints (--edge-url or --edge-region),
 		ingest operations require an API token (xaat-*). Personal tokens are

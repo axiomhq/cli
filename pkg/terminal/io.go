@@ -130,6 +130,12 @@ func (io *IO) IsStderrTTY() bool {
 	return io.isStderrTTY
 }
 
+// IsInteractive returns true if both stdin and stdout are TTYs, which prompts
+// need.
+func (io *IO) IsInteractive() bool {
+	return io.isStdinTTY && io.isStdoutTTY
+}
+
 // ColorScheme returns the IO's color scheme used to colorize text output if
 // enabled.
 func (io *IO) ColorScheme() *ColorScheme {
@@ -209,9 +215,9 @@ func (io *IO) StartActivityIndicator() func() {
 }
 
 // SurveyIO returns an options that makes itself the IO for survey questions.
-// Returns a nop option if no TTY is attached.
+// Returns a nop option if not interactive.
 func (io *IO) SurveyIO() survey.AskOpt {
-	if !io.isStdinTTY || !io.isStdoutTTY {
+	if !io.IsInteractive() {
 		return func(*survey.AskOptions) error { return nil }
 	}
 	return survey.WithStdio(io.in.(*os.File), io.origOut.(*os.File), io.errOut)
