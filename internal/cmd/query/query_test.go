@@ -10,52 +10,37 @@ import (
 	"github.com/axiomhq/cli/pkg/terminal"
 )
 
-func TestParseDuration(t *testing.T) {
-	tests := []struct {
-		input string
-		want  time.Duration
-	}{
-		// Stdlib units pass through.
-		{"1h", time.Hour},
-		{"30m", 30 * time.Minute},
-		{"1h30m", time.Hour + 30*time.Minute},
-		{"500ms", 500 * time.Millisecond},
-
-		// Day and week support.
-		{"1d", 24 * time.Hour},
-		{"7d", 7 * 24 * time.Hour},
-		{"1w", 7 * 24 * time.Hour},
-		{"2w", 2 * 7 * 24 * time.Hour},
-
-		// Mixed units.
-		{"1d12h", 36 * time.Hour},
-		{"1w2d", 9 * 24 * time.Hour},
-		{"1w2d3h", 9*24*time.Hour + 3*time.Hour},
-
-		// Fractional values.
-		{"0.5d", 12 * time.Hour},
-		{"1.5w", 252 * time.Hour},
-
-		// Positive prefix.
-		{"+1d", 24 * time.Hour},
-
-		// Negative durations.
-		{"-1h", -time.Hour},
-		{"-7d", -7 * 24 * time.Hour},
-		{"-2w", -2 * 7 * 24 * time.Hour},
-		{"-1d12h", -36 * time.Hour},
+func TestComplete(t *testing.T) {
+	opts := &options{
+		Query:     "['logs']",
+		StartTime: "-1h",
+		EndTime:   "now",
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.input, func(t *testing.T) {
-			got, err := parseDuration(tt.input)
-			if err != nil {
-				t.Fatalf("parseDuration(%q) returned error: %v", tt.input, err)
-			}
-			if got != tt.want {
-				t.Errorf("parseDuration(%q) = %v, want %v", tt.input, got, tt.want)
-			}
-		})
+	if err := complete(opts); err != nil {
+		t.Fatalf("complete() returned error: %v", err)
+	}
+	if got := opts.endTime.Sub(opts.startTime); got != time.Hour {
+		t.Errorf("endTime - startTime = %v, want %v", got, time.Hour)
+	}
+}
+
+func TestCompleteTimestampFormat(t *testing.T) {
+	opts := &options{
+		Query:           "['logs']",
+		StartTime:       "2026-11-03",
+		EndTime:         "now",
+		TimestampFormat: "2006-01-02",
+	}
+
+	if err := complete(opts); err != nil {
+		t.Fatalf("complete() returned error: %v", err)
+	}
+	if want := time.Date(2026, 11, 3, 0, 0, 0, 0, time.UTC); !opts.startTime.Equal(want) {
+		t.Errorf("startTime = %v, want %v", opts.startTime, want)
+	}
+	if opts.endTime.IsZero() {
+		t.Error("endTime is zero, want the current time")
 	}
 }
 
@@ -133,24 +118,6 @@ func TestTableHasAggregation(t *testing.T) {
 	}
 	if !tableHasAggregation(withAgg) {
 		t.Error("expected aggregation when field has Aggregation set")
-	}
-}
-
-func TestParseDurationErrors(t *testing.T) {
-	tests := []string{
-		"",
-		"abc",
-		"7",
-		"d",
-	}
-
-	for _, input := range tests {
-		t.Run(input, func(t *testing.T) {
-			_, err := parseDuration(input)
-			if err == nil {
-				t.Errorf("parseDuration(%q) expected error, got nil", input)
-			}
-		})
 	}
 }
 
