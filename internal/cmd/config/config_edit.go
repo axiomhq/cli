@@ -48,7 +48,7 @@ func newEditCmd(f *cmdutil.Factory) *cobra.Command {
 		},
 
 		RunE: func(*cobra.Command, []string) error {
-			if !f.IO.IsStdinTTY() {
+			if !f.IO.IsInteractive() {
 				return errors.New("cannot run this command non interactively")
 			}
 

@@ -59,7 +59,7 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 	_ = cmd.RegisterFlagCompletionFunc("name", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("description", cmdutil.NoCompletion)
 
-	if !opts.IO.IsStdinTTY() {
+	if !opts.IO.IsInteractive() {
 		_ = cmd.MarkFlagRequired("name")
 		_ = cmd.MarkFlagRequired("description")
 	}
@@ -68,6 +68,10 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 }
 
 func completeCreate(ctx context.Context, opts *createOptions) error {
+	if !opts.IO.IsInteractive() {
+		return nil
+	}
+
 	questions := make([]*survey.Question, 0, 2)
 
 	datasetNames, err := getDatasetNames(ctx, opts.Factory)

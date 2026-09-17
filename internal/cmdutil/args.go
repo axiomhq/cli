@@ -11,7 +11,7 @@ import (
 // populate.
 func PopulateFromArgs(f *Factory, ss ...*string) cobra.PositionalArgs {
 	populate := func(_ *cobra.Command, args []string) error {
-		if !f.IO.IsStdinTTY() && len(args) < len(ss) {
+		if !f.IO.IsInteractive() && len(args) < len(ss) {
 			return ErrNoPromptArgRequired
 		}
 
