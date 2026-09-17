@@ -62,7 +62,7 @@ axiom query "<APL>" [flags]
 | Flag | Description | Example |
 |------|-------------|---------|
 | `--start-time` | Query start time | `-7d`, `-1h`, `2024-01-15` |
-| `--end-time` | Query end time (default: now) | `-30m`, `2024-01-16` |
+| `--end-time` | Query end time (default: now) | `now`, `-30m`, `2024-01-16` |
 | `-f, --format` | Output format | `json`, `table` (default) |
 | `--fail-on-empty` | Exit code 1 if no results | (flag, no value) |
 
