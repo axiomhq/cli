@@ -55,7 +55,7 @@ func newDeleteCmd(f *cmdutil.Factory) *cobra.Command {
 
 	_ = cmd.RegisterFlagCompletionFunc("force", cmdutil.NoCompletion)
 
-	if !opts.IO.IsStdinTTY() {
+	if !opts.IO.IsInteractive() {
 		_ = cmd.MarkFlagRequired("force")
 	}
 
@@ -78,7 +78,7 @@ func completeDelete(opts *deleteOptions) error {
 
 func runDelete(ctx context.Context, opts *deleteOptions) error {
 	// Deleting must be forced if not running interactively.
-	if !opts.IO.IsStdinTTY() && !opts.Force {
+	if !opts.IO.IsInteractive() && !opts.Force {
 		return cmdutil.ErrSilent
 	}
 

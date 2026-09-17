@@ -152,7 +152,7 @@ func NeedsActiveDeployment(f *Factory) RunFunc {
 
 		// When not running interactively and no active deployment is given, the
 		// deployment to use must be provided as a flag.
-		if !f.IO.IsStdinTTY() && f.Config.ActiveDeployment == "" {
+		if !f.IO.IsInteractive() && f.Config.ActiveDeployment == "" {
 			return NewFlagErrorf("--deployment or -D required when not running interactively")
 		}
 
