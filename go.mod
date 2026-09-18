@@ -18,7 +18,7 @@ require (
 	github.com/axiomhq/axiom-go v0.37.0
 	github.com/axiomhq/pkg v0.6.0
 	github.com/briandowns/spinner v1.23.2
-	github.com/cli/go-gh/v2 v2.16.0
+	github.com/cli/go-gh/v2 v2.16.1
 	github.com/cli/safeexec v1.0.1
 	github.com/cpuguy83/go-md2man/v2 v2.0.7
 	github.com/dustin/go-humanize v1.0.1
