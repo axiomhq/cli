@@ -38,14 +38,17 @@ func newListCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "list [(-f|--format)=json|table] [(-d|--datasets) <datasets>] [(-start-time) <start-time>] [(--end-time) <end-time>",
+		Use:   "list [(-f|--format)=json|table] [(-d|--datasets) <datasets>] [--start-time <start-time>] [--end-time <end-time>]",
 		Short: "List all annotations",
 
 		Aliases: []string{"ls"},
 
 		Example: heredoc.Doc(`
 			# List all annotations:
-			$ axiom annotations list
+			$ axiom annotation list
+
+			# List the annotations of a dataset from the last 24 hours:
+			$ axiom annotation list --datasets=http-logs --start-time=-24h
 		`),
 
 		RunE: func(cmd *cobra.Command, _ []string) error {
@@ -53,54 +56,50 @@ func newListCmd(f *cmdutil.Factory) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringArrayVarP(&opts.Datasets, "datasets", "d", nil, "Filter by datasets")
-	cmd.Flags().StringVarP(&opts.Start, "start-time", "", "", "Filter by start time")
-	cmd.Flags().StringVarP(&opts.End, "end-time", "", "", "Filter by end time")
+	cmd.Flags().StringSliceVarP(&opts.Datasets, "datasets", "d", nil, "Filter by datasets")
+	cmd.Flags().StringVarP(&opts.Start, "start-time", "", "", "Filter by start time - may also be now or a relative time eg: -24h")
+	cmd.Flags().StringVarP(&opts.End, "end-time", "", "", "Filter by end time - may also be now or a relative time eg: -1h (defaults to now if --start-time is set)")
 	cmd.Flags().StringVarP(&opts.Format, "format", "f", iofmt.Table.String(), "Format to output data in")
 
 	_ = cmd.RegisterFlagCompletionFunc("format", cmdutil.FormatCompletion)
-	_ = cmd.RegisterFlagCompletionFunc("datasets", cmdutil.FormatCompletion)
-	_ = cmd.RegisterFlagCompletionFunc("start-time", cmdutil.FormatCompletion)
-	_ = cmd.RegisterFlagCompletionFunc("end-time", cmdutil.FormatCompletion)
+	_ = cmd.RegisterFlagCompletionFunc("datasets", cmdutil.DatasetCompletionFunc(f))
+	_ = cmd.RegisterFlagCompletionFunc("start-time", cmdutil.NoCompletion)
+	_ = cmd.RegisterFlagCompletionFunc("end-time", cmdutil.NoCompletion)
 
 	return cmd
 }
 
 func runList(ctx context.Context, opts *listOptions) error {
+	if opts.End != "" && opts.Start == "" {
+		return cmdutil.NewFlagErrorf("--end-time requires --start-time")
+	}
+
+	now := time.Now()
+	start, err := parseTime(opts.Start, now)
+	if err != nil {
+		return fmt.Errorf("invalid start time: %w", err)
+	}
+	end, err := parseTime(opts.End, now)
+	if err != nil {
+		return fmt.Errorf("invalid end time: %w", err)
+	}
+	if end.IsZero() && !start.IsZero() {
+		end = now
+	}
+
 	client, err := opts.Client(ctx)
 	if err != nil {
 		return err
 	}
 
-	var start, end time.Time
-	if opts.Start != "" {
-		var err error
-		start, err = time.Parse(time.RFC3339, opts.Start)
-		if err != nil {
-			return fmt.Errorf("invalid start time: %w", err)
-		}
-	}
-	if opts.End != "" {
-		var err error
-		end, err = time.Parse(time.RFC3339, opts.End)
-		if err != nil {
-			return fmt.Errorf("invalid start time: %w", err)
-		}
-	}
-
 	progStop := opts.IO.StartActivityIndicator()
 	defer progStop()
 
-	var filter *axiom.AnnotationsFilter
-	if len(opts.Datasets) > 0 || !start.IsZero() || !end.IsZero() {
-		filter = &axiom.AnnotationsFilter{
-			Datasets: opts.Datasets,
-			Start:    start,
-			End:      end,
-		}
-	}
-
-	annotations, err := client.Annotations.List(ctx, filter)
+	annotations, err := client.Annotations.List(ctx, &axiom.AnnotationsFilter{
+		Datasets: opts.Datasets,
+		Start:    start,
+		End:      end,
+	})
 	if err != nil {
 		return err
 	}
