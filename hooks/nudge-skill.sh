@@ -22,7 +22,7 @@ marker="${TMPDIR:-/tmp}/.axiom-cli-skill-nudge-${session_id:-$PPID}"
 [ -f "$marker" ] && exit 0
 touch "$marker"
 
-nudge='<system-reminder>Axiom CLI skills provide guided workflows. Use /axiom-apl for APL query reference, /explore-dataset to discover schema and patterns, /find-traces to analyze OpenTelemetry traces, or /detect-anomalies for statistical anomaly detection.</system-reminder>'
+nudge='Axiom CLI skills provide guided workflows. Use /axiom-apl for APL query reference, /explore-dataset to discover schema and patterns, /find-traces to analyze OpenTelemetry traces, or /detect-anomalies for statistical anomaly detection.'
 
 jq -n --arg nudge "$nudge" '{
   hookSpecificOutput: {
