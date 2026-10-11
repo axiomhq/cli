@@ -49,6 +49,10 @@ func deploymentCompletionFunc(config *config.Config) cmdutil.CompletionFunc {
 			return cmdutil.NoCompletion(cmd, args, toComplete)
 		}
 
+		if config == nil {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+
 		aliases := config.DeploymentAliases()
 		res := make([]string, 0, len(aliases))
 		for _, alias := range aliases {
