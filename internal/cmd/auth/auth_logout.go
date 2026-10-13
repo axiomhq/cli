@@ -69,7 +69,7 @@ func newLogoutCmd(f *cmdutil.Factory) *cobra.Command {
 
 	_ = cmd.RegisterFlagCompletionFunc("force", cmdutil.NoCompletion)
 
-	if !opts.IO.IsStdinTTY() {
+	if !opts.IO.IsInteractive() {
 		_ = cmd.MarkFlagRequired("force")
 	}
 
@@ -78,7 +78,7 @@ func newLogoutCmd(f *cmdutil.Factory) *cobra.Command {
 
 func runLogout(opts *logoutOptions) error {
 	// Logging out must be forced if not running interactively.
-	if !opts.IO.IsStdinTTY() && !opts.Force {
+	if !opts.IO.IsInteractive() && !opts.Force {
 		return cmdutil.ErrSilent
 	}
 

@@ -66,7 +66,7 @@ func newTrimCmd(f *cmdutil.Factory) *cobra.Command {
 	_ = cmd.RegisterFlagCompletionFunc("duration", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("force", cmdutil.NoCompletion)
 
-	if !opts.IO.IsStdinTTY() {
+	if !opts.IO.IsInteractive() {
 		_ = cmd.MarkFlagRequired("duration")
 		_ = cmd.MarkFlagRequired("force")
 	}
@@ -75,6 +75,10 @@ func newTrimCmd(f *cmdutil.Factory) *cobra.Command {
 }
 
 func completeTrim(ctx context.Context, opts *trimOptions) error {
+	if !opts.IO.IsInteractive() {
+		return nil
+	}
+
 	questions := make([]*survey.Question, 0, 2)
 
 	datasetNames, err := getDatasetNames(ctx, opts.Factory)
@@ -110,7 +114,7 @@ func completeTrim(ctx context.Context, opts *trimOptions) error {
 
 func runTrim(ctx context.Context, opts *trimOptions) error {
 	// Trimming must be forced if not running interactively.
-	if !opts.IO.IsStdinTTY() && !opts.Force {
+	if !opts.IO.IsInteractive() && !opts.Force {
 		return cmdutil.ErrSilent
 	}
 

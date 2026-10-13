@@ -60,10 +60,18 @@ func newUpdateCmd(f *cmdutil.Factory) *cobra.Command {
 
 	_ = cmd.RegisterFlagCompletionFunc("description", cmdutil.NoCompletion)
 
+	if !opts.IO.IsInteractive() {
+		_ = cmd.MarkFlagRequired("description")
+	}
+
 	return cmd
 }
 
 func completeUpdate(ctx context.Context, opts *updateOptions) error {
+	if !opts.IO.IsInteractive() {
+		return nil
+	}
+
 	questions := make([]*survey.Question, 0, 2)
 
 	datasetNames, err := getDatasetNames(ctx, opts.Factory)

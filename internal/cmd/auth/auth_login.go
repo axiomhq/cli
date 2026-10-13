@@ -37,8 +37,8 @@ type loginOptions struct {
 	// which is optional, the user will be asked for it.
 	Alias string
 	// Token of the user who wants to authenticate against the deployment. The
-	// user will be asked for it unless the session has no TTY attached, in
-	// which case the token is read from stdin.
+	// user will be asked for it when running interactively. Otherwise, the
+	// token is read from stdin.
 	Token string
 	// OrganizationID of the organization the supplied token is valid for. If
 	// not supplied as a flag, which is optional, the user will be asked for it.
@@ -88,14 +88,17 @@ func NewLoginCmd(f *cmdutil.Factory) *cobra.Command {
 				return err
 			}
 
-			if !opts.IO.IsStdinTTY() || opts.AutoLogin {
+			if opts.IO.IsStdinTTY() && !opts.IO.IsInteractive() {
+				return errTokenNotPiped
+			}
+			if !opts.IO.IsInteractive() || opts.AutoLogin {
 				return nil
 			}
 			return completeLogin(cmd.Context(), opts)
 		},
 
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			if opts.IO.IsStdinTTY() && opts.AutoLogin {
+			if opts.IO.IsInteractive() && opts.AutoLogin {
 				return autoLogin(cmd.Context(), opts)
 			}
 			return runLogin(cmd.Context(), opts)
@@ -114,7 +117,7 @@ func NewLoginCmd(f *cmdutil.Factory) *cobra.Command {
 	_ = cmd.RegisterFlagCompletionFunc("force", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("url", cmdutil.NoCompletion)
 
-	if !opts.IO.IsStdinTTY() {
+	if !opts.IO.IsInteractive() {
 		_ = cmd.MarkFlagRequired("alias")
 		_ = cmd.MarkFlagRequired("org-id")
 	}
@@ -353,10 +356,10 @@ func runLogin(ctx context.Context, opts *loginOptions) error {
 	}
 
 	// If a deployment with the alias exists in the config, we ask the user if
-	// he wants to overwrite it, if "--force" is not set. When no TTY is
-	// attached, we abort and return, not overwritting anything.
+	// he wants to overwrite it, if "--force" is not set. When not running
+	// interactively, we abort and return, not overwriting anything.
 	if _, ok := opts.Config.Deployments[opts.Alias]; ok && !opts.Force {
-		if !opts.IO.IsStdinTTY() {
+		if !opts.IO.IsInteractive() {
 			return fmt.Errorf("deployment with alias %q already configured, overwrite with '-f|--force' flag", opts.Alias)
 		}
 

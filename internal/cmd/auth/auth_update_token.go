@@ -19,8 +19,8 @@ import (
 type updateTokenOptions struct {
 	*cmdutil.Factory
 	// Token of the user who wants to authenticate against the deployment. The
-	// user will be asked for it unless the session has no TTY attached, in
-	// which case the token is read from stdin.
+	// user will be asked for it when running interactively. Otherwise, the
+	// token is read from stdin.
 	Token string
 }
 
@@ -49,7 +49,10 @@ func newUpdateTokenCmd(f *cmdutil.Factory) *cobra.Command {
 		),
 
 		PreRunE: func(*cobra.Command, []string) error {
-			if !opts.IO.IsStdinTTY() {
+			if opts.IO.IsStdinTTY() && !opts.IO.IsInteractive() {
+				return errTokenNotPiped
+			}
+			if !opts.IO.IsInteractive() {
 				return nil
 			}
 			return completeUpdateToken(opts)
