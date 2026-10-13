@@ -42,7 +42,7 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "create (-t|--type) <type> (-d|--datasets) <datasets> [(-T|--title) <title>] [(-D|--description) <description>] [(-U|--url) <url>] [(--time) <time>] [(--end-time) <endTime>",
+		Use:   "create (-t|--type) <type> (-d|--datasets) <datasets> [--title <title>] [--description <description>] [(-u|--url) <url>] [--time <time>] [--end-time <end-time>]",
 		Short: "Create an annotation",
 
 		Aliases: []string{"new"},
@@ -52,9 +52,12 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 		Example: heredoc.Doc(`
 			# Interactively create an annotation
 			$ axiom annotation create
-			
+
 			# Create an annotation and provide the parameters on the command-line:
 			$ axiom annotation create --type=deploy --datasets=http-logs
+
+			# Create an annotation that spans the last 30 minutes:
+			$ axiom annotation create --type=maintenance --datasets=http-logs --time=-30m --end-time=now
 		`),
 
 		RunE: func(cmd *cobra.Command, _ []string) error {
@@ -66,22 +69,22 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&opts.Type, "type", "t", "", "Type of the annotation (must be lowercase alphanumeric and hyphens)")
-	cmd.Flags().StringArrayVarP(&opts.Datasets, "datasets", "d", nil, "Datasets to attach the annotation to")
+	cmd.Flags().StringSliceVarP(&opts.Datasets, "datasets", "d", nil, "Datasets to attach the annotation to")
 	cmd.Flags().StringVarP(&opts.Title, "title", "", "", "Title of the annotation")
 	cmd.Flags().StringVarP(&opts.Description, "description", "", "", "Description of the annotation")
 	cmd.Flags().StringVarP(&opts.URL, "url", "u", "", "URL of the annotation")
-	cmd.Flags().StringVarP(&opts.Time, "time", "", "", "Time of the annotation")
-	cmd.Flags().StringVarP(&opts.EndTime, "end-time", "", "", "End time of the annotation")
+	cmd.Flags().StringVarP(&opts.Time, "time", "", "", "Time of the annotation - may also be now or a relative time eg: -30m (defaults to the time of the request)")
+	cmd.Flags().StringVarP(&opts.EndTime, "end-time", "", "", "End time of the annotation - may also be now or a relative time eg: -5m")
 
 	_ = cmd.RegisterFlagCompletionFunc("type", cmdutil.NoCompletion)
-	_ = cmd.RegisterFlagCompletionFunc("datasets", cmdutil.NoCompletion)
+	_ = cmd.RegisterFlagCompletionFunc("datasets", cmdutil.DatasetCompletionFunc(f))
 	_ = cmd.RegisterFlagCompletionFunc("title", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("description", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("url", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("time", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("end-time", cmdutil.NoCompletion)
 
-	if !opts.IO.IsStdinTTY() {
+	if !opts.IO.IsInteractive() {
 		_ = cmd.MarkFlagRequired("type")
 		_ = cmd.MarkFlagRequired("datasets")
 	}
@@ -90,14 +93,18 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 }
 
 func completeCreate(ctx context.Context, opts *createOptions) error {
-	questions := make([]*survey.Question, 0, 2)
-
-	datasetNames, err := getDatasetNames(ctx, opts.Factory)
-	if err != nil {
-		return err
+	if !opts.IO.IsInteractive() {
+		return nil
 	}
 
+	questions := make([]*survey.Question, 0, 2)
+
 	if len(opts.Datasets) == 0 {
+		datasetNames, err := getDatasetNames(ctx, opts.Factory)
+		if err != nil {
+			return err
+		}
+
 		questions = append(questions, &survey.Question{
 			Name: "datasets",
 			Prompt: &survey.MultiSelect{
@@ -151,18 +158,14 @@ func runCreate(ctx context.Context, opts *createOptions) error {
 		}
 	}
 
-	var startTime, endTime time.Time
-	if opts.Time != "" {
-		startTime, err = time.Parse(time.RFC3339, opts.Time)
-		if err != nil {
-			return fmt.Errorf("invalid time: %w", err)
-		}
+	now := time.Now()
+	startTime, err := parseTime(opts.Time, now)
+	if err != nil {
+		return fmt.Errorf("invalid time: %w", err)
 	}
-	if opts.EndTime != "" {
-		endTime, err = time.Parse(time.RFC3339, opts.EndTime)
-		if err != nil {
-			return fmt.Errorf("invalid end-time: %w", err)
-		}
+	endTime, err := parseTime(opts.EndTime, now)
+	if err != nil {
+		return fmt.Errorf("invalid end time: %w", err)
 	}
 
 	stop := opts.IO.StartActivityIndicator()
@@ -182,6 +185,12 @@ func runCreate(ctx context.Context, opts *createOptions) error {
 	}
 
 	stop()
+
+	if !opts.IO.IsStdoutTTY() {
+		if _, err := fmt.Fprintln(opts.IO.Out(), annotation.ID); err != nil {
+			return fmt.Errorf("created annotation %s but could not print its ID: %w", annotation.ID, err)
+		}
+	}
 
 	if opts.IO.IsStderrTTY() {
 		cs := opts.IO.ColorScheme()

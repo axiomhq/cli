@@ -116,6 +116,11 @@ jobs:
           axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.json -f=testdata/logs.ndjson -f=testdata/logs.csv
           axiom dataset list
           axiom query "['${{ env.AXIOM_DATASET }}']"
+          id=$(axiom annotation create --type=cli-test --datasets=${{ env.AXIOM_DATASET }} --time=-10m)
+          echo "ANNOTATION_ID=$id" >> "$GITHUB_ENV"
+          axiom annotation update "$id" --end-time=now
+          axiom annotation list --datasets=${{ env.AXIOM_DATASET }} --start-time=-1h --format=json | jq -e --arg id "$id" 'any(.[]; .id == $id and .endTime != "0001-01-01T00:00:00Z")'
+          axiom annotation list --datasets=${{ env.AXIOM_DATASET }}
       - name: Test (Windows)
         if: matrix.goos == 'windows'
         run: |
@@ -132,7 +137,11 @@ jobs:
           axiom query "['${{ env.AXIOM_DATASET }}']"
       - name: Cleanup
         if: always()
-        run: axiom dataset delete -f ${{ env.AXIOM_DATASET }}
+        run: |
+          rc=0
+          axiom dataset delete -f ${{ env.AXIOM_DATASET }} || rc=$?
+          if [ -n "${ANNOTATION_ID:-}" ]; then axiom annotation delete -f "$ANNOTATION_ID" || rc=$?; fi
+          exit $rc
 
   action:
     name: Action

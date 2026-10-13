@@ -3,6 +3,7 @@ package annotation
 import (
 	"context"
 	"sort"
+	"time"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
@@ -23,6 +24,12 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 			$ axiom annotation list
 			$ axiom annotation update ann_123456789 --title="Production Deployment"
 			$ axiom annotation delete ann_123456789
+
+			# Mark a deployment in CI. Set AXIOM_TOKEN to an API token with
+			# annotation permissions:
+			$ id=$(axiom annotation create --type=deploy --datasets=http-logs)
+			$ ./deploy.sh
+			$ axiom annotation update "$id" --end-time=now
 		`),
 
 		Annotations: map[string]string{
@@ -32,7 +39,6 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 		PersistentPreRunE: cmdutil.ChainRunFuncs(
 			cmdutil.AsksForSetup(f, auth.NewLoginCmd(f)),
 			cmdutil.NeedsActiveDeployment(f),
-			cmdutil.NeedsPersonalAccessToken(f),
 		),
 	}
 
@@ -67,4 +73,16 @@ func getDatasetNames(ctx context.Context, f *cmdutil.Factory) ([]string, error) 
 	sort.Strings(datasetNames)
 
 	return datasetNames, nil
+}
+
+// parseTime parses an RFC3339 time, "now" or a relative time like "-1h". An
+// empty string returns the zero time.
+func parseTime(s string, now time.Time) (time.Time, error) {
+	if s == "" {
+		return time.Time{}, nil
+	}
+	if t, ok := cmdutil.RelativeTime(s, now); ok {
+		return t, nil
+	}
+	return time.Parse(time.RFC3339, s)
 }
