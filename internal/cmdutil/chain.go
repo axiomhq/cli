@@ -169,8 +169,11 @@ func NeedsActiveDeployment(f *Factory) RunFunc {
 // deployments are configured.
 func NeedsDeployments(f *Factory) RunFunc {
 	return func(_ *cobra.Command, _ []string) error {
-		if len(f.Config.Deployments) == 0 {
-			return execTemplateSilent(f.IO, noDeploymentsMsgTmpl, nil)
+		if f == nil || f.Config == nil || len(f.Config.Deployments) == 0 {
+			if f != nil && f.IO != nil {
+				return execTemplateSilent(f.IO, noDeploymentsMsgTmpl, nil)
+			}
+			return ErrSilent
 		}
 		return nil
 	}
@@ -180,7 +183,18 @@ func NeedsDeployments(f *Factory) RunFunc {
 // deployment is not configured. An empty alias is not evaluated.
 func NeedsValidDeployment(f *Factory, alias *string) RunFunc {
 	return func(_ *cobra.Command, _ []string) error {
-		if _, ok := f.Config.Deployments[*alias]; !ok && *alias != "" {
+		if alias == nil || *alias == "" {
+			return nil
+		}
+		if f == nil || f.Config == nil || f.Config.Deployments == nil {
+			if f != nil && f.IO != nil {
+				return execTemplateSilent(f.IO, badDeploymentMsgTmpl, map[string]string{
+					"Deployment": *alias,
+				})
+			}
+			return ErrSilent
+		}
+		if _, ok := f.Config.Deployments[*alias]; !ok {
 			return execTemplateSilent(f.IO, badDeploymentMsgTmpl, map[string]string{
 				"Deployment": *alias,
 			})

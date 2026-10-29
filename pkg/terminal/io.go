@@ -260,14 +260,29 @@ func isTerminal(f *os.File) bool {
 	return isatty.IsTerminal(fd) || isatty.IsCygwinTerminal(fd)
 }
 
+// NewTestIO returns an IO configured with the given in, out and errOut writers.
+func NewTestIO(in io.ReadCloser, out, errOut io.Writer) *IO {
+	if in == nil {
+		in = io.NopCloser(strings.NewReader(""))
+	}
+	if out == nil {
+		out = io.Discard
+	}
+	if errOut == nil {
+		errOut = io.Discard
+	}
+	return &IO{
+		in:          in,
+		out:         out,
+		errOut:      errOut,
+		origOut:     out,
+		colorScheme: NewColorScheme(false),
+	}
+}
+
 // TestIO returns an IO which does not read or write to any real outputs.
 func TestIO() *IO {
-	return &IO{
-		in:      io.NopCloser(strings.NewReader("")),
-		out:     io.Discard,
-		errOut:  io.Discard,
-		origOut: io.Discard,
-	}
+	return NewTestIO(nil, nil, nil)
 }
 
 // pagerWriter implements an `io.WriteCloser` that wraps all EPIPE errors in an
