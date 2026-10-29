@@ -4,7 +4,6 @@ CGO	  := CGO_ENABLED=1 go
 
 # ENVIRONMENT
 VERBOSE	=
-GOPATH	:= $(GOPATH)
 
 # APPLICATION INFORMATION
 BUILD_DATE	:= $(shell date -u '+%Y-%m-%dT%H:%M:%SZ')
@@ -106,7 +105,9 @@ fmt: ## Format and simplify the source code using `golangci-lint fmt`
 generate: pkg/iofmt/format_string.go ## Generate code using `go generate`
 
 .PHONY: install
-install: $(GOPATH)/bin/axiom ## Install the binary into the $GOPATH/bin directory
+install: dep.stamp ## Install the binary into $GOBIN, or $GOPATH/bin
+	@echo ">> installing axiom binary"
+	@$(GO) install $(GO_FLAGS) ./cmd/axiom
 
 .PHONY: lint
 lint: ## Lint the source code

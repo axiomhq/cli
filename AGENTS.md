@@ -10,7 +10,7 @@ make build        # Build binaries (uses goreleaser snapshot)
 make test         # Run all tests with race detection
 make lint         # Run golangci-lint
 make fmt          # Format code with golangci-lint fmt
-make install      # Install binary to $GOPATH/bin
+make install      # Install the binary into $GOBIN, or $GOPATH/bin
 make man          # Generate man pages
 make completions  # Generate shell completion scripts
 make all          # Run dep, generate, fmt, lint, test, build, man

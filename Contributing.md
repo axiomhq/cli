@@ -32,7 +32,7 @@ $ brew install axiom
 ```
 $ git clone https://github.com/axiomhq/cli.git
 $ cd cli
-$ make install  # Build and install binary into $GOPATH
+$ make install  # Build and install the binary into $GOBIN, or $GOPATH/bin
 ```
 
 ## Submitting Modifications
