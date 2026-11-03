@@ -131,11 +131,11 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	// Overrides
 	cmd.PersistentFlags().StringP("config", "C", "", "Path to configuration file to use")
 	cmd.PersistentFlags().StringP("deployment", "D", "", "Deployment to use")
-	cmd.PersistentFlags().StringP("auth-org-id", "O", os.Getenv("AXIOM_ORG_ID"), "Organization ID to use")
-	cmd.PersistentFlags().StringP("auth-token", "T", os.Getenv("AXIOM_TOKEN"), "Token to use")
-	cmd.PersistentFlags().StringP("auth-url", "U", os.Getenv("AXIOM_URL"), "Url to use")
-	cmd.PersistentFlags().String("edge-url", os.Getenv("AXIOM_EDGE_URL"), "Edge URL for ingest and query operations")
-	cmd.PersistentFlags().String("edge-region", os.Getenv("AXIOM_EDGE_REGION"), "Regional edge domain (e.g., eu-central-1.aws.edge.axiom.co)")
+	cmd.PersistentFlags().StringP("auth-org-id", "O", "", "Organization ID to use")
+	cmd.PersistentFlags().StringP("auth-token", "T", "", "Token to use")
+	cmd.PersistentFlags().StringP("auth-url", "U", "", "Url to use")
+	cmd.PersistentFlags().String("edge-url", "", "Edge URL for ingest and query operations")
+	cmd.PersistentFlags().String("edge-region", "", "Regional edge domain (e.g., eu-central-1.aws.edge.axiom.co)")
 	cmd.PersistentFlags().BoolP("insecure", "I", false, "Bypass certificate validation")
 	cmd.PersistentFlags().Bool("no-spinner", false, "Disable the activity indicator")
 
