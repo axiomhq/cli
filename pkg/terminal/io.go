@@ -267,6 +267,8 @@ func TestIO() *IO {
 		out:     io.Discard,
 		errOut:  io.Discard,
 		origOut: io.Discard,
+
+		colorScheme: &ColorScheme{},
 	}
 }
 

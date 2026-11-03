@@ -33,7 +33,14 @@ func newStatusCmd(f *cmdutil.Factory) *cobra.Command {
 
 		DisableFlagsInUseLine: true,
 
-		Args:              cobra.MaximumNArgs(1),
+		// Set here because PreRunE validates the alias and runs before RunE. Not
+		// PopulateFromArgs, which requires the argument when not interactive.
+		Args: cobra.MatchAll(cobra.MaximumNArgs(1), func(_ *cobra.Command, args []string) error {
+			if len(args) > 0 {
+				opts.Alias = args[0]
+			}
+			return nil
+		}),
 		ValidArgsFunction: deploymentCompletionFunc(f.Config),
 
 		Example: heredoc.Doc(`
@@ -50,10 +57,7 @@ func newStatusCmd(f *cmdutil.Factory) *cobra.Command {
 			cmdutil.NeedsValidDeployment(f, &opts.Alias),
 		),
 
-		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) > 0 {
-				opts.Alias = args[0]
-			}
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			return runStatus(cmd.Context(), opts)
 		},
 	}
