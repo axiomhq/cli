@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 
 // Publishes the binaries GoReleaser built into dist/ to npm: one package per
-// platform (@axiomhq/cli-<platform>-<arch>) holding the binary, and the
-// @axiomhq/cli package that depends on all of them optionally and runs the one
-// npm installed for the current platform.
+// platform (@axiomhq/cli-<platform>-<arch>) holding the binary, and the axiom
+// package that depends on all of them optionally and runs the one npm installed
+// for the current platform.
+//
+// Until v1.0.0, the axiom package was the Axiom AI SDK (now @axiomhq/ai), so
+// CLI releases below v1.0.1 can't be published to it.
 //
 // Usage: node npm/publish.mjs [--dry-run]
 
@@ -54,7 +57,7 @@ const packages = binaries.map((a) => {
   writeJSON(join(dir, "package.json"), {
     name,
     ...common,
-    description: `The ${os}-${cpu} binary of the Axiom CLI (@axiomhq/cli).`,
+    description: `The ${os}-${cpu} binary of the Axiom CLI (axiom).`,
     os: [os],
     cpu: [cpu],
     preferUnplugged: true,
@@ -68,7 +71,7 @@ copyFileSync(join(root, "npm", "axiom.js"), join(main, "bin", "axiom.js"));
 copyFileSync(join(root, "README.md"), join(main, "README.md"));
 copyFileSync(join(root, "LICENSE"), join(main, "LICENSE"));
 writeJSON(join(main, "package.json"), {
-  name: "@axiomhq/cli",
+  name: "axiom",
   ...common,
   description: "Powerful log analytics from the comfort of your command-line",
   bin: { axiom: "bin/axiom.js" },
@@ -76,29 +79,45 @@ writeJSON(join(main, "package.json"), {
   optionalDependencies: Object.fromEntries(packages.map((p) => [p.name, version])),
 });
 
-// Platform packages go first so @axiomhq/cli never points at missing versions.
-for (const { name, dir } of [...packages, { name: "@axiomhq/cli", dir: main }]) {
-  publish(name, dir);
+// Platform packages go first so axiom never points at missing versions.
+const all = [...packages, { name: "axiom", dir: main }].map((p) => ({
+  ...p,
+  published: dryRun ? undefined : publishedRepository(p.name),
+}));
+
+// Check every package before publishing any, so a version taken by another
+// project fails the release without leaving some packages published.
+for (const { name, published } of all) {
+  if (published !== undefined && published !== common.repository.url) {
+    throw new Error(`${name}@${version} is already taken by ${published || "another project"}`);
+  }
 }
 
-function publish(name, dir) {
-  if (!dryRun && isPublished(name)) {
+for (const { name, dir, published } of all) {
+  if (published !== undefined) {
     console.log(`${name}@${version} is already published, skipping`);
-    return;
+  } else {
+    publish(dir);
   }
+}
+
+function publish(dir) {
   const args = ["publish", "--access", "public", "--tag", version.includes("-") ? "next" : "latest"];
   if (dryRun) args.push("--dry-run");
   else if (process.env.GITHUB_ACTIONS) args.push("--provenance");
   execFileSync("npm", args, { cwd: dir, stdio: "inherit" });
 }
 
-function isPublished(name) {
+// Returns the repository URL of name@version, "" if it has none, or undefined
+// if that version isn't published.
+function publishedRepository(name) {
+  let out;
   try {
-    execFileSync("npm", ["view", `${name}@${version}`, "version"], { stdio: "pipe" });
-    return true;
+    out = execFileSync("npm", ["view", `${name}@${version}`, "repository.url"], { encoding: "utf8", stdio: "pipe" });
   } catch {
-    return false;
+    return undefined;
   }
+  return out.trim();
 }
 
 function writeJSON(path, value) {

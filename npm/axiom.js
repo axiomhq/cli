@@ -2,7 +2,7 @@
 "use strict";
 
 // Runs the Axiom CLI binary from the platform package that npm installed as
-// an optional dependency of @axiomhq/cli.
+// an optional dependency of the axiom package.
 
 const { spawnSync } = require("node:child_process");
 

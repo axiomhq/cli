@@ -38,8 +38,7 @@ For more information check out the
 There are multiple ways you can install the CLI:
 
 - With Homebrew: `brew install --cask axiomhq/tap/axiom`
-- With npm: `npm install -g @axiomhq/cli`, or run it once with
-  `npx @axiomhq/cli`
+- With npm: `npm install -g axiom`, or run it once with `npx axiom`
 - Download the pre-built binary from the
   [GitHub Releases](https://github.com/axiomhq/cli/releases/latest)
 - Using Go: `go install github.com/axiomhq/cli/cmd/axiom@latest`
