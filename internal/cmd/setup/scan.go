@@ -62,13 +62,14 @@ var manifestRules = []manifestRule{
 	{envFile, []string{"OTEL_"}, "OTEL_ setting"},
 }
 
-// Signal is one manifest that already mentions OpenTelemetry.
+// Signal records dependency, setting, and exporter evidence from one file.
 type Signal struct {
-	Path   string
-	Detail string
+	Path                  string
+	Detail                string
+	AxiomExporterSettings []string
 }
 
-// Scan walks root and reports manifests that already mention OpenTelemetry.
+// Scan walks root and reports OpenTelemetry mentions and literal Axiom exporter URLs.
 // It only knows common dependency files, so a miss is not proof that the app is uninstrumented.
 func Scan(root string) ([]Signal, error) {
 	var signals []Signal
@@ -90,20 +91,33 @@ func Scan(root string) ([]Signal, error) {
 		if !ok {
 			return nil
 		}
-		detail, found, err := fileHasNeedle(path, rule.needles)
-		if err != nil || !found {
+		data, err := readManifest(path)
+		if err != nil {
 			return err
 		}
-		if detail == "OTEL_" {
-			detail = rule.detail
-		} else {
-			detail = rule.detail + " (" + detail + ")"
+		var detail string
+		lower := strings.ToLower(string(data))
+		for _, needle := range rule.needles {
+			if strings.Contains(lower, strings.ToLower(needle)) {
+				detail = rule.detail
+				if needle != "OTEL_" {
+					detail += " (" + needle + ")"
+				}
+				break
+			}
+		}
+		var exporters []string
+		if envFile(name) {
+			exporters = axiomExporterSettings(string(data))
+		}
+		if detail == "" && len(exporters) == 0 {
+			return nil
 		}
 		rel, err := filepath.Rel(root, path)
 		if err != nil {
 			rel = path
 		}
-		signals = append(signals, Signal{Path: rel, Detail: detail})
+		signals = append(signals, Signal{Path: rel, Detail: detail, AxiomExporterSettings: exporters})
 		return nil
 	})
 	return signals, err
@@ -118,30 +132,20 @@ func ruleFor(name string) (manifestRule, bool) {
 	return manifestRule{}, false
 }
 
-func fileHasNeedle(path string, needles []string) (string, bool, error) {
+func readManifest(path string) ([]byte, error) {
 	f, err := os.Open(path)
 	if err != nil {
-		return "", false, err
+		return nil, err
 	}
 	defer f.Close()
 
 	info, err := f.Stat()
 	if err != nil {
-		return "", false, err
+		return nil, err
 	}
 	if info.Size() > maxManifestBytes {
-		return "", false, nil
+		return nil, nil
 	}
 
-	data, err := io.ReadAll(io.LimitReader(f, maxManifestBytes))
-	if err != nil {
-		return "", false, err
-	}
-	lower := strings.ToLower(string(data))
-	for _, needle := range needles {
-		if strings.Contains(lower, strings.ToLower(needle)) {
-			return needle, true, nil
-		}
-	}
-	return "", false, nil
+	return io.ReadAll(io.LimitReader(f, maxManifestBytes))
 }

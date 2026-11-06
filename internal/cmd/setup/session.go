@@ -97,14 +97,29 @@ directly, use the same config and deployment selected above.
 
 `, args)
 
-	if len(signals) == 0 {
+	foundOTel := false
+	for _, signal := range signals {
+		if signal.Detail != "" {
+			fmt.Fprintf(&b, "- `%s`: %s\n", signal.Path, signal.Detail)
+			foundOTel = true
+		}
+	}
+	if !foundOTel {
 		b.WriteString("No OpenTelemetry package or OTEL_ setting was found in the usual dependency and env files.\n")
 		b.WriteString("The app may still be instrumented in a language this check does not recognize. Read the repository before deciding.\n")
-		return b.String()
 	}
+	b.WriteString("\n## Exporter URLs pointing to Axiom\n\n")
+	foundAxiom := false
 	for _, signal := range signals {
-		fmt.Fprintf(&b, "- `%s`: %s\n", signal.Path, signal.Detail)
+		for _, setting := range signal.AxiomExporterSettings {
+			fmt.Fprintf(&b, "- `%s`: `%s` has a URL literal whose host is axiom.co or a subdomain.\n", signal.Path, setting)
+			foundAxiom = true
+		}
 	}
+	if !foundAxiom {
+		b.WriteString("No literal OTLP exporter URL pointing to Axiom was found in the scanned env files. The destination is unknown; do not assume it is another backend.\n")
+	}
+	b.WriteString("This check reads only the standard OTEL_EXPORTER_OTLP_ENDPOINT and per-signal OTLP endpoint assignments in env files. These are static file matches, including example files. They do not prove the running app exports to Axiom. Inspect other exporter settings, config formats, and variable references before deciding. URL values are omitted to avoid exposing credentials.\n")
 	return b.String()
 }
 
