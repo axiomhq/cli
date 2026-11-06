@@ -42,7 +42,7 @@ Commands live in `internal/cmd/<command>/` with a consistent pattern:
 Commands are grouped:
 - **Core:** `ingest`, `query` - Data operations
 - **Management:** `annotation`, `config`, `dataset` - Resource management
-- **Additional:** `auth`, `completion`, `version`, `web`
+- **Additional:** `auth`, `completion`, `setup`, `version`, `web`
 
 ### Configuration
 `internal/config/config.go` - TOML-based config (`~/.axiom.toml`) with environment variable overrides via `AXIOM_` prefix (token, org_id, url, deployment). Supports multiple named deployments.
