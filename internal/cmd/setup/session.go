@@ -1,6 +1,7 @@
 package setup
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -17,6 +18,25 @@ type login struct {
 	Alias          string
 	OrganizationID string
 	URL            string
+	ConfigPath     string
+}
+
+func absoluteConfigPath(path string) (string, error) {
+	if path == "" {
+		return "", nil
+	}
+	return filepath.Abs(path)
+}
+
+func cliArgs(info login) []string {
+	args := []string{}
+	if info.ConfigPath != "" {
+		args = append(args, "--config", info.ConfigPath)
+	}
+	if info.Alias != "" {
+		args = append(args, "--deployment", info.Alias)
+	}
+	return args
 }
 
 func sessionDir(now time.Time) (string, error) {
@@ -60,9 +80,22 @@ Use the deployment in this file, and follow the skill's credential rules before 
 - Organization ID: %s
 - API URL: %s
 
+`, onboardingSkillURL, repo, blank(info.Alias), blank(info.OrganizationID), url)
+	args, _ := json.Marshal(cliArgs(info)) // A slice of strings is always JSON-encodable.
+	fmt.Fprintf(&b, `## Axiom CLI commands
+
+For every Axiom CLI command, insert these arguments immediately after the axiom executable.
+This JSON array lists separate arguments; pass each value literally, preserving spaces in paths:
+
+%s
+
+Keep these arguments when running from the repository directory or any other directory.
+Do not switch to the default deployment or config. If using another tool or reading credentials
+directly, use the same config and deployment selected above.
+
 ## OpenTelemetry already in the repo
 
-`, onboardingSkillURL, repo, blank(info.Alias), blank(info.OrganizationID), url)
+`, args)
 
 	if len(signals) == 0 {
 		b.WriteString("No OpenTelemetry package or OTEL_ setting was found in the usual dependency and env files.\n")

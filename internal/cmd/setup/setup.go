@@ -17,8 +17,9 @@ import (
 type options struct {
 	*cmdutil.Factory
 
-	Agent string
-	Dir   string
+	Agent      string
+	Dir        string
+	ConfigPath string
 }
 
 // NewCmd creates and returns the setup command.
@@ -48,6 +49,9 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 		),
 
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			if flag := cmd.Flag("config"); flag != nil && flag.Changed {
+				opts.ConfigPath = flag.Value.String()
+			}
 			return run(cmd.Context(), opts)
 		},
 	}
@@ -60,6 +64,10 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 
 func run(ctx context.Context, opts *options) error {
 	repo, err := filepath.Abs(opts.Dir)
+	if err != nil {
+		return err
+	}
+	configPath, err := absoluteConfigPath(opts.ConfigPath)
 	if err != nil {
 		return err
 	}
@@ -80,6 +88,7 @@ func run(ctx context.Context, opts *options) error {
 		Alias:          opts.Config.ActiveDeployment,
 		OrganizationID: deployment.OrganizationID,
 		URL:            deployment.URL,
+		ConfigPath:     configPath,
 	}, signals)
 	if err != nil {
 		return err
