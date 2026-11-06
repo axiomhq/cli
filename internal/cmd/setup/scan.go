@@ -8,7 +8,11 @@ import (
 	"strings"
 )
 
-const maxManifestBytes = 1 << 20
+const (
+	maxManifestBytes     = 1 << 20
+	openTelemetryPackage = "OpenTelemetry package"
+	openTelemetryNeedle  = "opentelemetry"
+)
 
 // skipDirs are dependency and build trees. A hit in there is not this app's setup.
 var skipDirs = map[string]struct{}{
@@ -46,15 +50,15 @@ func envFile(name string) bool {
 
 // Rules stay on dependency manifests and env files. Source files are left for the agent.
 var manifestRules = []manifestRule{
-	{exactName("package.json", "package-lock.json", "pnpm-lock.yaml", "yarn.lock", "bun.lock"), []string{"@opentelemetry/", "opentelemetry"}, "OpenTelemetry package"},
+	{exactName("package.json", "package-lock.json", "pnpm-lock.yaml", "yarn.lock", "bun.lock"), []string{"@opentelemetry/", openTelemetryNeedle}, openTelemetryPackage},
 	{exactName("go.mod", "go.sum"), []string{"go.opentelemetry.io/"}, "OpenTelemetry module"},
-	{exactName("requirements.txt", "pyproject.toml", "poetry.lock", "Pipfile", "Pipfile.lock", "uv.lock"), []string{"opentelemetry"}, "OpenTelemetry package"},
-	{exactName("Gemfile", "Gemfile.lock"), []string{"opentelemetry"}, "OpenTelemetry gem"},
-	{exactName("pom.xml", "build.gradle", "build.gradle.kts"), []string{"opentelemetry"}, "OpenTelemetry dependency"},
-	{exactName("Cargo.toml", "Cargo.lock"), []string{"opentelemetry"}, "OpenTelemetry crate"},
-	{exactName("composer.json", "composer.lock"), []string{"open-telemetry", "opentelemetry"}, "OpenTelemetry package"},
-	{suffix(".csproj"), []string{"opentelemetry"}, "OpenTelemetry package"},
-	{suffix(".fsproj"), []string{"opentelemetry"}, "OpenTelemetry package"},
+	{exactName("requirements.txt", "pyproject.toml", "poetry.lock", "Pipfile", "Pipfile.lock", "uv.lock"), []string{openTelemetryNeedle}, openTelemetryPackage},
+	{exactName("Gemfile", "Gemfile.lock"), []string{openTelemetryNeedle}, "OpenTelemetry gem"},
+	{exactName("pom.xml", "build.gradle", "build.gradle.kts"), []string{openTelemetryNeedle}, "OpenTelemetry dependency"},
+	{exactName("Cargo.toml", "Cargo.lock"), []string{openTelemetryNeedle}, "OpenTelemetry crate"},
+	{exactName("composer.json", "composer.lock"), []string{"open-telemetry", openTelemetryNeedle}, openTelemetryPackage},
+	{suffix(".csproj"), []string{openTelemetryNeedle}, openTelemetryPackage},
+	{suffix(".fsproj"), []string{openTelemetryNeedle}, openTelemetryPackage},
 	{envFile, []string{"OTEL_"}, "OTEL_ setting"},
 }
 
