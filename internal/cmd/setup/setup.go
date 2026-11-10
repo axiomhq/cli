@@ -102,10 +102,18 @@ func run(ctx context.Context, opts *options) error {
 		fmt.Fprintf(opts.IO.ErrOut(), heredoc.Doc(`
 			No supported agent CLI (claude, codex) was found on this machine.
 
+			Install one using its official setup guide:
+			  Claude Code: https://code.claude.com/docs/en/setup
+			  Codex:       https://learn.chatgpt.com/docs/codex/cli
+
+			After installing, launch claude or codex once and complete sign-in.
+			Then rerun axiom setup with the same flags. If the command is still
+			not found, follow the guide's PATH instructions or open a new terminal.
+
 			The onboarding brief was written to:
 			  %s
 
-			Paste that file into any coding agent to onboard this repository by hand.
+			You can also paste the contents of that file into another coding agent.
 		`), contextPath)
 		return nil
 	}
