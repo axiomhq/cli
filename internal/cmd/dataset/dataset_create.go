@@ -22,6 +22,8 @@ type createOptions struct {
 	// Description of the dataset to create. If not supplied as a flag, which is
 	// optional, the user will be asked for it.
 	Description string `survey:"description"`
+	// Type is the friendly dataset type: events or metrics.
+	Type string `survey:"type"`
 }
 
 func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
@@ -30,7 +32,7 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:   "create [(-n|--name) <dataset-name>] [(-d|--description) <dataset-description>]",
+		Use:   "create [(-n|--name) <dataset-name>] [(-d|--description) <dataset-description>] [--type events|metrics]",
 		Short: "Create a dataset",
 
 		Aliases: []string{"new"},
@@ -43,10 +45,16 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 			
 			# Create a dataset and provide the parameters on the command-line:
 			$ axiom dataset create --name=http-logs --description="All of my logs"
+
+			# Create an OpenTelemetry metrics dataset:
+			$ axiom dataset create --name=app-metrics --description="Application metrics" --type=metrics
 		`),
 
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			if err := completeCreate(cmd.Context(), opts); err != nil {
+			if opts.Type != "events" && opts.Type != "metrics" {
+				return fmt.Errorf("invalid dataset type %q: choose events or metrics", opts.Type)
+			}
+			if err := completeCreate(cmd.Context(), opts, !cmd.Flags().Changed("type")); err != nil {
 				return err
 			}
 			return runCreate(cmd.Context(), opts)
@@ -55,6 +63,11 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 
 	cmd.Flags().StringVarP(&opts.Name, "name", "n", "", "Name of the dataset")
 	cmd.Flags().StringVarP(&opts.Description, "description", "d", "", "Description of the dataset")
+	cmd.Flags().StringVar(&opts.Type, "type", "events", "Type of dataset: events or metrics")
+
+	_ = cmd.RegisterFlagCompletionFunc("type", func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
+		return []string{"events", "metrics"}, cobra.ShellCompDirectiveNoFileComp
+	})
 
 	_ = cmd.RegisterFlagCompletionFunc("name", cmdutil.NoCompletion)
 	_ = cmd.RegisterFlagCompletionFunc("description", cmdutil.NoCompletion)
@@ -67,12 +80,12 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 	return cmd
 }
 
-func completeCreate(ctx context.Context, opts *createOptions) error {
+func completeCreate(ctx context.Context, opts *createOptions, promptType bool) error {
 	if !opts.IO.IsInteractive() {
 		return nil
 	}
 
-	questions := make([]*survey.Question, 0, 2)
+	questions := make([]*survey.Question, 0, 3)
 
 	datasetNames, err := getDatasetNames(ctx, opts.Factory)
 	if err != nil {
@@ -98,10 +111,32 @@ func completeCreate(ctx context.Context, opts *createOptions) error {
 		})
 	}
 
+	if promptType {
+		questions = append(questions, &survey.Question{
+			Name: "type",
+			Prompt: &survey.Select{
+				Message: "What type of dataset?",
+				Options: []string{"events", "metrics"},
+				Default: "events",
+				Help:    "Events stores logs, traces, and general events. Metrics stores OpenTelemetry metrics.",
+			},
+		})
+	}
+
 	return survey.Ask(questions, opts, opts.IO.SurveyIO())
 }
 
 func runCreate(ctx context.Context, opts *createOptions) error {
+	var kind string
+	switch opts.Type {
+	case "events":
+		kind = "axiom:events:v1"
+	case "metrics":
+		kind = "otel:metrics:v1"
+	default:
+		return fmt.Errorf("invalid dataset type %q: choose events or metrics", opts.Type)
+	}
+
 	client, err := opts.Client(ctx)
 	if err != nil {
 		return err
@@ -111,6 +146,7 @@ func runCreate(ctx context.Context, opts *createOptions) error {
 	defer stop()
 
 	if _, err := client.Datasets.Create(ctx, axiom.DatasetCreateRequest{
+		Kind:        kind,
 		Name:        opts.Name,
 		Description: opts.Description,
 	}); err != nil {
