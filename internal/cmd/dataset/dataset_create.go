@@ -13,6 +13,11 @@ import (
 	"github.com/axiomhq/cli/pkg/surveyext"
 )
 
+const (
+	datasetTypeEvents  = "events"
+	datasetTypeMetrics = "metrics"
+)
+
 type createOptions struct {
 	*cmdutil.Factory
 
@@ -51,7 +56,7 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 		`),
 
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			if opts.Type != "events" && opts.Type != "metrics" {
+			if opts.Type != datasetTypeEvents && opts.Type != datasetTypeMetrics {
 				return fmt.Errorf("invalid dataset type %q: choose events or metrics", opts.Type)
 			}
 			if err := completeCreate(cmd.Context(), opts, !cmd.Flags().Changed("type")); err != nil {
@@ -63,10 +68,10 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 
 	cmd.Flags().StringVarP(&opts.Name, "name", "n", "", "Name of the dataset")
 	cmd.Flags().StringVarP(&opts.Description, "description", "d", "", "Description of the dataset")
-	cmd.Flags().StringVar(&opts.Type, "type", "events", "Type of dataset: events or metrics")
+	cmd.Flags().StringVar(&opts.Type, "type", datasetTypeEvents, "Type of dataset: events or metrics")
 
 	_ = cmd.RegisterFlagCompletionFunc("type", func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
-		return []string{"events", "metrics"}, cobra.ShellCompDirectiveNoFileComp
+		return []string{datasetTypeEvents, datasetTypeMetrics}, cobra.ShellCompDirectiveNoFileComp
 	})
 
 	_ = cmd.RegisterFlagCompletionFunc("name", cmdutil.NoCompletion)
@@ -116,8 +121,8 @@ func completeCreate(ctx context.Context, opts *createOptions, promptType bool) e
 			Name: "type",
 			Prompt: &survey.Select{
 				Message: "What type of dataset?",
-				Options: []string{"events", "metrics"},
-				Default: "events",
+				Options: []string{datasetTypeEvents, datasetTypeMetrics},
+				Default: datasetTypeEvents,
 				Help:    "Events stores logs, traces, and general events. Metrics stores OpenTelemetry metrics.",
 			},
 		})
@@ -129,9 +134,9 @@ func completeCreate(ctx context.Context, opts *createOptions, promptType bool) e
 func runCreate(ctx context.Context, opts *createOptions) error {
 	var kind string
 	switch opts.Type {
-	case "events":
+	case datasetTypeEvents:
 		kind = "axiom:events:v1"
-	case "metrics":
+	case datasetTypeMetrics:
 		kind = "otel:metrics:v1"
 	default:
 		return fmt.Errorf("invalid dataset type %q: choose events or metrics", opts.Type)
