@@ -122,7 +122,7 @@ Combine datasets.
     ['other-dataset'] | where _time >= ago(1h)
   ) on user_id
 
-// Join kinds: inner, leftouter, rightouter, fullouter, leftanti, rightanti
+// Supported join kinds: inner (default), innerunique, leftouter. Others fail.
 ```
 
 #### union

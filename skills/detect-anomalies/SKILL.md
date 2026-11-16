@@ -70,13 +70,9 @@ Find values that appeared recently but weren't seen before:
 
 ```bash
 axiom query "['<dataset>']
-| where _time >= ago(1h)
-| summarize by error_code
-| join kind=leftanti (
-    ['<dataset>']
-    | where _time between (ago(25h) .. ago(1h))
-    | summarize by error_code
-  ) on error_code" --start-time -25h -f json
+| where _time >= ago(25h)
+| summarize first_seen = min(_time) by error_code
+| where first_seen >= ago(1h)" --start-time -25h -f json
 ```
 
 Replace `error_code` with any categorical field (service, endpoint, status).
@@ -154,7 +150,7 @@ axiom query "['<dataset>']
 |------|------------------|-----------|
 | **Volume Spike** | Z-score on count | Traffic surge, attack, incident |
 | **Volume Drop** | Z-score on count | Outage, data collection issue |
-| **New Values** | Left anti-join | New errors, new services |
+| **New Values** | First-seen time (`min(_time)`) | New errors, new services |
 | **Statistical Outlier** | 3-sigma rule | Extreme performance issue |
 | **Rare Events** | Count = 1 | Unusual conditions |
 | **Error Spike** | Error rate increase | Service degradation |

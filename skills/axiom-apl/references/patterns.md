@@ -175,29 +175,31 @@ Common query patterns organized by use case.
 
 ### Volume Anomaly (Z-Score)
 
+Aggregation functions work only in `summarize`. Run the baseline query first, then replace `<avg_count>` and `<stdev_count>` with its results.
+
 ```apl
+// Baseline: average and standard deviation of the hourly count
+['logs']
+| where _time between (ago(25h) .. ago(1h))
+| summarize count() by bin(_time, 1h)
+| summarize avg_count = avg(count_), stdev_count = stdev(count_)
+
+// Hours more than 2 standard deviations from the baseline
 ['logs']
 | where _time >= ago(24h)
 | summarize count() by bin(_time, 1h)
-| extend
-    avg_count = avg(count_),
-    stdev_count = stdev(count_),
-    z_score = (count_ - avg(count_)) / stdev(count_)
+| extend z_score = (count_ - <avg_count>) / <stdev_count>
 | where abs(z_score) > 2
 ```
 
 ### New Values Detection
 
 ```apl
-// Find new error codes in last hour not seen in previous 24h
+// Error codes first seen in the last hour (25h lookback)
 ['logs']
-| where _time >= ago(1h)
-| summarize by error_code
-| join kind=leftanti (
-    ['logs']
-    | where _time between (ago(25h) .. ago(1h))
-    | summarize by error_code
-  ) on error_code
+| where _time >= ago(25h)
+| summarize first_seen = min(_time) by error_code
+| where first_seen >= ago(1h)
 ```
 
 ### Statistical Outliers
@@ -271,20 +273,6 @@ union
     dataset2 = sum(d2_count)
   by _time
 | sort by _time asc
-```
-
-### Sequential Pattern Mining
-
-```apl
-['logs']
-| where _time >= ago(1h)
-| sort by _time asc
-| extend
-    next_event = next(event_type, 1),
-    time_to_next = next(_time, 1) - _time
-| where time_to_next < 5m
-| summarize count() by pattern = strcat(event_type, " -> ", next_event)
-| top 20 by count_
 ```
 
 ## OpenTelemetry Specific
