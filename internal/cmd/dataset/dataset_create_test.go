@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/axiomhq/axiom-go/axiom"
+
 	"github.com/axiomhq/cli/internal/cmdutil"
 	"github.com/axiomhq/cli/internal/config"
 	"github.com/axiomhq/cli/internal/testutil"
