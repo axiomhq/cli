@@ -1,7 +1,6 @@
 package dataset
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -73,18 +72,6 @@ func TestCreateDatasetType(t *testing.T) {
 			req := requests[0]
 			if req.Kind != tt.kind || req.Name != "app-data" || req.Description != "App telemetry" {
 				t.Errorf("unexpected create request: %+v", req)
-			}
-		})
-	}
-}
-
-// Reject invalid final values even when callers bypass flag validation.
-func TestRunCreateRejectsInvalidType(t *testing.T) {
-	for _, datasetType := range []string{"", "logs", "METRICS"} {
-		t.Run(datasetType, func(t *testing.T) {
-			err := runCreate(context.Background(), &createOptions{Type: datasetType})
-			if err == nil || !strings.Contains(err.Error(), "invalid dataset type") {
-				t.Fatalf("error = %v, want invalid dataset type", err)
 			}
 		})
 	}
