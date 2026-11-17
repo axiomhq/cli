@@ -18,6 +18,11 @@ const (
 	datasetTypeMetrics = "metrics"
 )
 
+var datasetKinds = map[string]string{
+	datasetTypeEvents:  "axiom:events:v1",
+	datasetTypeMetrics: "otel:metrics:v1",
+}
+
 type createOptions struct {
 	*cmdutil.Factory
 
@@ -56,10 +61,10 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 		`),
 
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			if opts.Type != datasetTypeEvents && opts.Type != datasetTypeMetrics {
+			if _, ok := datasetKinds[opts.Type]; !ok {
 				return fmt.Errorf("invalid dataset type %q: choose events or metrics", opts.Type)
 			}
-			if err := completeCreate(cmd.Context(), opts, !cmd.Flags().Changed("type")); err != nil {
+			if err := completeCreate(cmd.Context(), opts); err != nil {
 				return err
 			}
 			return runCreate(cmd.Context(), opts)
@@ -85,12 +90,12 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 	return cmd
 }
 
-func completeCreate(ctx context.Context, opts *createOptions, promptType bool) error {
+func completeCreate(ctx context.Context, opts *createOptions) error {
 	if !opts.IO.IsInteractive() {
 		return nil
 	}
 
-	questions := make([]*survey.Question, 0, 3)
+	questions := make([]*survey.Question, 0, 2)
 
 	datasetNames, err := getDatasetNames(ctx, opts.Factory)
 	if err != nil {
@@ -116,32 +121,10 @@ func completeCreate(ctx context.Context, opts *createOptions, promptType bool) e
 		})
 	}
 
-	if promptType {
-		questions = append(questions, &survey.Question{
-			Name: "type",
-			Prompt: &survey.Select{
-				Message: "What type of dataset?",
-				Options: []string{datasetTypeEvents, datasetTypeMetrics},
-				Default: datasetTypeEvents,
-				Help:    "Events stores logs, traces, and general events. Metrics stores OpenTelemetry metrics.",
-			},
-		})
-	}
-
 	return survey.Ask(questions, opts, opts.IO.SurveyIO())
 }
 
 func runCreate(ctx context.Context, opts *createOptions) error {
-	var kind string
-	switch opts.Type {
-	case datasetTypeEvents:
-		kind = "axiom:events:v1"
-	case datasetTypeMetrics:
-		kind = "otel:metrics:v1"
-	default:
-		return fmt.Errorf("invalid dataset type %q: choose events or metrics", opts.Type)
-	}
-
 	client, err := opts.Client(ctx)
 	if err != nil {
 		return err
@@ -151,7 +134,7 @@ func runCreate(ctx context.Context, opts *createOptions) error {
 	defer stop()
 
 	if _, err := client.Datasets.Create(ctx, axiom.DatasetCreateRequest{
-		Kind:        kind,
+		Kind:        datasetKinds[opts.Type],
 		Name:        opts.Name,
 		Description: opts.Description,
 	}); err != nil {
