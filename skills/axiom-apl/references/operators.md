@@ -185,14 +185,14 @@ Show dataset schema.
 ## Special Aggregations
 
 #### arg_min / arg_max
-Get field value at min/max of another field.
+Get field value at min/max of another field. An alias before `arg_min` or `arg_max` names the column of the first argument, so put the alias inside the call.
 
 ```apl
 // Get operation name at earliest timestamp
-| summarize first_op = arg_min(_time, name) by trace_id
+| summarize arg_min(_time, first_op = name) by trace_id
 
 // Get slowest operation name
-| summarize slowest = arg_max(duration, name) by trace_id
+| summarize arg_max(duration, slowest = name) by trace_id
 ```
 
 #### histogram

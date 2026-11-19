@@ -57,7 +57,7 @@ axiom query "['<dataset>']
     span_count = count(),
     error_count = countif(error),
     services = make_set(['service.name']),
-    root_operation = arg_min(_time, name)
+    arg_min(_time, root_operation = name)
   by trace_id
 | sort by start_time desc
 | limit 20" --start-time -1h -f json
