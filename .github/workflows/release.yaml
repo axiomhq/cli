@@ -8,6 +8,8 @@ on:
 permissions:
   contents: write
   packages: write
+  # npm provenance and trusted publishing.
+  id-token: write
 
 jobs:
   release:
@@ -40,3 +42,10 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           HOMEBREW_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
           AUR_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - run: node npm/publish.mjs
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
