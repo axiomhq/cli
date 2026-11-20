@@ -68,6 +68,7 @@ ADDITIONAL COMMANDS
   help:        Help about any command
   version:     Print version
   web:         Open Axiom in the browser
+  setup:       Onboard a repository to Axiom with a coding agent
 
 FLAGS
   -O, --auth-org-id string   Organization ID to use

@@ -23,6 +23,7 @@ import (
 	// Additional commands
 	authCmd "github.com/axiomhq/cli/internal/cmd/auth"
 	completionCmd "github.com/axiomhq/cli/internal/cmd/completion"
+	setupCmd "github.com/axiomhq/cli/internal/cmd/setup"
 	versionCmd "github.com/axiomhq/cli/internal/cmd/version"
 	webCmd "github.com/axiomhq/cli/internal/cmd/web"
 )
@@ -153,6 +154,7 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.AddCommand(completionCmd.NewCmd(f))
 	cmd.AddCommand(versionCmd.NewCmd(f, version.Print("Axiom CLI")))
 	cmd.AddCommand(webCmd.NewCmd(f))
+	cmd.AddCommand(setupCmd.NewCmd(f))
 
 	// Help topics
 	cmd.AddCommand(newHelpTopic(f.IO, "credentials"))
