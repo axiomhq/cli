@@ -14,7 +14,7 @@
 | `strcat(a, b, ...)` | Concatenate | `strcat(first, " ", last)` |
 | `split(s, delim)` | Split to array | `split(path, "/")` |
 | `replace_string(s, old, new)` | Replace literal | `replace_string(url, "http", "https")` |
-| `replace_regex(s, pat, repl)` | Regex replace | `replace_regex(msg, "\\d+", "N")` |
+| `replace_regex(regex, rewrite, s)` | Regex replace | `replace_regex(@"\d+", "N", msg)` |
 
 ### String Predicates
 
@@ -36,8 +36,8 @@
 // Extract with regex
 | extend user_id = extract("user=([^&]+)", 1, url)
 
-// Extract all matches
-| extend numbers = extract_all(@"\d+", message)
+// Extract all matches of capture group 1
+| extend numbers = extract_all(@"(\d+)", dynamic([1]), message)
 ```
 
 ## DateTime Functions
