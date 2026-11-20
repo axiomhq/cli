@@ -108,7 +108,7 @@ jobs:
           chmod +x axiom_*_${{ matrix.goos }}_amd64/axiom
           mv axiom_*_${{ matrix.goos }}_amd64/axiom /usr/local/bin/axiom
           axiom version -I
-          axiom dataset create -n=${{ env.AXIOM_DATASET }} -d="CLI Integration test"
+          axiom dataset create -n=${{ env.AXIOM_DATASET }} -d="CLI Integration test" --type=events
           axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.json.gz -t=json -e=gzip
           axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.ndjson.gz -t=ndjson -e=gzip
           axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.csv.gz -t=csv -e=gzip
@@ -129,7 +129,7 @@ jobs:
           mv axiom.exe C:/Windows/System32/axiom.exe
           axiom version -I
           gunzip testdata/logs.*.gz
-          axiom dataset create -n=${{ env.AXIOM_DATASET }} -d="CLI Integration test"
+          axiom dataset create -n=${{ env.AXIOM_DATASET }} -d="CLI Integration test" --type=events
           axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.json
           axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.ndjson
           axiom ingest ${{ env.AXIOM_DATASET }} -f=testdata/logs.csv
