@@ -32,7 +32,8 @@ type createOptions struct {
 	// Description of the dataset to create. If not supplied as a flag, which is
 	// optional, the user will be asked for it.
 	Description string `survey:"description"`
-	// Type is the friendly dataset type: events or metrics.
+	// Type of the dataset to create. If not supplied as a flag, which is
+	// optional, the user will be asked for it.
 	Type string `survey:"type"`
 }
 
@@ -54,18 +55,18 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 			$ axiom dataset create
 			
 			# Create a dataset and provide the parameters on the command-line:
-			$ axiom dataset create --name=http-logs --description="All of my logs"
+			$ axiom dataset create --name=http-logs --description="All of my logs" --type=events
 
 			# Create an OpenTelemetry metrics dataset:
 			$ axiom dataset create --name=app-metrics --description="Application metrics" --type=metrics
 		`),
 
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			if _, ok := datasetKinds[opts.Type]; !ok {
-				return fmt.Errorf("invalid dataset type %q: choose events or metrics", opts.Type)
-			}
 			if err := completeCreate(cmd.Context(), opts); err != nil {
 				return err
+			}
+			if _, ok := datasetKinds[opts.Type]; !ok {
+				return fmt.Errorf("invalid dataset type %q: choose events or metrics", opts.Type)
 			}
 			return runCreate(cmd.Context(), opts)
 		},
@@ -73,7 +74,7 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 
 	cmd.Flags().StringVarP(&opts.Name, "name", "n", "", "Name of the dataset")
 	cmd.Flags().StringVarP(&opts.Description, "description", "d", "", "Description of the dataset")
-	cmd.Flags().StringVar(&opts.Type, "type", datasetTypeEvents, "Type of dataset: events or metrics")
+	cmd.Flags().StringVar(&opts.Type, "type", "", "Type of dataset: events or metrics")
 
 	_ = cmd.RegisterFlagCompletionFunc("type", func(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 		return []string{datasetTypeEvents, datasetTypeMetrics}, cobra.ShellCompDirectiveNoFileComp
@@ -85,6 +86,7 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 	if !opts.IO.IsInteractive() {
 		_ = cmd.MarkFlagRequired("name")
 		_ = cmd.MarkFlagRequired("description")
+		_ = cmd.MarkFlagRequired("type")
 	}
 
 	return cmd
@@ -95,7 +97,7 @@ func completeCreate(ctx context.Context, opts *createOptions) error {
 		return nil
 	}
 
-	questions := make([]*survey.Question, 0, 2)
+	questions := make([]*survey.Question, 0, 3)
 
 	datasetNames, err := getDatasetNames(ctx, opts.Factory)
 	if err != nil {
@@ -118,6 +120,18 @@ func completeCreate(ctx context.Context, opts *createOptions) error {
 		questions = append(questions, &survey.Question{
 			Name:   "description",
 			Prompt: &survey.Input{Message: "What is the description of the dataset?"},
+		})
+	}
+
+	if opts.Type == "" {
+		questions = append(questions, &survey.Question{
+			Name: "type",
+			Prompt: &survey.Select{
+				Message: "What type of dataset?",
+				Options: []string{datasetTypeEvents, datasetTypeMetrics},
+				Default: datasetTypeEvents,
+				Help:    "Events stores logs, traces, and general events. Metrics stores OpenTelemetry metrics.",
+			},
 		})
 	}
 

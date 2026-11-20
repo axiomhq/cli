@@ -20,13 +20,13 @@ func TestCreateDatasetType(t *testing.T) {
 		name    string
 		args    []string
 		kind    string
-		wantErr bool
+		wantErr string
 	}{
-		{name: "default events", kind: "axiom:events:v1"},
+		{name: "missing", wantErr: `required flag(s) "type"`},
 		{name: "explicit events", args: []string{"--type", "events"}, kind: "axiom:events:v1"},
 		{name: "metrics", args: []string{"--type", "metrics"}, kind: "otel:metrics:v1"},
-		{name: "invalid", args: []string{"--type", "logs"}, wantErr: true},
-		{name: "empty", args: []string{"--type="}, wantErr: true},
+		{name: "invalid", args: []string{"--type", "logs"}, wantErr: "invalid dataset type"},
+		{name: "empty", args: []string{"--type="}, wantErr: "invalid dataset type"},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			var requests []axiom.DatasetCreateRequest
@@ -41,7 +41,7 @@ func TestCreateDatasetType(t *testing.T) {
 					_, _ = w.Write([]byte(`{"name":"app-data"}`))
 					return
 				}
-				if tt.wantErr {
+				if tt.wantErr != "" {
 					t.Errorf("invalid type made a request: %s %s", r.Method, r.URL.Path)
 				}
 				_, _ = w.Write([]byte(`{}`))
@@ -54,9 +54,9 @@ func TestCreateDatasetType(t *testing.T) {
 			cmd.SetArgs(append([]string{"--name", "app-data", "--description", "App telemetry"}, tt.args...))
 			testutil.SetupCmd(cmd)
 			_, err := cmd.ExecuteC()
-			if tt.wantErr {
-				if err == nil || !strings.Contains(err.Error(), "invalid dataset type") {
-					t.Fatalf("error = %v, want invalid dataset type", err)
+			if tt.wantErr != "" {
+				if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
+					t.Fatalf("error = %v, want %q", err, tt.wantErr)
 				}
 				if len(requests) != 0 {
 					t.Fatalf("invalid type created a dataset")
