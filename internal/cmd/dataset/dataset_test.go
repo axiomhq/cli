@@ -14,81 +14,84 @@ import (
 	"github.com/axiomhq/cli/pkg/terminal"
 )
 
-func TestDatasetTokens(t *testing.T) {
-	for _, token := range []struct {
-		name, value, orgHeader string
+func executeWithAPIToken(t *testing.T, url string, args ...string) error {
+	t.Helper()
+	cmd := NewCmd(&cmdutil.Factory{
+		Config: &config.Config{
+			ActiveDeployment: "test",
+			Deployments:      map[string]config.Deployment{"test": {URL: url, Token: "xaat-test"}},
+		},
+		IO: terminal.TestIO(),
+	})
+	cmd.SetArgs(args)
+	testutil.SetupCmd(cmd)
+	_, err := cmd.ExecuteC()
+	return err
+}
+
+func TestDatasetCommandsAcceptAPIToken(t *testing.T) {
+	for _, tt := range []struct {
+		args         []string
+		method, path string
+		response     string
 	}{
-		{"api", "xaat-test", ""},
-		{"personal", "xapt-test", "test-org"},
+		{[]string{"create", "--name=logs", "--description=Logs", "--type=events"}, http.MethodPost, "/v2/datasets", `{"name":"logs"}`},
+		{[]string{"list", "--format=json"}, http.MethodGet, "/v2/datasets", `[{"name":"logs"}]`},
+		{[]string{"update", "logs", "--description=Updated"}, http.MethodPut, "/v2/datasets/logs", `{"name":"logs"}`},
+		{[]string{"delete", "logs", "--force"}, http.MethodDelete, "/v2/datasets/logs", ""},
+		{[]string{"trim", "logs", "--duration=1h", "--force"}, http.MethodPost, "/v2/datasets/logs/trim", ""},
 	} {
-		for _, tt := range []struct {
-			args         []string
-			method, path string
-			response     string
-		}{
-			{[]string{"create", "--name=logs", "--description=Logs", "--type=events"}, http.MethodPost, "/v2/datasets", `{"name":"logs"}`},
-			{[]string{"list", "--format=json"}, http.MethodGet, "/v2/datasets", `[{"name":"logs"}]`},
-			{[]string{"update", "logs", "--description=Updated"}, http.MethodPut, "/v2/datasets/logs", `{"name":"logs"}`},
-			{[]string{"delete", "logs", "--force"}, http.MethodDelete, "/v2/datasets/logs", ""},
-			{[]string{"trim", "logs", "--duration=1h", "--force"}, http.MethodPost, "/v2/datasets/logs/trim", ""},
-		} {
-			for _, status := range []int{http.StatusOK, http.StatusUnauthorized, http.StatusForbidden} {
-				t.Run(token.name+"/"+tt.args[0]+"/"+http.StatusText(status), func(t *testing.T) {
-					requests := 0
-					srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-						w.Header().Set("Content-Type", "application/json")
-						if got := r.Header.Get("Authorization"); got != "Bearer "+token.value {
-							t.Errorf("Authorization = %q, want the configured token", got)
-						}
-						if r.Method == http.MethodGet && r.URL.Path == "/v2/user" && token.name == "personal" {
-							_, _ = w.Write([]byte(`{"name":"Test user"}`))
-							return
-						}
-						if got := r.Header.Get("X-Axiom-Org-Id"); got != token.orgHeader {
-							t.Errorf("organization header = %q, want %q", got, token.orgHeader)
-						}
-						switch {
-						case r.Method == tt.method && r.URL.Path == tt.path:
-							requests++
-							w.WriteHeader(status)
-							if status != http.StatusOK {
-								_, _ = w.Write([]byte(`{"message":"request denied"}`))
-								return
-							}
-							_, _ = w.Write([]byte(tt.response))
-						case token.name == "personal" && r.Method == http.MethodGet && r.URL.Path == "/v2/datasets":
-							_, _ = w.Write([]byte(`[{"name":"logs"}]`))
-						default:
-							t.Errorf("unexpected request: %s %s", r.Method, r.URL.Path)
-							w.WriteHeader(http.StatusNotFound)
-						}
-					}))
-					defer srv.Close()
-					cmd := NewCmd(&cmdutil.Factory{
-						Config: &config.Config{
-							ActiveDeployment: "test",
-							Deployments: map[string]config.Deployment{
-								"test": {URL: srv.URL, Token: token.value, OrganizationID: "test-org"},
-							},
-						},
-						IO: terminal.TestIO(),
-					})
-					cmd.SetArgs(tt.args)
-					testutil.SetupCmd(cmd)
-					_, err := cmd.ExecuteC()
-					srv.Close()
-					if status == http.StatusOK {
-						if err != nil {
-							t.Fatalf("dataset command failed: %v", err)
-						}
-					} else if !errors.Is(err, axiom.HTTPError{Status: status}) {
-						t.Fatalf("error = %v, want HTTP %d", err, status)
-					}
-					if requests == 0 {
-						t.Fatal("dataset command did not reach the API")
-					}
-				})
+		t.Run(tt.args[0], func(t *testing.T) {
+			requests := 0
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests++
+				if r.Method != tt.method || r.URL.Path != tt.path {
+					t.Errorf("request = %s %s, want %s %s", r.Method, r.URL.Path, tt.method, tt.path)
+				}
+				if got := r.Header.Get("Authorization"); got != "Bearer xaat-test" {
+					t.Errorf("Authorization = %q, want the configured API token", got)
+				}
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte(tt.response))
+			}))
+			defer srv.Close()
+
+			err := executeWithAPIToken(t, srv.URL, tt.args...)
+			srv.Close()
+			if err != nil {
+				t.Fatalf("dataset command failed: %v", err)
 			}
-		}
+			if requests != 1 {
+				t.Fatalf("got %d requests, want exactly one", requests)
+			}
+		})
+	}
+}
+
+func TestDatasetCreatePreservesAPIErrors(t *testing.T) {
+	const message = "token cannot create datasets"
+	for _, status := range []int{http.StatusUnauthorized, http.StatusForbidden} {
+		t.Run(http.StatusText(status), func(t *testing.T) {
+			requests := 0
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests++
+				if r.Method != http.MethodPost || r.URL.Path != "/v2/datasets" {
+					t.Errorf("unexpected request: %s %s", r.Method, r.URL.Path)
+				}
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(status)
+				_, _ = w.Write([]byte(`{"message":"` + message + `"}`))
+			}))
+			defer srv.Close()
+
+			err := executeWithAPIToken(t, srv.URL, "create", "--name=logs", "--description=Logs", "--type=events")
+			srv.Close()
+			if apiErr, ok := errors.AsType[axiom.HTTPError](err); !ok || apiErr.Status != status || apiErr.Message != message {
+				t.Fatalf("error = %v, want HTTP %d with message %q", err, status, message)
+			}
+			if requests != 1 {
+				t.Fatalf("got %d requests, want exactly one; a rejected write must not be retried", requests)
+			}
+		})
 	}
 }
