@@ -62,6 +62,7 @@ MANAGEMENT COMMANDS
   auth:        Manage authentication state
   config:      Manage configuration
   dataset:     Manage datasets
+  org:         Manage organizations
 
 ADDITIONAL COMMANDS
   completion:  Generate shell completion scripts
@@ -100,6 +101,12 @@ The default configuration file is `.axiom.toml` located in the home directory.
 Configuration values can also be set using flags or the environment. Flags get
 precedence over environment variables which get precedence over the
 configuration file values.
+
+To start without an account, run `axiom org create --temporary --name=my-project`.
+The CLI saves the API token in the config and prints JSON with the organization ID,
+claim URL, and expiry time. Use `-D <returned-org-id>` for dataset, ingest, and query
+commands. Open the claim URL before expiry to keep the organization and its data.
+Existing deployments and the default stay unchanged.
 
 ## GitHub Action
 

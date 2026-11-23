@@ -22,6 +22,7 @@ require (
 	github.com/cli/safeexec v1.0.1
 	github.com/cpuguy83/go-md2man/v2 v2.0.7
 	github.com/dustin/go-humanize v1.1.0
+	github.com/gofrs/flock v0.13.1
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/klauspost/compress v1.20.5
@@ -262,7 +263,6 @@ require (
 	github.com/go-xmlfmt/xmlfmt v1.1.3 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/godoc-lint/godoc-lint v0.11.4 // indirect
-	github.com/gofrs/flock v0.13.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect

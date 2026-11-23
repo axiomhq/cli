@@ -92,6 +92,8 @@ type Deployment struct {
 	OrganizationID string `toml:"org_id"`
 	EdgeURL        string `toml:"edge_url"`
 	EdgeRegion     string `toml:"edge_region"`
+	ClaimURL       string `toml:"claim_url,omitempty"`
+	ExpiresAt      string `toml:"expires_at,omitempty"`
 }
 
 // LoadDefault tries to load the default configuration. It behaves like Load()

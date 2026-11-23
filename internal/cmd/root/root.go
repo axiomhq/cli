@@ -19,6 +19,7 @@ import (
 	annotationCmd "github.com/axiomhq/cli/internal/cmd/annotation"
 	configCmd "github.com/axiomhq/cli/internal/cmd/config"
 	datasetCmd "github.com/axiomhq/cli/internal/cmd/dataset"
+	orgCmd "github.com/axiomhq/cli/internal/cmd/org"
 
 	// Additional commands
 	authCmd "github.com/axiomhq/cli/internal/cmd/auth"
@@ -147,6 +148,7 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 	cmd.AddCommand(configCmd.NewCmd(f))
 	cmd.AddCommand(datasetCmd.NewCmd(f))
 	cmd.AddCommand(annotationCmd.NewCmd(f))
+	cmd.AddCommand(orgCmd.NewCmd(f))
 
 	// Additional commands
 	cmd.AddCommand(authCmd.NewCmd(f))
