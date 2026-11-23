@@ -58,7 +58,7 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 		`),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if !temporary {
-				return cmdutil.NewFlagError(fmt.Errorf("--temporary is required"))
+				return cmdutil.NewFlagErrorf("--temporary is required")
 			}
 			return runCreate(cmd, f, opts)
 		},
@@ -70,6 +70,11 @@ func newCreateCmd(f *cmdutil.Factory) *cobra.Command {
 }
 
 func runCreate(cmd *cobra.Command, f *cmdutil.Factory, opts createOptions) error {
+	if f.Config.URLOverride == "" {
+		if err := cmdutil.NeedsValidDeployment(f, &f.Config.ActiveDeployment)(cmd, nil); err != nil {
+			return err
+		}
+	}
 	baseURL := "https://api.axiom.co"
 	if deployment, ok := f.Config.GetActiveDeployment(); ok && deployment.URL != "" {
 		baseURL = deployment.URL
@@ -94,8 +99,7 @@ func runCreate(cmd *cobra.Command, f *cmdutil.Factory, opts createOptions) error
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("User-Agent", "axiom-cli/"+version.Release())
 
-	// Reserve private storage before creating an organization. The API returns
-	// its token and claim URL only once, so retain the response if saving fails.
+	// NOTE: the token and claim URL are returned once, so reserve private recovery storage before creating the org.
 	recovery, err := os.CreateTemp(filepath.Dir(f.Config.ConfigFilePath), ".axiom-org-*.json")
 	if err != nil {
 		return fmt.Errorf("cannot prepare credential storage: %w", err)
@@ -116,13 +120,12 @@ func runCreate(cmd *cobra.Command, f *cmdutil.Factory, opts createOptions) error
 	client := &http.Client{
 		Transport: transport,
 		Timeout:   time.Minute,
-		// A redirect must not replay this non-idempotent POST.
+		// NOTE: a redirect must not replay this non-idempotent POST.
 		CheckRedirect: func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse },
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		// Do not unwrap cancellation errors here: main's generic cancellation
-		// message would hide that the organization may already exist.
+		// NOTE: wrapping cancellation would hide this message behind main's generic cancellation error.
 		return fmt.Errorf("organization creation could not be confirmed; the request was not retried: %v", err)
 	}
 	defer resp.Body.Close()
@@ -143,6 +146,7 @@ func runCreate(cmd *cobra.Command, f *cmdutil.Factory, opts createOptions) error
 		provisionedOrg
 		Token string `json:"token"`
 	}
+	// NOTE: decoder errors can include response values, so report the recovery path without the decoder error.
 	if err := json.NewDecoder(recovery).Decode(&result); err != nil {
 		return fmt.Errorf("invalid organization response saved in %q; do not repeat creation", recovery.Name())
 	}
@@ -152,14 +156,15 @@ func runCreate(cmd *cobra.Command, f *cmdutil.Factory, opts createOptions) error
 	if err := recovery.Close(); err != nil {
 		return fmt.Errorf("cannot close organization response in %q; do not repeat creation: %w", recovery.Name(), err)
 	}
-	if err := config.AddDeployment(f.Config.ConfigFilePath, result.ID, config.Deployment{
+	if err := config.AddDeployment(cmd.Context(), f.Config.ConfigFilePath, result.ID, config.Deployment{
 		URL:            baseURL,
 		Token:          result.Token,
 		OrganizationID: result.ID,
 		ClaimURL:       result.ClaimURL,
 		ExpiresAt:      result.ExpiresAt.Format(time.RFC3339Nano),
 	}); err != nil {
-		return fmt.Errorf("organization created but config not saved; recover credentials from %q instead of repeating creation: %w", recovery.Name(), err)
+		// NOTE: keep the recovery path visible even when the user cancels while waiting for the config lock.
+		return fmt.Errorf("organization created but config not saved; recover credentials from %q instead of repeating creation: %v", recovery.Name(), err)
 	}
 	if err := os.Remove(recovery.Name()); err != nil {
 		return fmt.Errorf("organization %q saved; remove the extra credential file %q: %w", result.ID, recovery.Name(), err)

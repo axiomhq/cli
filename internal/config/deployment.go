@@ -1,18 +1,20 @@
 package config
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/gofrs/flock"
 	"github.com/pelletier/go-toml"
 )
 
-// AddDeployment saves a new deployment without applying environment overrides
-// or changing existing entries. A failed write leaves the old file intact.
-func AddDeployment(filename, alias string, deployment Deployment) error {
-	// Keep symlinked configs working when replacing the file.
+// AddDeployment saves a new deployment without applying environment overrides or changing existing entries.
+// A failed write leaves the old file intact.
+func AddDeployment(ctx context.Context, filename, alias string, deployment Deployment) error {
+	// NOTE: replace the symlink target so existing config links keep working.
 	if _, err := os.Lstat(filename); err == nil {
 		filename, err = filepath.EvalSymlinks(filename)
 		if err != nil {
@@ -22,13 +24,13 @@ func AddDeployment(filename, alias string, deployment Deployment) error {
 		return err
 	}
 
-	// Lock a stable sidecar: renaming the config replaces its inode. Keep the
-	// lock file so concurrent creators always lock the same inode.
+	// NOTE: renaming the config changes its inode, so concurrent saves lock a stable sidecar file.
+	// Keep the lock file so later saves use the same lock.
 	lock := flock.New(filename + ".lock")
-	if err := lock.Lock(); err != nil {
+	defer lock.Close()
+	if _, err := lock.TryLockContext(ctx, 100*time.Millisecond); err != nil {
 		return err
 	}
-	defer lock.Close()
 
 	tree, err := toml.LoadFile(filename)
 	if os.IsNotExist(err) {
@@ -45,8 +47,8 @@ func AddDeployment(filename, alias string, deployment Deployment) error {
 		return fmt.Errorf("deployment %q already exists", alias)
 	}
 
-	// A single deployment is implicitly active when loaded. Keep it active
-	// when adding a second deployment, even if no default was written before.
+	// NOTE: loading a single deployment makes it active even when no default is stored.
+	// Preserve that choice when adding a second deployment.
 	if stored.ActiveDeployment == "" && len(stored.Deployments) == 1 {
 		for existing := range stored.Deployments {
 			tree.Set("active_deployment", existing)

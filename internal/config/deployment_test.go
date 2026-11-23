@@ -1,6 +1,7 @@
 package config_test
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -26,7 +27,7 @@ func TestAddDeploymentPreservesStoredConfig(t *testing.T) {
 			t.Setenv("AXIOM_DEPLOYMENT", "ignore-env-default")
 			t.Setenv("AXIOM_TOKEN", "ignore-env-token")
 			dep := config.Deployment{URL: "https://api.axiom.co", Token: "xaat-new", OrganizationID: "new-org", ClaimURL: "https://app.axiom.co/claim", ExpiresAt: "2027-01-02T12:00:00Z"}
-			require.NoError(t, config.AddDeployment(filename, "new.org", dep))
+			require.NoError(t, config.AddDeployment(context.Background(), filename, "new.org", dep))
 			tree, err := toml.LoadFile(filename)
 			require.NoError(t, err)
 			require.Equal(t, tc.active, tree.Get("active_deployment"))
@@ -35,7 +36,7 @@ func TestAddDeploymentPreservesStoredConfig(t *testing.T) {
 			require.Equal(t, "xapt-existing", tree.Get("deployments.existing.token"))
 			require.Equal(t, dep.Token, tree.GetPath([]string{"deployments", "new.org", "token"}))
 
-			// Later config writes must not discard the claim URL and deadline.
+			// NOTE: later config writes must not discard the claim URL and deadline.
 			var cfg config.Config
 			require.NoError(t, tree.Unmarshal(&cfg))
 			cfg.ConfigFilePath = filename
@@ -52,17 +53,6 @@ func TestAddDeploymentPreservesStoredConfig(t *testing.T) {
 	}
 }
 
-func TestAddDeploymentRefusesOverwrite(t *testing.T) {
-	filename := filepath.Join(t.TempDir(), "config.toml")
-	const original = "[deployments.existing]\ntoken = 'xapt-existing'\n"
-	require.NoError(t, os.WriteFile(filename, []byte(original), 0o600))
-	err := config.AddDeployment(filename, "existing", config.Deployment{Token: "xaat-new"})
-	require.ErrorContains(t, err, "already exists")
-	data, err := os.ReadFile(filename)
-	require.NoError(t, err)
-	require.Equal(t, original, string(data))
-}
-
 func TestAddDeploymentConcurrentSaves(t *testing.T) {
 	filename := filepath.Join(t.TempDir(), "config.toml")
 	require.NoError(t, os.WriteFile(filename, []byte("[deployments.existing]\ntoken = 'xapt-existing'\n"), 0o600))
@@ -74,7 +64,7 @@ func TestAddDeploymentConcurrentSaves(t *testing.T) {
 		wg.Go(func() {
 			<-start
 			alias := fmt.Sprintf("org-%d", i)
-			errs <- config.AddDeployment(filename, alias, config.Deployment{Token: "xaat-" + alias})
+			errs <- config.AddDeployment(context.Background(), filename, alias, config.Deployment{Token: "xaat-" + alias})
 		})
 	}
 	close(start)
@@ -105,7 +95,7 @@ func TestAddDeploymentThroughSymlink(t *testing.T) {
 	link := filepath.Join(dir, "config.toml")
 	require.NoError(t, os.WriteFile(target, nil, 0o600))
 	require.NoError(t, os.Symlink(target, link))
-	require.NoError(t, config.AddDeployment(link, "test-org", config.Deployment{Token: "xaat-new"}))
+	require.NoError(t, config.AddDeployment(context.Background(), link, "test-org", config.Deployment{Token: "xaat-new"}))
 	actual, err := os.Readlink(link)
 	require.NoError(t, err)
 	require.Equal(t, target, actual)

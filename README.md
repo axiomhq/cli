@@ -103,10 +103,7 @@ precedence over environment variables which get precedence over the
 configuration file values.
 
 To start without an account, run `axiom org create --temporary --name=my-project`.
-The CLI saves the API token in the config and prints JSON with the organization ID,
-claim URL, and expiry time. Use `-D <returned-org-id>` for dataset, ingest, and query
-commands. Open the claim URL before expiry to keep the organization and its data.
-Existing deployments and the default stay unchanged.
+The command saves credentials and prints a claim link; see `axiom org create --help` for the next steps.
 
 ## GitHub Action
 

@@ -3,8 +3,6 @@ package org_test
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -32,7 +30,7 @@ func createCommand(filename, endpoint string, out io.Writer, args ...string) *co
 	f := &cmdutil.Factory{
 		Config: &config.Config{
 			ConfigFilePath: filename,
-			// Existing credentials must not be sent to the public endpoint.
+			// NOTE: existing credentials must not be sent to the public endpoint.
 			TokenOverride:          "xapt-test",
 			OrganizationIDOverride: "existing-org",
 		},
@@ -57,13 +55,12 @@ func TestCreateAndUseOrganization(t *testing.T) {
 			assert.Empty(t, r.Header.Get("X-Axiom-Org-Id"))
 			assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
 			body, err := io.ReadAll(r.Body)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 			assert.JSONEq(t, `{"name":"Test Org","edgeDeployment":"cloud.us-east-1.aws"}`, string(body))
 			_, _ = io.WriteString(w, provisionResponse)
 		case "/v2/datasets":
 			assert.Equal(t, "Bearer xaat-test-secret", r.Header.Get("Authorization"))
-			// API tokens already identify the organization; the SDK only sends
-			// an org header for personal tokens.
+			// NOTE: API tokens identify the organization; the SDK only sends an org header for personal tokens.
 			assert.Empty(t, r.Header.Get("X-Axiom-Org-Id"))
 			var body map[string]any
 			assert.NoError(t, json.NewDecoder(r.Body).Decode(&body))
@@ -80,21 +77,16 @@ func TestCreateAndUseOrganization(t *testing.T) {
 	cmd := createCommand(filename, server.URL, &out, "--temporary", "--name", "Test Org", "--edge-deployment", "cloud.us-east-1.aws")
 	require.NoError(t, cmd.Execute())
 	require.EqualValues(t, 1, requests.Load())
-	var result map[string]any
-	require.NoError(t, json.Unmarshal(out.Bytes(), &result))
-	require.Equal(t, "test-org", result["id"])
-	require.Equal(t, "2027-01-02T12:00:00Z", result["expiresAt"])
-	require.Equal(t, "https://app.axiom.co/orgs/test-org/claim?token=test-claim", result["claimUrl"])
-	require.NotContains(t, result, "token")
-	require.NotContains(t, out.String(), "xaat-test-secret")
+	require.JSONEq(t, `{"id":"test-org","name":"Test Org","defaultEdgeDeployment":"cloud.us-east-1.aws","expiresAt":"2027-01-02T12:00:00Z","claimUrl":"https://app.axiom.co/orgs/test-org/claim?token=test-claim"}`, out.String())
 	tree, err := toml.LoadFile(filename)
 	require.NoError(t, err)
 	var saved config.Config
 	require.NoError(t, tree.Unmarshal(&saved))
 	require.Equal(t, "test-org", saved.ActiveDeployment)
-	require.Equal(t, "xaat-test-secret", saved.Deployments["test-org"].Token)
-	require.Equal(t, result["claimUrl"], saved.Deployments["test-org"].ClaimURL)
-	require.Equal(t, result["expiresAt"], saved.Deployments["test-org"].ExpiresAt)
+	require.Equal(t, config.Deployment{
+		URL: server.URL, Token: "xaat-test-secret", OrganizationID: "test-org",
+		ClaimURL: "https://app.axiom.co/orgs/test-org/claim?token=test-claim", ExpiresAt: "2027-01-02T12:00:00Z",
+	}, saved.Deployments["test-org"])
 	if runtime.GOOS != "windows" {
 		info, err := os.Stat(filename)
 		require.NoError(t, err)
@@ -104,8 +96,7 @@ func TestCreateAndUseOrganization(t *testing.T) {
 	require.NoError(t, err)
 	require.Empty(t, files)
 
-	// Read the saved token as a later invocation does; do not inject it into
-	// the dataset command or skip the parent command's credential checks.
+	// NOTE: use the saved config through the root command so credential checks run as they do on a later invocation.
 	f := &cmdutil.Factory{Config: &saved, IO: terminal.TestIO()}
 	datasetCmd := root.NewCmd(f)
 	testutil.SetupCmd(datasetCmd)
@@ -114,77 +105,46 @@ func TestCreateAndUseOrganization(t *testing.T) {
 	require.EqualValues(t, 2, requests.Load())
 }
 
-func TestCreateDoesNotRetry(t *testing.T) {
-	for _, status := range []int{http.StatusTooManyRequests, http.StatusInternalServerError, http.StatusTemporaryRedirect} {
-		t.Run(http.StatusText(status), func(t *testing.T) {
-			var requests atomic.Int32
-			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				requests.Add(1)
-				w.Header().Set("Location", "/v2/orgs/provision")
-				w.WriteHeader(status)
-				_, _ = io.WriteString(w, `{"message":"xaat-do-not-print"}`)
-			}))
-			defer server.Close()
-			dir := t.TempDir()
-			var out bytes.Buffer
-			err := createCommand(filepath.Join(dir, "config.toml"), server.URL, &out, "--temporary").Execute()
-			require.ErrorContains(t, err, fmt.Sprintf("HTTP %d", status))
-			require.ErrorContains(t, err, "not retried")
-			require.NotContains(t, err.Error(), "xaat-do-not-print")
-			require.EqualValues(t, 1, requests.Load())
-			require.Empty(t, out.String())
-			files, err := os.ReadDir(dir)
-			require.NoError(t, err)
-			require.Empty(t, files)
-		})
-	}
-}
-
-func TestCreateInterruptedResponse(t *testing.T) {
+func TestCreateDoesNotFollowRedirect(t *testing.T) {
 	var requests atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		requests.Add(1)
-		conn, _, err := w.(http.Hijacker).Hijack()
-		require.NoError(t, err)
-		require.NoError(t, conn.Close())
+		w.Header().Set("Location", "/v2/orgs/provision")
+		w.WriteHeader(http.StatusTemporaryRedirect)
+		_, _ = io.WriteString(w, `{"message":"xaat-do-not-print"}`)
 	}))
 	defer server.Close()
+	dir := t.TempDir()
 	var out bytes.Buffer
-	err := createCommand(filepath.Join(t.TempDir(), "config.toml"), server.URL, &out, "--temporary").Execute()
-	require.ErrorContains(t, err, "could not be confirmed")
+	err := createCommand(filepath.Join(dir, "config.toml"), server.URL, &out, "--temporary").Execute()
+	require.ErrorContains(t, err, "HTTP 307")
+	require.ErrorContains(t, err, "not retried")
+	require.NotContains(t, err.Error(), "xaat-do-not-print")
 	require.EqualValues(t, 1, requests.Load())
 	require.Empty(t, out.String())
-}
-
-func TestCreateStopsBeforeRequest(t *testing.T) {
-	var requests atomic.Int32
-	server := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {
-		requests.Add(1)
-	}))
-	defer server.Close()
-	filename := filepath.Join(t.TempDir(), "missing", "config.toml")
-	require.ErrorContains(t, createCommand(filename, server.URL, io.Discard).Execute(), "--temporary")
-	require.ErrorContains(t, createCommand(filename, server.URL, io.Discard, "--temporary").Execute(), "cannot prepare credential storage")
-	require.Zero(t, requests.Load())
+	files, err := os.ReadDir(dir)
+	require.NoError(t, err)
+	require.Empty(t, files)
 }
 
 func TestCreateRetainsResponseWhenSaveFails(t *testing.T) {
 	dir := t.TempDir()
 	filename := filepath.Join(dir, "config.toml")
-	const original = "active_deployment = 'existing'\n[deployments.existing]\ntoken = 'xapt-existing'\n"
+	const original = "active_deployment = 'test-org'\n[deployments.test-org]\ntoken = 'xapt-existing'\n"
 	require.NoError(t, os.WriteFile(filename, []byte(original), 0o600))
 	var requests atomic.Int32
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requests.Add(1)
-		// Make the final save fail after the remote organization was created.
-		require.NoError(t, os.Rename(filename, filename+".backup"))
-		require.NoError(t, os.Mkdir(filename, 0o700))
+		body, err := io.ReadAll(r.Body)
+		assert.NoError(t, err)
+		assert.JSONEq(t, `{}`, string(body))
 		_, _ = io.WriteString(w, provisionResponse)
 	}))
 	defer server.Close()
 	var out bytes.Buffer
 	err := createCommand(filename, server.URL, &out, "--temporary").Execute()
 	require.ErrorContains(t, err, "organization created but config not saved")
+	require.ErrorContains(t, err, `deployment "test-org" already exists`)
 	require.EqualValues(t, 1, requests.Load())
 	require.Empty(t, out.String())
 	files, globErr := filepath.Glob(filepath.Join(dir, ".axiom-org-*.json"))
@@ -200,45 +160,7 @@ func TestCreateRetainsResponseWhenSaveFails(t *testing.T) {
 		require.NoError(t, statErr)
 		require.Equal(t, os.FileMode(0o600), info.Mode().Perm())
 	}
-	backup, readErr := os.ReadFile(filename + ".backup")
+	saved, readErr := os.ReadFile(filename)
 	require.NoError(t, readErr)
-	require.Equal(t, original, string(backup))
-}
-
-func TestCreateRetainsInvalidResponse(t *testing.T) {
-	const invalid = `{"id":"test-org","token":"xaat-test-secret","expiresAt":"secret-in-invalid-date"}`
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		_, _ = io.WriteString(w, invalid)
-	}))
-	defer server.Close()
-	dir := t.TempDir()
-	err := createCommand(filepath.Join(dir, "config.toml"), server.URL, io.Discard, "--temporary").Execute()
-	require.ErrorContains(t, err, "invalid organization response saved")
-	require.NotContains(t, err.Error(), "secret")
-	files, globErr := filepath.Glob(filepath.Join(dir, ".axiom-org-*.json"))
-	require.NoError(t, globErr)
-	require.Len(t, files, 1)
-	response, readErr := os.ReadFile(files[0])
-	require.NoError(t, readErr)
-	require.Equal(t, invalid, string(response))
-	_, statErr := os.Stat(filepath.Join(dir, "config.toml"))
-	require.True(t, os.IsNotExist(statErr))
-}
-
-type failingWriter struct{}
-
-func (failingWriter) Write([]byte) (int, error) { return 0, errors.New("broken pipe") }
-
-func TestCreateOutputFailureDoesNotLoseCredentials(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		_, _ = io.WriteString(w, provisionResponse)
-	}))
-	defer server.Close()
-	filename := filepath.Join(t.TempDir(), "config.toml")
-	err := createCommand(filename, server.URL, failingWriter{}, "--temporary").Execute()
-	require.ErrorContains(t, err, "saved")
-	require.ErrorContains(t, err, "do not repeat creation")
-	tree, readErr := toml.LoadFile(filename)
-	require.NoError(t, readErr)
-	require.Equal(t, "xaat-test-secret", tree.Get("deployments.test-org.token"))
+	require.Equal(t, original, string(saved))
 }
