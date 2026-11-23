@@ -32,7 +32,6 @@ func NewCmd(f *cmdutil.Factory) *cobra.Command {
 		PersistentPreRunE: cmdutil.ChainRunFuncs(
 			cmdutil.AsksForSetup(f, auth.NewLoginCmd(f)),
 			cmdutil.NeedsActiveDeployment(f),
-			cmdutil.NeedsPersonalAccessToken(f),
 		),
 	}
 

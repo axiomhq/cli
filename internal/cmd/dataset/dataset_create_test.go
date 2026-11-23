@@ -47,11 +47,11 @@ func TestCreateDatasetType(t *testing.T) {
 				_, _ = w.Write([]byte(`{}`))
 			}))
 			defer srv.Close()
-			cmd := newCreateCmd(&cmdutil.Factory{
+			cmd := NewCmd(&cmdutil.Factory{
 				Config: &config.Config{ActiveDeployment: "test", Deployments: map[string]config.Deployment{"test": {URL: srv.URL, Token: "xapt-test", OrganizationID: "test-org"}}},
 				IO:     terminal.TestIO(),
 			})
-			cmd.SetArgs(append([]string{"--name", "app-data", "--description", "App telemetry"}, tt.args...))
+			cmd.SetArgs(append([]string{"create", "--name", "app-data", "--description", "App telemetry"}, tt.args...))
 			testutil.SetupCmd(cmd)
 			_, err := cmd.ExecuteC()
 			if tt.wantErr != "" {

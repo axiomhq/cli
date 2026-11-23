@@ -10,15 +10,13 @@ import (
 
 var topics = map[string]string{
 	"credentials": `
-		The supplied access token must be a Personal Access token, retrieved
-		from the users profile page (Settings -> Profile).
+		Personal access tokens can be retrieved from the user's profile page
+		(Settings -> Profile).
 
-		API tokens can be provided by flag or environment variable but are only
-		valid for ingestion, querying and annotations, depending on their
-		permissions! Using them with Axiom CLI is encouraged for ingest-only,
-		query-only and/or annotation-only situations but renders the CLI unable
-		to do anything else. Use a Personal Access Token to get full access to
-		the deployment.
+		API tokens can be provided by flag or environment variable for ingestion,
+		querying, annotations and dataset management, subject to their permissions.
+		Login, auth status, token replacement and organization switching still
+		require a personal access token.
 
 		EDGE OPERATIONS: When using edge endpoints (--edge-url or --edge-region),
 		ingest operations require an API token (xaat-*). Personal tokens are
