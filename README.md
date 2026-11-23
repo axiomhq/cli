@@ -102,9 +102,6 @@ Configuration values can also be set using flags or the environment. Flags get
 precedence over environment variables which get precedence over the
 configuration file values.
 
-To start without an account, run `axiom org create --temporary --name=my-project`.
-The command saves credentials and prints a claim link; see `axiom org create --help` for the next steps.
-
 ## GitHub Action
 
 The `actions/setup` action installs the CLI on a workflow runner and adds it to
