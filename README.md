@@ -62,6 +62,7 @@ MANAGEMENT COMMANDS
   auth:        Manage authentication state
   config:      Manage configuration
   dataset:     Manage datasets
+  org:         Manage organizations
 
 ADDITIONAL COMMANDS
   completion:  Generate shell completion scripts

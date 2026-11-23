@@ -189,6 +189,8 @@ homebrew_casks:
       - "man/axiom-dataset-trim.1"
       - "man/axiom-dataset-update.1"
       - "man/axiom-ingest.1"
+      - "man/axiom-org.1"
+      - "man/axiom-org-create.1"
       - "man/axiom-query.1"
       - "man/axiom-stream.1"
       - "man/axiom-version.1"
